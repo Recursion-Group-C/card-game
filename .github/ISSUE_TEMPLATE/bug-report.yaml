@@ -1,0 +1,35 @@
+name: 🐛 Bug report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug"]
+body:
+- type: textarea
+  attributes:
+    label: どんな不具合が出る？
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: どんな動作を期待していた？
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: 不具合の再現方法
+    placeholder: |
+      1. In this environment...
+      2. With this config...
+      3. Run '...'
+      4. See error...
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: 原因
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: 修正案
+  validations:
+    required: true
