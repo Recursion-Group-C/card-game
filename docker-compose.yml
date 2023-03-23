@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  next-app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - '3000:3000'
+    # 追加
+    # user: ${REMOTE_USER_ID}:${REMOTE_GROUP_ID}
+
