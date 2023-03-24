@@ -11,8 +11,8 @@ RUN groupadd --gid $USER_GID $USERNAME \
 RUN git config --global user.email "you@example.com"
 RUN git config --global user.name "Your Name"
 
-# COPY package*.json ./
-# RUN npm install
+COPY package*.json ./
+RUN npm install
 
 COPY . .
 
