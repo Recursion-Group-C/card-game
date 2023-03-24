@@ -5,9 +5,9 @@ import type { AppProps } from 'next/app'
 //   return <Component {...pageProps} />
 // }
 
-const App = ({ Component, pageProps }: AppProps) => {
+const App = ({ Component, pageProps }: AppProps) => (
   /* eslint-disable react/jsx-props-no-spreading */
   <Component {...pageProps} />
-}
+);
 
 export default App;
