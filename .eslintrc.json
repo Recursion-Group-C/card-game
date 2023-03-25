@@ -20,6 +20,10 @@
     "plugin:tailwindcss/recommended",
     "prettier"
   ],
+  "ignorePatterns": [
+    "/lib/**/*", // Ignore built files.
+    "**/*.js" // Ignore files like *.config.js
+  ],
   "rules": {
     "linebreak-style": [
       "error",
@@ -35,6 +39,12 @@
     ],
     "react/prop-types": "off",
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "off"
+    "react-hooks/exhaustive-deps": "off",
+    "jsx-a11y/label-has-associated-control": [ 2, {
+      "labelComponents": ["CustomInputLabel"],
+      "labelAttributes": ["label"],
+      "controlComponents": ["CustomInput"],
+      "depth": 3
+    }]
   }
 }
