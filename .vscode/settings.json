@@ -7,5 +7,7 @@
     "vim.vimrc.path": "c:\\Users\\10001222407\\.vimrc",
     "editor.quickSuggestions": {
         "strings": true
-    }
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
 }
