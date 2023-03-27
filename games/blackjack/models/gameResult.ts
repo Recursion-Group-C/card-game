@@ -1,9 +1,9 @@
-const GameResult = {
-  WIN: "WIN",
-  LOSS: "LOSS",
-  PUSH: "PUSH",
-  BLACKJACK: "BLACKJACK",
-  BUST: "BUST"
-} as const
+enum GameResult {
+  WIN = 'WIN',
+  LOSS = 'LOSS',
+  PUSH = 'PUSH',
+  BLACKJACK = 'BLACKJACK',
+  BUST = 'BUST'
+}
 
 export default GameResult;

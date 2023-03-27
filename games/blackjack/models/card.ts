@@ -2,7 +2,7 @@ export default class Card {
   private suit: string;
 
   private value: string;
-  
+
   private faceDown = false;
 
   constructor(suit: string, value: string) {
@@ -24,7 +24,7 @@ export default class Card {
    */
   public getAtlasFrame(): string {
     return !this.faceDown
-      ? `card ${this.suit}${this.value}.png`
+      ? `card${this.suit}${this.value}.png`
       : '';
   }
 
@@ -36,4 +36,3 @@ export default class Card {
     return this.faceDown;
   }
 }
-
