@@ -3,7 +3,7 @@ export default class GameDecision {
   private _action: string;
 
   private _amount: number;
-
+  
   constructor(action: string, amount: number) {
     this._action = action;
     this._amount = amount;
