@@ -10,10 +10,10 @@ const Game = () => {
       const Phaser = await import('phaser');
 
       const { default: BetScene } = await import(
-        '../../games/blackjack/scene/BetScene'
+        '../../games/blackjack/scenes/BetScene'
       );
       const { default: MainScene } = await import(
-        '../../games/blackjack/scene/MainScene'
+        '../../games/blackjack/scenes/MainScene'
       );
 
       const phaserGame = new Phaser.Game({
@@ -27,7 +27,6 @@ const Game = () => {
       setGame(phaserGame);
     }
     initPhaser();
-    console.log('in use effect');
   }, []);
 
   return (
