@@ -1,22 +1,21 @@
-/* eslint no-underscore-dangle: 0 */
 import Card from './card';
 import GameDecision from './gameDecision';
 import game from '../constants/game';
 
 export default abstract class Player {
-  private readonly _name: string; // if a player has logged in, use the player name fetched from the DB, otherwise use "Player"
+  readonly #name: string; // if a player has logged in, use the player name fetched from the DB, otherwise use "
 
-  private readonly _playerType: string; // player, house, ai
+  readonly #playerType: string; // player, ho
 
-  private _chips: number; // if a player has logged in, use the player's deposit fetched from the DB, otherwise use constant amount.
+  #chips: number; // if a player has logged in, use the player's deposit fetched from the DB, otherwise use constant
 
-  private _bet: number;
+  #bet: number;
 
-  private _winAmount: number;
+  #winAmount: number;
 
-  private _gameStatus: string;
+  #gameStatus: string;
 
-  private _hand: Array<Card> = [];
+  #hand: Array<Card> = [];
 
   constructor(
     playerType: string,
@@ -26,61 +25,61 @@ export default abstract class Player {
     name = 'Player',
     chips: number = game.player.chips
   ) {
-    this._name = name;
-    this._playerType = playerType;
-    this._chips = chips;
-    this._bet = bet;
-    this._winAmount = winAmount;
-    this._gameStatus = gameStatus;
+    this.#name = name;
+    this.#playerType = playerType;
+    this.#chips = chips;
+    this.#bet = bet;
+    this.#winAmount = winAmount;
+    this.#gameStatus = gameStatus;
   }
 
   get name(): string {
-    return this._name;
+    return this.#name;
   }
 
   get playerType(): string {
-    return this._playerType;
+    return this.#playerType;
   }
 
   get chips(): number {
-    return this._chips;
+    return this.#chips;
   }
 
   set chips(chips: number) {
-    this._chips = chips;
+    this.#chips = chips;
   }
 
   get bet(): number {
-    return this._bet;
+    return this.#bet;
   }
 
   set bet(bet: number) {
-    this._bet = bet;
+    this.#bet = bet;
   }
 
   get winAmount(): number {
-    return this._winAmount;
+    return this.#winAmount;
   }
 
   set winAmount(winAmount: number) {
-    this._winAmount = winAmount;
+    this.#winAmount = winAmount;
   }
 
   get gameStatus(): string {
-    return this._gameStatus;
+    return this.#gameStatus;
   }
 
   set gameStatus(gameStatus: string) {
-    this._gameStatus = gameStatus;
+    this.#gameStatus = gameStatus;
   }
 
   get hand(): Array<Card> {
-    return this._hand;
+    return this.#hand;
   }
 
   // Array cannot simply use setter, so I create addCardToHand function instead of setter
   addCardToHand(card: Card) {
-    this._hand.push(card);
+    this.#hand.push(card);
   }
 
   abstract promptPlayer(userData: number): GameDecision;

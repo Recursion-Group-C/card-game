@@ -1,27 +1,26 @@
-/* eslint no-underscore-dangle: 0 */
 export default class GameDecision {
-  private _action: string;
+  #action: string;
 
-  private _amount: number;
-  
+  #amount: number;
+
   constructor(action: string, amount: number) {
-    this._action = action;
-    this._amount = amount;
+    this.#action = action;
+    this.#amount = amount;
   }
 
   get action(): string {
-    return this._action;
+    return this.#action;
   }
 
   set action(action: string) {
-    this._action = action;
+    this.#action = action;
   }
 
   get amount(): number {
-    return this._amount;
+    return this.#amount;
   }
 
   set amount(amount: number) {
-    this._amount = amount;
+    this.#amount = amount;
   }
 }
