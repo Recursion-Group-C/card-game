@@ -1,16 +1,15 @@
-/* eslint no-underscore-dangle: 0 */
 import Deck from './deck';
 import Player from './player';
 import game from '../constants/game';
 
 export default abstract class Table {
-  private readonly _betDenominations: Array<number> = [];
+  readonly #betDenominations: Array<number> = [];
 
   protected turnCounter: number;
 
-  private _gamePhase: string;
+  #gamePhase: string;
 
-  private _resultsLog: Array<string> = [];
+  #resultsLog: Array<string> = [];
 
   protected deck: Deck;
 
@@ -22,32 +21,32 @@ export default abstract class Table {
       ...game.table.betDenominations
     ]
   ) {
-    this._betDenominations = betDenominations;
+    this.#betDenominations = betDenominations;
     this.turnCounter = 0;
-    this._gamePhase = gamePhase;
+    this.#gamePhase = gamePhase;
     this.deck = new Deck();
     this.deck.shuffle();
   }
 
   get betDenominations(): Array<number> {
-    return this._betDenominations;
+    return this.#betDenominations;
   }
 
   get gamePhase(): string {
-    return this._gamePhase;
+    return this.#gamePhase;
   }
 
   set gamePhase(gamePhase: string) {
-    this._gamePhase = gamePhase;
+    this.#gamePhase = gamePhase;
   }
 
   get resultsLog(): Array<string> {
-    return this._resultsLog;
+    return this.#resultsLog;
   }
 
   // Array cannot simply use setter, so I create addLogToResultsLog function instead of setter
   addLogToResultsLog(log: string) {
-    this._resultsLog.push(log);
+    this.#resultsLog.push(log);
   }
 
   isFirstPlayer(): boolean {

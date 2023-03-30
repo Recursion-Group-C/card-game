@@ -1,20 +1,35 @@
-/* eslint no-underscore-dangle: 0 */
 export default class Card {
-  private readonly _suit: string;
+  readonly #suit: string;
 
-  private readonly _rank: string;
+  readonly #rank: string;
+
+  #faceDown = false;
 
   constructor(suit: string, rank: string) {
-    this._suit = suit;
-    this._rank = rank;
+    this.#suit = suit;
+    this.#rank = rank;
   }
 
   get suit(): string {
-    return this._suit;
+    return this.#suit;
   }
 
   get rank(): string {
-    return this._rank;
+    return this.#rank;
+  }
+
+  set faceDown(faceDown: boolean) {
+    this.#faceDown = faceDown;
+  }
+
+  get faceDown(): boolean {
+    return this.#faceDown;
+  }
+
+  getAtlasFrame(): string {
+    return !this.#faceDown
+      ? `card${this.#suit}${this.#rank}.png`
+      : '';
   }
 
   getRankNumber(gameType: string): number {
@@ -72,6 +87,6 @@ export default class Card {
         };
         break;
     }
-    return rankToNum[this.rank] ?? -1; // if rankToNum[this.rank] is undefined, this function returns -1
+    return rankToNum[this.#rank] ?? 0; // if rankToNum[this.rank] is undefined, this function returns 0
   }
 }
