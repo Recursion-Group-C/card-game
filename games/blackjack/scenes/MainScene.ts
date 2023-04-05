@@ -14,6 +14,7 @@ import {
   textStyle
 } from '../constants/constants';
 import BetScene from './BetScene';
+import updateBetDoubleText from './BetScene';
 import GameResult from '../models/gameResult';
 import Text = Phaser.GameObjects.Text;
 import Texture = Phaser.Textures.Texture;
@@ -39,6 +40,8 @@ export default class MainScene extends Phaser.Scene {
 
   private textStay: Text | undefined;
 
+  private textDouble: Text | undefined;
+
   private moneyText: Text | undefined;
 
   private cardImages: Image[] | undefined;
@@ -51,11 +54,15 @@ export default class MainScene extends Phaser.Scene {
 
   private hitButton: Image | undefined;
 
+  private doubleButton: Image | undefined;
+
   private playerHandZone: Zone | undefined;
 
   private dealerHandZone: Zone | undefined;
 
   private faceDownImage: Image | undefined;
+
+  private gamePhase: string = 'default';
 
   private CARD_FLIP_TIME = 600;
 
@@ -84,6 +91,10 @@ export default class MainScene extends Phaser.Scene {
     this.load.image(
       'yellowChip',
       '/game_assets/common/images/chipYellow.png'
+    );
+    this.load.image(
+      'whiteChip',
+      '/game_assets/common/images/chipWhite.png'
     );
   }
 
@@ -197,14 +208,14 @@ export default class MainScene extends Phaser.Scene {
 
   private setUpMoneyText(): void {
     this.moneyText = this.add.text(0, 0, '', textStyle);
-    let betText: Text = this.add.text(0, 0, '', textStyle);
+    let betText = this.add.text(0, 0, '', textStyle);
 
     this.updateMoneyText();
     this.updateBetText(betText);
   }
 
   private updateMoneyText(): void {
-    this.moneyText?.setText(
+    this.moneyText!.setText(
       'Money: $' + this.betScene?.money
     );
     Phaser.Display.Align.In.TopRight(
@@ -214,7 +225,7 @@ export default class MainScene extends Phaser.Scene {
       -20
     );
   }
-
+  // ****
   private updateBetText(text: Text) {
     text.setText('Bet: $' + this.betScene?.bet);
     Phaser.Display.Align.To.BottomLeft(
@@ -304,6 +315,33 @@ export default class MainScene extends Phaser.Scene {
     );
   }
 
+  private setUpDoubleButton(): void {
+    this.gamePhase = 'Double';
+    this.doubleButton = this.add
+      .image(
+        this.gameZone!.width * 0.15,
+        this.gameZone!.height * 0.5,
+        'whiteChip'
+      )
+      .setScale(1.2 * this.betScene?.scale);
+    this.textDouble = this.add.text(
+      this.gameZone!.width * 0.15,
+      this.gameZone!.height * 0.5,
+      'Double',
+      textStyle
+    );
+    Phaser.Display.Align.In.Center(
+      this.textDouble,
+      this.doubleButton
+    );
+    this.doubleButton.setInteractive();
+    this.setUpHoverStyles(this.doubleButton);
+    this.setUpClickHandler(
+      this.doubleButton,
+      this.handleDouble
+    );
+  }
+
   private setUpHoverStyles(image: Image) {
     image.on(
       'pointerover',
@@ -328,6 +366,7 @@ export default class MainScene extends Phaser.Scene {
     this.playerHand = new Hand();
     this.setUpHitButton();
     this.setUpStayButton();
+    this.setUpDoubleButton();
     this.setUpDealerScoreText();
     this.setUpPlayerScoreText();
   }
@@ -364,6 +403,20 @@ export default class MainScene extends Phaser.Scene {
       mainScene.CARD_FLIP_TIME,
       mainScene
     );
+  }
+
+  private handleDouble(mainScene: MainScene): void {
+    mainScene.handOutCard(
+      mainScene.playerHand as Hand,
+      false
+    );
+    mainScene.setPlayerScoreText();
+    if (mainScene.playerHand!.getBlackjackScore() > 21) {
+      mainScene.textHit!.destroy();
+      mainScene.textStay!.destroy();
+      mainScene.endHand(GameResult.BUST);
+    }
+    // this.handleStay(mainScene);
   }
 
   private drawCardsUntil17(mainScene: MainScene) {
@@ -483,7 +536,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   private endHand(result: GameResult) {
-    this.payout(result);
+    this.payout(result, 'Double');
     let graphics = this.add.graphics({
       fillStyle: { color: 0x000000, alpha: 0.75 }
     });
@@ -527,28 +580,57 @@ export default class MainScene extends Phaser.Scene {
     );
   }
 
-  private payout(result: GameResult) {
-    if (result === GameResult.WIN) {
-      this.betScene!.money += this.betScene!.bet;
-    } else if (result === GameResult.BLACKJACK) {
-      this.betScene!.money += Math.floor(
-        this.betScene!.bet * 1.5
+  //payout()を実装する　また、handleDouble()でhandlestay()の中身を使えるように
+
+  private payout(result: GameResult, gamePhase: string) {
+    if (gamePhase === 'Double') {
+      if (result === GameResult.WIN) {
+        this.betScene!.money += this.betScene!.bet * 2;
+        // } else if (result === GameResult.BLACKJACK) {
+        //   this.betScene!.money += Math.floor(
+        //     this.betScene!.bet * 1.5
+        //   );
+      } else {
+        this.betScene!.money -= this.betScene!.bet * 2;
+      }
+      this.updateMoneyText();
+      let highScore = localStorage.getItem(
+        HIGH_SCORE_STORAGE
       );
+      if (
+        !highScore ||
+        this.betScene!.money >
+          new Number(highScore).valueOf()
+      ) {
+        localStorage.setItem(
+          HIGH_SCORE_STORAGE,
+          new String(this.betScene!.money).valueOf()
+        );
+      }
     } else {
-      this.betScene!.money -= this.betScene!.bet;
-    }
-    this.updateMoneyText();
-    let highScore = localStorage.getItem(
-      HIGH_SCORE_STORAGE
-    );
-    if (
-      !highScore ||
-      this.betScene!.money > new Number(highScore).valueOf()
-    ) {
-      localStorage.setItem(
-        HIGH_SCORE_STORAGE,
-        new String(this.betScene!.money).valueOf()
+      if (result === GameResult.WIN) {
+        this.betScene!.money += this.betScene!.bet;
+      } else if (result === GameResult.BLACKJACK) {
+        this.betScene!.money += Math.floor(
+          this.betScene!.bet * 1.5
+        );
+      } else {
+        this.betScene!.money -= this.betScene!.bet;
+      }
+      this.updateMoneyText();
+      let highScore = localStorage.getItem(
+        HIGH_SCORE_STORAGE
       );
+      if (
+        !highScore ||
+        this.betScene!.money >
+          new Number(highScore).valueOf()
+      ) {
+        localStorage.setItem(
+          HIGH_SCORE_STORAGE,
+          new String(this.betScene!.money).valueOf()
+        );
+      }
     }
   }
 }

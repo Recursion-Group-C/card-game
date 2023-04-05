@@ -1,5 +1,7 @@
 import Card from './card';
 
+import MainScene from '../scenes/MainScene';
+
 export default class Hand {
   private cards: Array<Card> = [];
 
@@ -48,4 +50,3 @@ export default class Hand {
     return this.cards;
   }
 }
-

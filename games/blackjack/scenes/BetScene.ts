@@ -12,7 +12,7 @@ import Zone = Phaser.GameObjects.Zone;
 export default class BetScene extends Phaser.Scene {
   public money = 1000;
 
-  public bet = 0;
+  public bet: number = 0;
 
   public moneyText: Text | undefined;
 
@@ -146,6 +146,11 @@ export default class BetScene extends Phaser.Scene {
       this.betText as Phaser.GameObjects.GameObject,
       this.moneyText as Phaser.GameObjects.GameObject
     );
+  }
+
+  public updateBetDoubleText () {
+    this.betText?.setText('Bet: $' + this.bet * 2);
+    Phaser.Display.Align.To.BottomLeft(this.betText as Phaser.GameObjects.GameObject, this.moneyText as Phaser.GameObjects.GameObject)
   }
 
   private updateHighScoreText() {
