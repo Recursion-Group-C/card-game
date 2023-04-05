@@ -416,7 +416,14 @@ export default class MainScene extends Phaser.Scene {
       mainScene.textStay!.destroy();
       mainScene.endHand(GameResult.BUST);
     }
-    // this.handleStay(mainScene);
+    mainScene.textStay!.destroy();
+    mainScene.textHit!.destroy();
+    mainScene.handleFlipOver(mainScene);
+    setTimeout(
+      mainScene.drawCardsUntil17,
+      mainScene.CARD_FLIP_TIME,
+      mainScene
+    );
   }
 
   private drawCardsUntil17(mainScene: MainScene) {
