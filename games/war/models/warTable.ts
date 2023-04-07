@@ -21,10 +21,6 @@ export default class WarTable extends Table {
     ];
   }
 
-  public getDeck() {
-    return this.deck;
-  }
-
   // eslint-disable-next-line class-methods-use-this
   assignPlayerHands(): void {
     throw new Error('Method not implemented.');
@@ -34,18 +30,6 @@ export default class WarTable extends Table {
   evaluateAndGetRoundResults(): void {
     throw new Error('Method not implemented.');
   }
-
-  // ゲームの最初に各プレイヤーにカードを配る。
-  //   assignPlayerHands(playerIndex: number): Card {
-  //     const card = this.deck.drawOne();
-  //     if (!card) {
-  //       throw new Error(
-  //         'Failed to asseign a card to a player'
-  //       );
-  //     }
-  //     this.players[playerIndex].addCardToHand(card);
-  //     return card;
-  //   }
 
   // 各ラウンドの終わりに、各プレイヤーの手札とベットをクリアにする。
   clearPlayerHandsAndBets(): void {
@@ -65,7 +49,7 @@ export default class WarTable extends Table {
   compareCards(): void {
     const houseCardValue = this.players[0].getHandScore();
     const playerCardValue = this.players[1].getHandScore();
-    console.log(houseCardValue, playerCardValue);
+    // console.log(houseCardValue, playerCardValue);
 
     if (playerCardValue > houseCardValue) {
       // Player wins round
@@ -86,36 +70,12 @@ export default class WarTable extends Table {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  evaluateMove(player: WarPlayer): void {
-    const playerDecision = player.promptPlayer(0);
-
-    if (playerDecision.action === 'bet') {
-      player.bet = playerDecision.amount;
-      player.gameStatus = 'bet';
-      //   this.assignPlayerHands();
-      this.compareCards();
-
-      if (player.gameStatus === 'tie') {
-        const tieDecision = player.promptPlayer(1);
-        if (tieDecision.action === 'surrender') {
-          player.gameStatus = 'surrender';
-          player.chips -= player.bet / 2;
-        } else if (tieDecision.action === 'war') {
-          player.bet += tieDecision.amount;
-          //   this.assignPlayerHands();
-          this.compareCards();
-        }
-      }
-    }
+  evaluateMove(): void {
+    throw new Error('Method not implemented.');
   }
 
+  // eslint-disable-next-line class-methods-use-this
   haveTurn(): void {
-    const currentPlayer = this.getTurnPlayer();
-    currentPlayer.clearHand();
-    // this.assignPlayerHands();
-    while (currentPlayer.gameStatus !== 'stand') {
-      this.evaluateMove(currentPlayer);
-    }
-    this.evaluateAndGetRoundResults();
+    throw new Error('Method not implemented.');
   }
 }
