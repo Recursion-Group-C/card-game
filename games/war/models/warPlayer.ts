@@ -20,30 +20,10 @@ export default class WarPlayer extends Player {
     );
   }
 
-  promptPlayer(userData: number): GameDecision {
-    // 押されたボタンに応じてプレイを選ぶ
-    if (this.gameStatus === 'broke') {
-      return new GameDecision('broke', 0);
-    }
-
-    if (this.gameStatus === 'bet') {
-      return new GameDecision('bet', userData);
-    }
-
-    if (this.gameStatus === 'war') {
-      return new GameDecision('war', this.bet);
-    }
-
-    if (this.gameStatus === 'surrender') {
-      return new GameDecision('surrender', this.bet);
-    }
-
-    throw new Error('Invalid game status');
+  // eslint-disable-next-line class-methods-use-this
+  promptPlayer(): GameDecision {
+    throw new Error('Method not implemented.');
   }
-
-  //   addCardToHand(card: Card) {
-  //     this.hand.push(card);
-  //   }
 
   clearHand() {
     this.hand.pop();
@@ -67,7 +47,8 @@ export default class WarPlayer extends Player {
     return score;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   getUserActionGameDecision(): GameDecision {
-    return this.promptPlayer(this.bet);
+    throw new Error('Method not implemented.');
   }
 }
