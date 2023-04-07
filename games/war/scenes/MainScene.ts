@@ -491,8 +491,8 @@ export default class MainScene extends Phaser.Scene {
     playerIndex: number,
     faceDownCard: boolean
   ) {
-    // let card = this.warTable?.getDeck().drawOne();
-    let card = new Card('H', '10');
+    let card = this.warTable?.getDeck().drawOne();
+    // let card = new Card('H', '10');
     let cardImage: Image;
 
     if (!faceDownCard) {
@@ -617,7 +617,6 @@ export default class MainScene extends Phaser.Scene {
     } else if (result === GameResult.SURRENDER) {
       this.betScene!.money += this.betScene!.bet / 2;
     } else if (result === GameResult.WAR_WIN) {
-      // ワーゲームでプレイヤーが勝利した場6合、追加ベット額を2倍にした額を追加する
       this.betScene!.money +=
         (this.betScene!.bet + additionalBet) * 2;
     } else {

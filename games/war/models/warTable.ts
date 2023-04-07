@@ -21,6 +21,10 @@ export default class WarTable extends Table {
     ];
   }
 
+  public getDeck() {
+    return this.deck;
+  }
+
   // eslint-disable-next-line class-methods-use-this
   assignPlayerHands(): void {
     throw new Error('Method not implemented.');
