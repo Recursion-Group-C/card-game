@@ -24,6 +24,7 @@ import Texture = Phaser.Textures.Texture;
 import Zone = Phaser.GameObjects.Zone;
 import Image = Phaser.GameObjects.Image;
 import GameObject = Phaser.GameObjects.GameObject;
+import { Game } from 'phaser';
 
 export default class PlayScene extends BaseScene {
   private redDeck: RedDeck;
@@ -50,7 +51,7 @@ export default class PlayScene extends BaseScene {
 
   private aiDeckSizeText: Text | undefined;
 
-  private timerText: Text;
+  private timerText: Text | undefined;
 
   private gameZone: Zone | undefined;
 
@@ -101,8 +102,6 @@ export default class PlayScene extends BaseScene {
       'AI',
       100
     );
-
-    this.timerText = this.add.text(0, 0, '');
   }
 
   create(): void {
@@ -233,7 +232,7 @@ export default class PlayScene extends BaseScene {
     } else if (this.timer === 0) {
       this.setTimerText('GO!!');
       Phaser.Display.Align.In.Center(
-        this.timerText,
+        this.timerText as Text,
         this.gameZone as GameObject,
         0,
         -20
@@ -259,7 +258,7 @@ export default class PlayScene extends BaseScene {
     }
 
     Phaser.Display.Align.In.Center(
-      this.timerText,
+      this.timerText as Text,
       this.gameZone as GameObject,
       0,
       -20
@@ -274,7 +273,7 @@ export default class PlayScene extends BaseScene {
     this.timerText = this.add.text(0, 0, '', style.timer);
     this.setTimerText(`${String(this.timer)}`);
     Phaser.Display.Align.In.Center(
-      this.timerText,
+      this.timerText as Text,
       this.gameZone as GameObject,
       0,
       -20
@@ -321,16 +320,6 @@ export default class PlayScene extends BaseScene {
       xOffset,
       -20
     );
-
-    //  Just a visual display of the drop zone. This code will be removed
-    // const graphics = this.add.graphics();
-    // graphics.lineStyle(2, 0x000);
-    // graphics.strokeRect(
-    //   dropCardZone.x - dropCardZone.width / 2,
-    //   dropCardZone.y - dropCardZone.height / 2,
-    //   dropCardZone.width,
-    //   dropCardZone.height
-    // );
   }
 
   private setUpCardDropZone(dropCardZone: {
