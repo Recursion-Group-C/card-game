@@ -1,6 +1,5 @@
 import { Game as GameType } from 'phaser';
 import { useEffect, useState } from 'react';
-import BaseScene from '../../games/common/scenes/BaseScene';
 
 const WarGame = () => {
   const [game, setGame] = useState<GameType>(); // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -26,12 +25,12 @@ const WarGame = () => {
         height: window.innerHeight
       };
 
-      const Scenes: Array<BaseScene> = [
+      const Scenes: Array<any> = [
         PreloadScene,
         BetScene,
         PlayScene
       ];
-      const createScene = (Scene: BaseScene) =>
+      const createScene = (Scene: any) =>
         new Scene(SHARED_CONFIG);
       const initScenes = () => Scenes.map(createScene);
 
