@@ -1,17 +1,14 @@
 import Scene = Phaser.Scene;
+import game from '../constants/game';
 
-export const CARD_ATLAS_KEY = 'cards';
-export const CARD_HEIGHT = 190;
-export const CARD_WIDTH = 140;
-
-export class CardFactory {
+export default class CardFactory {
   constructor(
     scene: Scene,
     textureUrl: string,
     atlasUrl: string
   ) {
     scene.load.atlasXML(
-      CARD_ATLAS_KEY,
+      game.card.atlas_key,
       textureUrl,
       atlasUrl
     );

@@ -1,6 +1,14 @@
 const game = {
+  storage: {
+    high_score_storage: 'highscore'
+  },
   table: {
-    betDenominations: [5, 20, 50, 100]
+    betDenominations: [5, 21, 50, 100],
+    redChip_key: 'redChip',
+    whiteChip_key: 'whiteChip',
+    blueChip_key: 'blueChip',
+    orangeChip_key: 'orangeChip',
+    yellowChip_key: 'yellowChip'
   },
   player: {
     chips: 1000
@@ -24,6 +32,9 @@ const game = {
     ],
     width: 140,
     height: 190,
+    flip_time: 800,
+    atlas_key: 'cards',
+    back_key: 'cardBack',
     common_assets_path: '/game_assets/common/images'
   }
 } as const;
