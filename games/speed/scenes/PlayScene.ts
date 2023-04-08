@@ -283,6 +283,7 @@ export default class PlayScene extends BaseScene {
   private disableCardDraggable(): void {
     const cardImages = this.children.list.filter(
       (object: any) =>
+        object.type === 'Image' &&
         object.texture.key === game.card.atlas_key &&
         object.input?.draggable
     );
@@ -294,6 +295,7 @@ export default class PlayScene extends BaseScene {
   private enableCardDraggable(): void {
     const cardImages = this.children.list.filter(
       (object: any) =>
+        object.type === 'Image' &&
         object.texture.key === game.card.atlas_key &&
         object.input?.draggable
     );
