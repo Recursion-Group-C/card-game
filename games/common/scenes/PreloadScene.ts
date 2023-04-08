@@ -2,7 +2,7 @@ import path from 'path';
 
 import Phaser from 'phaser';
 
-import game from '../../common/constants/game';
+import game from '../constants/game';
 
 export default class PreloadScene extends Phaser.Scene {
   constructor() {
