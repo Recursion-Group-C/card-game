@@ -26,13 +26,13 @@ import Image = Phaser.GameObjects.Image;
 import GameObject = Phaser.GameObjects.GameObject;
 
 export default class PlayScene extends BaseScene {
-  private redDeck: RedDeck | undefined;
+  private redDeck: RedDeck;
 
-  private blackDeck: BlackDeck | undefined;
+  private blackDeck: BlackDeck;
 
-  private player: SpeedPlayer | undefined;
+  private player: SpeedPlayer;
 
-  private ai: SpeedPlayer | undefined;
+  private ai: SpeedPlayer;
 
   private faceDownImages: Array<Image> = [];
 
@@ -50,14 +50,14 @@ export default class PlayScene extends BaseScene {
 
   private aiDeckSizeText: Text | undefined;
 
-  private timerText: Text | undefined;
+  private timerText: Text;
 
   private gameZone: Zone | undefined;
 
-  private dropCardZone: {
-    right: Zone | undefined;
-    left: Zone | undefined;
-  } = { right: undefined, left: undefined };
+  private dropCardZone: any = {
+    right: undefined,
+    left: undefined
+  };
 
   private dropCardRank = { right: 0, left: 0 };
 
@@ -79,10 +79,53 @@ export default class PlayScene extends BaseScene {
 
   constructor(config: any) {
     super('PlayScene', config);
+
+    this.redDeck = new RedDeck();
+    this.blackDeck = new BlackDeck();
+
+    // create player instance
+    this.player = new SpeedPlayer(
+      'player',
+      0,
+      0,
+      'deal',
+      'Okuma',
+      100
+    );
+
+    this.ai = new SpeedPlayer(
+      'ai',
+      0,
+      0,
+      'deal',
+      'AI',
+      100
+    );
+
+    this.timerText = this.add.text(0, 0, '');
   }
 
   create(): void {
     this.setUpNewGame();
+
+    // create player instance
+    this.player = new SpeedPlayer(
+      'player',
+      0,
+      0,
+      'deal',
+      'Okuma',
+      100
+    );
+
+    this.ai = new SpeedPlayer(
+      'ai',
+      0,
+      0,
+      'deal',
+      'AI',
+      100
+    );
 
     const width = Number(
       this.scene.manager.game.config.width
@@ -163,6 +206,7 @@ export default class PlayScene extends BaseScene {
     this.setDeckImage(false);
     this.dealInitialCards();
 
+    this.timer = 3;
     this.time.delayedCall(3000, () => {
       this.setUpTimerText();
       // ゲームのカウントダウン
@@ -239,8 +283,8 @@ export default class PlayScene extends BaseScene {
 
   private disableCardDraggable(): void {
     const cardImages = this.children.list.filter(
-      (object) =>
-        object.texture?.key === game.card.atlas_key &&
+      (object: any) =>
+        object.texture.key === game.card.atlas_key &&
         object.input?.draggable
     );
     for (let i = 0; i < cardImages.length; i += 1) {
@@ -250,8 +294,8 @@ export default class PlayScene extends BaseScene {
 
   private enableCardDraggable(): void {
     const cardImages = this.children.list.filter(
-      (object) =>
-        object.texture?.key === game.card.atlas_key &&
+      (object: any) =>
+        object.texture.key === game.card.atlas_key &&
         object.input?.draggable
     );
     for (let i = 0; i < cardImages.length; i += 1) {
@@ -265,25 +309,6 @@ export default class PlayScene extends BaseScene {
     this.redDeck.shuffle();
     this.blackDeck = new BlackDeck();
     this.blackDeck.shuffle();
-
-    // create player instance
-    this.player = new SpeedPlayer(
-      'player',
-      0,
-      0,
-      'deal',
-      'Okuma',
-      100
-    );
-
-    this.ai = new SpeedPlayer(
-      'ai',
-      0,
-      0,
-      'deal',
-      'AI',
-      100
-    );
   }
 
   private alignCardDropZone(
@@ -323,7 +348,7 @@ export default class PlayScene extends BaseScene {
 
     this.input.on(
       'dragstart',
-      (pointer, gameObject: GameObject) => {
+      (pointer: any, gameObject: any) => {
         this.children.bringToTop(gameObject);
       },
       this
@@ -333,7 +358,7 @@ export default class PlayScene extends BaseScene {
       'drag',
       (
         pointer: Phaser.Input.Pointer,
-        gameObject: GameObject,
+        gameObject: any,
         dragX: number,
         dragY: number
       ) => {
@@ -349,7 +374,7 @@ export default class PlayScene extends BaseScene {
       'drop',
       (
         pointer: Phaser.Input.Pointer,
-        gameObject: Image,
+        gameObject: any,
         dropZone: Zone
       ) => {
         if (
@@ -433,11 +458,7 @@ export default class PlayScene extends BaseScene {
 
     this.input.on(
       'dragend',
-      (
-        pointer,
-        gameObject: GameObject,
-        dropped: boolean
-      ) => {
+      (pointer: any, gameObject: any, dropped: boolean) => {
         if (!dropped) {
           gameObject.x = gameObject.input.dragStartX;
           gameObject.y = gameObject.input.dragStartY;
@@ -689,7 +710,10 @@ export default class PlayScene extends BaseScene {
   // 山札がない場合は、手札から出す
   // TODO: デッキの数の表示を更新するタイミングを考える
   private dealLeadCards(): void {
-    if (this.blackDeck?.getDeckSize() > 0) {
+    if (
+      this.blackDeck &&
+      this.blackDeck?.getDeckSize() > 0
+    ) {
       this.handOutLeadCardFromDeck(
         this.blackDeck,
         this.aiHandZone!.x - game.card.width * 2,
@@ -705,7 +729,7 @@ export default class PlayScene extends BaseScene {
       );
     }
 
-    if (this.redDeck?.getDeckSize() > 0) {
+    if (this.redDeck.getDeckSize() > 0) {
       this.handOutLeadCardFromDeck(
         this.redDeck,
         this.playerHandZone!.x + game.card.width * 2,
@@ -760,33 +784,36 @@ export default class PlayScene extends BaseScene {
     toY: number,
     faceDownCard: boolean
   ) {
-    const card: Card = deck.drawOne();
+    const card: Card | undefined = deck.drawOne();
     let cardImage: Image;
 
-    if (!faceDownCard) {
-      player.addCardToHand(card);
-      cardImage = this.add.image(
-        originX,
-        originY,
-        game.card.atlas_key,
-        card.getAtlasFrame()
-      );
-      cardImage.name = String(card.getRankNumber('speed'));
-      if (player.playerType === 'player') {
-        cardImage.setInteractive();
-        this.input.setDraggable(cardImage);
+    if (card) {
+      if (!faceDownCard) {
+        player.addCardToHand(card);
+        cardImage = this.add.image(
+          originX,
+          originY,
+          game.card.atlas_key,
+          card.getAtlasFrame()
+        );
+        cardImage.name = String(
+          card.getRankNumber('speed')
+        );
+        if (player.playerType === 'player') {
+          cardImage.setInteractive();
+          this.input.setDraggable(cardImage);
+        }
+      } else {
+        player.addCardFaceDownToHand(card);
+        cardImage = this.add.image(
+          originX,
+          originY,
+          game.card.back_key
+        );
+        this.faceDownImages.push(cardImage);
       }
-    } else {
-      player.addCardFaceDownToHand(card);
-      cardImage = this.add.image(
-        originX,
-        originY,
-        game.card.back_key
-      );
-      this.faceDownImages.push(cardImage);
+      createCardTween(this, cardImage, toX, toY, 350);
     }
-
-    createCardTween(this, cardImage, toX, toY, 350);
   }
 
   private handOutLeadCardFromDeck(
@@ -796,27 +823,32 @@ export default class PlayScene extends BaseScene {
     toX: number,
     toY: number
   ): void {
-    const card: Card = deck.drawOne();
-    card.faceDown = true;
-    if (deck.constructor === RedDeck) {
-      this.dropCardRank.right = card.getRankNumber('speed');
-    } else {
-      this.dropCardRank.left = card.getRankNumber('speed');
+    const card: Card | undefined = deck.drawOne();
+
+    if (card) {
+      card.faceDown = true;
+      if (deck.constructor === RedDeck) {
+        this.dropCardRank.right =
+          card.getRankNumber('speed');
+      } else {
+        this.dropCardRank.left =
+          card.getRankNumber('speed');
+      }
+
+      const cardImage = this.add.image(
+        originX,
+        originY,
+        game.card.back_key
+      );
+      this.faceDownImages.push(cardImage);
+      this.children.bringToTop(cardImage);
+
+      createCardTween(this, cardImage, toX, toY, 350);
+      // カードを裏返す
+      this.time.delayedCall(1500, () => {
+        this.handleFlipOver(card, cardImage, false);
+      });
     }
-
-    const cardImage = this.add.image(
-      originX,
-      originY,
-      game.card.back_key
-    );
-    this.faceDownImages.push(cardImage);
-    this.children.bringToTop(cardImage);
-
-    createCardTween(this, cardImage, toX, toY, 350);
-    // カードを裏返す
-    this.time.delayedCall(1500, () => {
-      this.handleFlipOver(card, cardImage, false);
-    });
   }
 
   private handOutLeadCardFromHand(
@@ -844,7 +876,7 @@ export default class PlayScene extends BaseScene {
     let card: Card | undefined;
     let isRight = true;
 
-    for (let i = 0; i < this.ai?.hand.length; i += 1) {
+    for (let i = 0; i < this.ai.hand.length; i += 1) {
       if (
         PlayScene.isNextRank(
           this.ai?.hand[i].getRankNumber('speed'),
@@ -870,6 +902,7 @@ export default class PlayScene extends BaseScene {
         break;
       }
     }
+
     let cardImage: Image | undefined;
     if (card) {
       cardImage = searchCardImage(
@@ -877,6 +910,7 @@ export default class PlayScene extends BaseScene {
         card.suit,
         card.rank
       );
+
       if (cardImage) {
         this.children.bringToTop(cardImage);
         if (isRight)
@@ -893,9 +927,14 @@ export default class PlayScene extends BaseScene {
             this.dropCardZone.left?.x,
             this.dropCardZone.left.y
           );
+      } else {
+        return;
       }
 
-      if (this.blackDeck.getDeckSize() > 0) {
+      if (
+        this.blackDeck &&
+        this.blackDeck.getDeckSize() > 0
+      ) {
         this.handOutCard(
           this.blackDeck,
           this.ai,
@@ -906,15 +945,6 @@ export default class PlayScene extends BaseScene {
           false
         );
 
-        // const timerEvent = this.time.addEvent({
-        //   delay: 800,
-        //   callback: () => {
-        //     if (this.isGameStagnant()) this.dealLeadCards();
-        //     else timerEvent.remove(false);
-        //   },
-        //   callbackScope: this,
-        //   loop: true
-        // });
         this.setAiDeckSizeText();
       }
       if (this.blackDeck?.getDeckSize() === 0) {
@@ -927,13 +957,13 @@ export default class PlayScene extends BaseScene {
   private deriveGameResult(): string {
     let result;
     if (
-      this.player?.getHandScore() === 0 &&
-      this.ai?.getHandScore() === 0
+      this.player.getHandScore() === 0 &&
+      this.ai.getHandScore() === 0
     ) {
       result = GameResult.DRAW;
-    } else if (this.player?.getHandScore() === 0) {
+    } else if (this.player.getHandScore() === 0) {
       result = GameResult.WIN;
-    } else if (this.ai?.getHandScore() === 0) {
+    } else if (this.ai.getHandScore() === 0) {
       result = GameResult.LOSS;
     } else {
       result = GameResult.PLAYING; // まだゲームが終わっていない

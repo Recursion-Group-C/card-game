@@ -98,10 +98,9 @@ function searchCardImage(
   suit: string,
   rank: string
 ): Image | undefined {
-  const cardImages: Array<GameObject> =
-    scene.children.list.filter(
-      (gameObject) => gameObject.type === 'Image'
-    );
+  const cardImages: Array<any> = scene.children.list.filter(
+    (gameObject) => gameObject.type === 'Image'
+  );
   const targetImages: Array<GameObject> = cardImages.filter(
     (gameObject) => {
       const [objectSuit, objectRank] = parseCardString(
