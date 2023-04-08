@@ -1,11 +1,11 @@
 export const textStyle = {
-    font: "normal 48px Impact",
-    fill: '#FFFFFF',
-    stroke: '#000000',
-    strokeThickness: 5
+  font: 'normal 48px Impact',
+  fill: '#FFFFFF',
+  stroke: '#000000',
+  strokeThickness: 10
 };
 
-export const HIGH_SCORE_STORAGE = "highscore";
+export const HIGH_SCORE_STORAGE = 'highscore';
 
 export const CARD_WIDTH = 140;
 export const CARD_HEIGHT = 190;
