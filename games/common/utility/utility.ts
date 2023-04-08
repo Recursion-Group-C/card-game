@@ -2,6 +2,7 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 
 import Image = Phaser.GameObjects.Image;
+import Text = Phaser.GameObjects.Text;
 import Scene = Phaser.Scene;
 import Zone = Phaser.GameObjects.Zone;
 import GameObject = Phaser.GameObjects.GameObject;
