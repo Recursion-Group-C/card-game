@@ -42,6 +42,8 @@ export default class MainScene extends Phaser.Scene {
 
   private textDouble: Text | undefined;
 
+  private textSurrender: Text | undefined;
+
   private moneyText: Text | undefined;
 
   private cardImages: Image[] | undefined;
@@ -360,14 +362,14 @@ export default class MainScene extends Phaser.Scene {
         'blueChip'
       )
       .setScale(1.2 * this.betScene?.scale);
-    this.textDouble = this.add.text(
+    this.textSurrender = this.add.text(
       this.gameZone!.width * 0.84,
       this.gameZone!.height * 0.5,
       'Surrender',
       textStyle
     );
     Phaser.Display.Align.In.Center(
-      this.textDouble,
+      this.textSurrender,
       this.surrenderButton
     );
     this.surrenderButton.setInteractive();
@@ -453,8 +455,8 @@ export default class MainScene extends Phaser.Scene {
       mainScene.textStay!.destroy();
       mainScene.endHand(GameResult.BUST);
     }
-    mainScene.textStay!.destroy();
-    mainScene.textHit!.destroy();
+    // mainScene.textStay!.destroy();
+    // mainScene.textHit!.destroy();
     mainScene.handleFlipOver(mainScene);
     setTimeout(
       mainScene.drawCardsUntil17,
@@ -468,9 +470,9 @@ export default class MainScene extends Phaser.Scene {
       mainScene.playerHand as Hand,
       false
     );
-    mainScene.textStay!.destroy();
-    mainScene.textHit!.destroy();
-    mainScene.endHand(GameResult.BUST);
+    // mainScene.textStay!.destroy();
+    // mainScene.textHit!.destroy();
+    mainScene.endHand(GameResult.SURRENDER);
     mainScene.handleFlipOver(mainScene);
     setTimeout(
       mainScene.drawCardsUntil17,
@@ -507,7 +509,7 @@ export default class MainScene extends Phaser.Scene {
     );
     setTimeout(
       mainScene.endHand.bind(mainScene),
-      500,
+      1000,
       result
     );
   }
@@ -631,9 +633,9 @@ export default class MainScene extends Phaser.Scene {
       textStyle
     );
     resultText.setColor('#ffde3d');
-    resultText.setStroke('#000000', 5);
-    resultText.setFontSize(60);
-    Phaser.Display.Align.In.Center(
+    resultText.setStroke('#000000', 10);
+    resultText.setFontSize(100);
+    Phaser.Display.Align.In.LeftCenter(
       resultText,
       this.gameZone as Phaser.GameObjects.GameObject
     );
