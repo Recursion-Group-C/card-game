@@ -24,7 +24,7 @@ export default class Card {
    */
   public getAtlasFrame(): string {
     return !this.faceDown
-      ? `card${this.suit}${this.value}.png`
+      ? `card-${this.suit}-${this.value}.png`
       : '';
   }
 
