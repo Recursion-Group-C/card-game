@@ -1,5 +1,7 @@
 import Card from './card';
 
+import MainScene from '../scenes/MainScene';
+
 export default class Hand {
   private cards: Array<Card> = [];
 
@@ -41,11 +43,10 @@ export default class Hand {
       if (score + 11 > 21) score += 1;
       else score += 11;
     }
-    return score;
+    return score > 0 ? score : 0;
   }
 
   public getCards(): Card[] | undefined {
     return this.cards;
   }
 }
-

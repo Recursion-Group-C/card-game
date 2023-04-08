@@ -12,7 +12,7 @@ import Zone = Phaser.GameObjects.Zone;
 export default class BetScene extends Phaser.Scene {
   public money = 1000;
 
-  public bet = 0;
+  public bet: number = 0;
 
   public moneyText: Text | undefined;
 
@@ -48,6 +48,10 @@ export default class BetScene extends Phaser.Scene {
     );
     this.load.image(
       'orangeChip',
+      '/game_assets/common/images/chipOrange.png'
+    );
+    this.load.image(
+      'orangeChip2',
       '/game_assets/common/images/chipOrange.png'
     );
     this.load.image(
@@ -144,6 +148,11 @@ export default class BetScene extends Phaser.Scene {
     );
   }
 
+  public updateBetDoubleText () {
+    this.betText?.setText('Bet: $' + this.bet * 2);
+    Phaser.Display.Align.To.BottomLeft(this.betText as Phaser.GameObjects.GameObject, this.moneyText as Phaser.GameObjects.GameObject)
+  }
+
   private updateHighScoreText() {
     this.highScoreText?.setText(
       'High score: $' + this.highScore
@@ -156,22 +165,32 @@ export default class BetScene extends Phaser.Scene {
 
   private setUpButtons(): void {
     let whiteChip = this.add
-      .image(200, 300, 'whiteChip')
+      .image(100, 300, 'whiteChip')
       .setScale(this.scale);
     whiteChip.setInteractive();
     whiteChip.setDataEnabled();
-    whiteChip.data.set('value', 1);
+    whiteChip.data.set('value', 5);
     this.setUpHoverButtons(whiteChip);
-    let add1 = this.add.text(175, 375, '1', textStyle);
+    let add5 = this.add.text(175, 375, '5', textStyle);
 
     let redChip = this.add
-      .image(400, 300, 'redChip')
+      .image(200, 300, 'redChip')
       .setScale(this.scale);
-    let add25 = this.add.text(360, 375, '25', textStyle);
+    let add20 = this.add.text(260, 375, '20', textStyle);
     redChip.setInteractive();
     redChip.setDataEnabled();
-    redChip.data.set('value', 25);
+    redChip.data.set('value', 20);
     this.setUpHoverButtons(redChip);
+
+    let orangeChip = this.add
+      .image(500, 300, 'orangeChip2')
+      .setScale(this.scale);
+    let add50 = this.add.text(900, 375, '50', textStyle);
+    orangeChip.setInteractive();
+    orangeChip.setDataEnabled();
+    orangeChip.data.set('value', 50);
+    this.setUpHoverButtons(orangeChip);
+
     let blueChip = this.add
       .image(600, 300, 'blueChip')
       .setScale(this.scale);
@@ -180,11 +199,14 @@ export default class BetScene extends Phaser.Scene {
     blueChip.data.set('value', 100);
     this.setUpHoverButtons(blueChip);
     let add100 = this.add.text(550, 375, '100', textStyle);
+
     this.data.set('money', 1000);
     let chips: Image[] = new Array<Image>();
     chips.push(whiteChip);
     chips.push(redChip);
+    chips.push(orangeChip);
     chips.push(blueChip);
+
     let clearButton = this.add
       .image(0, 500, 'yellowChip')
       .setScale(1.2 * this.scale);
@@ -228,6 +250,12 @@ export default class BetScene extends Phaser.Scene {
       0,
       0
     );
+    Phaser.Display.Align.In.Center(
+      orangeChip as Image,
+      this.gameZone as Phaser.GameObjects.GameObject,
+      100,
+      0
+    );
     clearButton.setInteractive();
     dealButton.setInteractive();
     this.setUpHoverButtons(clearButton);
@@ -258,12 +286,13 @@ export default class BetScene extends Phaser.Scene {
       chips as Image[],
       this.scene as Phaser.Scenes.ScenePlugin
     );
-    Phaser.Display.Align.In.Center(add1, whiteChip);
-    Phaser.Display.Align.In.Center(add25, redChip);
+    Phaser.Display.Align.In.Center(add5, whiteChip);
+    Phaser.Display.Align.In.Center(add20, redChip);
+    Phaser.Display.Align.In.Center(add50, orangeChip);
     Phaser.Display.Align.In.Center(add100, blueChip);
     Phaser.Display.Align.In.Center(clearText, clearButton);
     Phaser.Display.Align.In.Center(dealText, dealButton);
-    this.setUpBetButtonHandlers(chips);
+    this.setUpBetButtonHandlers(chips); // 配列の順番で横並びする
   }
 
   private setUpBetButtonHandlers(buttons: Image[]) {

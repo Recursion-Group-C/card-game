@@ -14,6 +14,7 @@ import {
   textStyle
 } from '../constants/constants';
 import BetScene from './BetScene';
+import updateBetDoubleText from './BetScene';
 import GameResult from '../models/gameResult';
 import Text = Phaser.GameObjects.Text;
 import Texture = Phaser.Textures.Texture;
@@ -39,6 +40,10 @@ export default class MainScene extends Phaser.Scene {
 
   private textStay: Text | undefined;
 
+  private textDouble: Text | undefined;
+
+  private textSurrender: Text | undefined;
+
   private moneyText: Text | undefined;
 
   private cardImages: Image[] | undefined;
@@ -51,11 +56,17 @@ export default class MainScene extends Phaser.Scene {
 
   private hitButton: Image | undefined;
 
+  private doubleButton: Image | undefined;
+
+  private surrenderButton: Image | undefined;
+
   private playerHandZone: Zone | undefined;
 
   private dealerHandZone: Zone | undefined;
 
   private faceDownImage: Image | undefined;
+
+  private gamePhase: string = 'default';
 
   private CARD_FLIP_TIME = 600;
 
@@ -84,6 +95,14 @@ export default class MainScene extends Phaser.Scene {
     this.load.image(
       'yellowChip',
       '/game_assets/common/images/chipYellow.png'
+    );
+    this.load.image(
+      'whiteChip',
+      '/game_assets/common/images/chipWhite.png'
+    );
+    this.load.image(
+      'blueChip',
+      '/game_assets/common/images/chipBlue.png'
     );
   }
 
@@ -159,7 +178,10 @@ export default class MainScene extends Phaser.Scene {
   }
 
   private checkForBlackJack() {
-    if (this.playerHand?.getBlackjackScore() === 21) {
+    if (
+      this.playerHand?.getBlackjackScore() === 21 &&
+      this.gamePhase !== 'Surrender'
+    ) {
       this.endHand(GameResult.BLACKJACK);
     }
   }
@@ -197,14 +219,14 @@ export default class MainScene extends Phaser.Scene {
 
   private setUpMoneyText(): void {
     this.moneyText = this.add.text(0, 0, '', textStyle);
-    let betText: Text = this.add.text(0, 0, '', textStyle);
+    let betText = this.add.text(0, 0, '', textStyle);
 
     this.updateMoneyText();
     this.updateBetText(betText);
   }
 
   private updateMoneyText(): void {
-    this.moneyText?.setText(
+    this.moneyText!.setText(
       'Money: $' + this.betScene?.money
     );
     Phaser.Display.Align.In.TopRight(
@@ -304,6 +326,60 @@ export default class MainScene extends Phaser.Scene {
     );
   }
 
+  private setUpDoubleButton(): void {
+    this.gamePhase = 'Double';
+    this.doubleButton = this.add
+      .image(
+        this.gameZone!.width * 0.15,
+        this.gameZone!.height * 0.5,
+        'whiteChip'
+      )
+      .setScale(1.2 * this.betScene?.scale);
+    this.textDouble = this.add.text(
+      this.gameZone!.width * 0.15,
+      this.gameZone!.height * 0.5,
+      'Double',
+      textStyle
+    );
+    Phaser.Display.Align.In.Center(
+      this.textDouble,
+      this.doubleButton
+    );
+    this.doubleButton.setInteractive();
+    this.setUpHoverStyles(this.doubleButton);
+    this.setUpClickHandler(
+      this.doubleButton,
+      this.handleDouble
+    );
+  }
+
+  private setUpSurrenderButton() {
+    this.gamePhase = 'Surrender';
+    this.surrenderButton = this.add
+      .image(
+        this.gameZone!.width * 0.84,
+        this.gameZone!.height * 0.5,
+        'blueChip'
+      )
+      .setScale(1.2 * this.betScene?.scale);
+    this.textSurrender = this.add.text(
+      this.gameZone!.width * 0.84,
+      this.gameZone!.height * 0.5,
+      'Surrender',
+      textStyle
+    );
+    Phaser.Display.Align.In.Center(
+      this.textSurrender,
+      this.surrenderButton
+    );
+    this.surrenderButton.setInteractive();
+    this.setUpHoverStyles(this.surrenderButton);
+    this.setUpClickHandler(
+      this.surrenderButton,
+      this.handleSurrender
+    );
+  }
+
   private setUpHoverStyles(image: Image) {
     image.on(
       'pointerover',
@@ -328,6 +404,8 @@ export default class MainScene extends Phaser.Scene {
     this.playerHand = new Hand();
     this.setUpHitButton();
     this.setUpStayButton();
+    this.setUpDoubleButton();
+    this.setUpSurrenderButton();
     this.setUpDealerScoreText();
     this.setUpPlayerScoreText();
   }
@@ -366,13 +444,53 @@ export default class MainScene extends Phaser.Scene {
     );
   }
 
+  private handleDouble(mainScene: MainScene): void {
+    mainScene.handOutCard(
+      mainScene.playerHand as Hand,
+      false
+    );
+    mainScene.setPlayerScoreText();
+    if (mainScene.playerHand!.getBlackjackScore() > 21) {
+      mainScene.textHit!.destroy();
+      mainScene.textStay!.destroy();
+      mainScene.endHand(GameResult.BUST);
+    }
+    // mainScene.textStay!.destroy();
+    // mainScene.textHit!.destroy();
+    mainScene.handleFlipOver(mainScene);
+    setTimeout(
+      mainScene.drawCardsUntil17,
+      mainScene.CARD_FLIP_TIME,
+      mainScene
+    );
+  }
+
+  private handleSurrender(mainScene: MainScene) {
+    mainScene.handOutCard(
+      mainScene.playerHand as Hand,
+      false
+    );
+    // mainScene.textStay!.destroy();
+    // mainScene.textHit!.destroy();
+    mainScene.endHand(GameResult.SURRENDER);
+    mainScene.handleFlipOver(mainScene);
+    setTimeout(
+      mainScene.drawCardsUntil17,
+      mainScene.CARD_FLIP_TIME,
+      mainScene
+    );
+  }
+
   private drawCardsUntil17(mainScene: MainScene) {
     let dealerScore: number =
       mainScene.dealerHand!.getBlackjackScore();
     let playerScore: number =
       mainScene.playerHand!.getBlackjackScore();
     let result: unknown = null;
-    if (dealerScore < 17) {
+    if (
+      dealerScore < 17 &&
+      this.gamePhase !== 'Surrender'
+    ) {
       mainScene.handOutCard(
         mainScene.dealerHand as Hand,
         false
@@ -391,7 +509,7 @@ export default class MainScene extends Phaser.Scene {
     );
     setTimeout(
       mainScene.endHand.bind(mainScene),
-      500,
+      1000,
       result
     );
   }
@@ -401,17 +519,21 @@ export default class MainScene extends Phaser.Scene {
     playerScore: number,
     result: GameResult
   ) {
-    if (
-      dealerScore > 21 ||
-      (playerScore < 22 && playerScore > dealerScore)
-    ) {
-      result = GameResult.WIN;
-    } else if (dealerScore === playerScore) {
-      result = GameResult.PUSH;
-    } else {
+    if (this.gamePhase === 'Surrender') {
       result = GameResult.LOSS;
+    } else {
+      if (
+        dealerScore > 21 ||
+        (playerScore < 22 && playerScore > dealerScore)
+      ) {
+        result = GameResult.WIN;
+      } else if (dealerScore === playerScore) {
+        result = GameResult.PUSH;
+      } else {
+        result = GameResult.LOSS;
+      }
+      return result;
     }
-    return result;
   }
 
   private handleFlipOver(mainScene: MainScene) {
@@ -471,19 +593,25 @@ export default class MainScene extends Phaser.Scene {
 
   private setDealerScoreText() {
     this.dealerScoreText!.setText(
-      'Dealer Score: ' +
-        this.dealerHand!.getBlackjackScore()
+      this.dealerHand!.getBlackjackScore() > 0
+        ? 'Dealer Score: ' +
+            this.dealerHand!.getBlackjackScore()
+        : 'Dealer Score: 0'
     );
   }
 
   private setPlayerScoreText() {
     this.playerScoreText!.setText(
-      'Your Score: ' + this.playerHand!.getBlackjackScore()
+      this.playerHand!.getBlackjackScore() > 0
+        ? 'Your Score: ' +
+            this.playerHand!.getBlackjackScore()
+        : 'Your Score: 0'
     );
   }
 
   private endHand(result: GameResult) {
-    this.payout(result);
+    this.payout(result, this.gamePhase);
+    this.payout(result, this.gamePhase);
     let graphics = this.add.graphics({
       fillStyle: { color: 0x000000, alpha: 0.75 }
     });
@@ -505,9 +633,9 @@ export default class MainScene extends Phaser.Scene {
       textStyle
     );
     resultText.setColor('#ffde3d');
-    resultText.setStroke('#000000', 5);
-    resultText.setFontSize(60);
-    Phaser.Display.Align.In.Center(
+    resultText.setStroke('#000000', 10);
+    resultText.setFontSize(100);
+    Phaser.Display.Align.In.LeftCenter(
       resultText,
       this.gameZone as Phaser.GameObjects.GameObject
     );
@@ -527,28 +655,75 @@ export default class MainScene extends Phaser.Scene {
     );
   }
 
-  private payout(result: GameResult) {
-    if (result === GameResult.WIN) {
-      this.betScene!.money += this.betScene!.bet;
-    } else if (result === GameResult.BLACKJACK) {
-      this.betScene!.money += Math.floor(
-        this.betScene!.bet * 1.5
+  //payout()を実装する　また、handleDouble()でhandlestay()の中身を使えるように
+
+  private payout(result: GameResult, gamePhase: string) {
+    if (gamePhase === 'Double') {
+      if (result === GameResult.WIN) {
+        this.betScene!.money += this.betScene!.bet * 2;
+        // } else if (result === GameResult.BLACKJACK) {
+        //   this.betScene!.money += Math.floor(
+        //     this.betScene!.bet * 1.5
+        //   );
+      } else {
+        this.betScene!.money -= this.betScene!.bet * 2;
+      }
+      this.updateMoneyText();
+      let highScore = localStorage.getItem(
+        HIGH_SCORE_STORAGE
       );
+      if (
+        !highScore ||
+        this.betScene!.money >
+          new Number(highScore).valueOf()
+      ) {
+        localStorage.setItem(
+          HIGH_SCORE_STORAGE,
+          new String(this.betScene!.money).valueOf()
+        );
+      }
+    } else if (gamePhase === 'Surrender') {
+      // 半分にするlogic
+      this.betScene!.money -= this.betScene!.bet / 2;
+
+      this.updateMoneyText();
+      let highScore = localStorage.getItem(
+        HIGH_SCORE_STORAGE
+      );
+      if (
+        !highScore ||
+        this.betScene!.money >
+          new Number(highScore).valueOf()
+      ) {
+        localStorage.setItem(
+          HIGH_SCORE_STORAGE,
+          new String(this.betScene!.money).valueOf()
+        );
+      }
     } else {
-      this.betScene!.money -= this.betScene!.bet;
-    }
-    this.updateMoneyText();
-    let highScore = localStorage.getItem(
-      HIGH_SCORE_STORAGE
-    );
-    if (
-      !highScore ||
-      this.betScene!.money > new Number(highScore).valueOf()
-    ) {
-      localStorage.setItem(
-        HIGH_SCORE_STORAGE,
-        new String(this.betScene!.money).valueOf()
+      if (result === GameResult.WIN) {
+        this.betScene!.money += this.betScene!.bet;
+      } else if (result === GameResult.BLACKJACK) {
+        this.betScene!.money += Math.floor(
+          this.betScene!.bet * 1.5
+        );
+      } else {
+        this.betScene!.money -= this.betScene!.bet;
+      }
+      this.updateMoneyText();
+      let highScore = localStorage.getItem(
+        HIGH_SCORE_STORAGE
       );
+      if (
+        !highScore ||
+        this.betScene!.money >
+          new Number(highScore).valueOf()
+      ) {
+        localStorage.setItem(
+          HIGH_SCORE_STORAGE,
+          new String(this.betScene!.money).valueOf()
+        );
+      }
     }
   }
 }
