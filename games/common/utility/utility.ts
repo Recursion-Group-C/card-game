@@ -1,4 +1,6 @@
+/* eslint-disable */
 /* eslint no-param-reassign: ["error", { "props": false }] */
+
 import Image = Phaser.GameObjects.Image;
 import Scene = Phaser.Scene;
 import Zone = Phaser.GameObjects.Zone;
