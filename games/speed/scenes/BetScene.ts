@@ -1,6 +1,6 @@
 /* eslint no-underscore-dangle: 0 */
 // TODO: この画面を他のゲームでも共通して使用する
-import BaseScene from './BaseScene';
+import BaseScene from '../../common/scenes/BaseScene';
 
 import game from '../../common/constants/game';
 import style from '../../common/constants/style';

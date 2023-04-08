@@ -17,7 +17,7 @@ import BlackDeck from '../models/blackDeck';
 import SpeedPlayer from '../models/player';
 import RedDeck from '../models/redDeck';
 
-import BaseScene from './BaseScene';
+import BaseScene from '../../common/scenes/BaseScene';
 
 import Text = Phaser.GameObjects.Text;
 import Texture = Phaser.Textures.Texture;
@@ -298,14 +298,14 @@ export default class PlayScene extends BaseScene {
     );
 
     //  Just a visual display of the drop zone. This code will be removed
-    const graphics = this.add.graphics();
-    graphics.lineStyle(2, 0x000);
-    graphics.strokeRect(
-      dropCardZone.x - dropCardZone.width / 2,
-      dropCardZone.y - dropCardZone.height / 2,
-      dropCardZone.width,
-      dropCardZone.height
-    );
+    // const graphics = this.add.graphics();
+    // graphics.lineStyle(2, 0x000);
+    // graphics.strokeRect(
+    //   dropCardZone.x - dropCardZone.width / 2,
+    //   dropCardZone.y - dropCardZone.height / 2,
+    //   dropCardZone.width,
+    //   dropCardZone.height
+    // );
   }
 
   private setUpCardDropZone(dropCardZone: {

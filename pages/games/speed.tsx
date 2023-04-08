@@ -1,6 +1,6 @@
 import { Game as GameType } from 'phaser';
 import { useEffect, useState } from 'react';
-import BaseScene from '../../games/speed/scenes/BaseScene';
+import BaseScene from '../../games/common/scenes/BaseScene';
 
 const Game = () => {
   const [game, setGame] = useState<GameType>(); // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -18,7 +18,7 @@ const Game = () => {
       );
 
       const { default: PreloadScene } = await import(
-        '../../games/speed/scenes/PreloadScene'
+        '../../games/common/scenes/PreloadScene'
       );
 
       const SHARED_CONFIG = {

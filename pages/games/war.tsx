@@ -1,30 +1,56 @@
-import React, { useState, useEffect } from 'react';
 import { Game as GameType } from 'phaser';
+import { useEffect, useState } from 'react';
+import BaseScene from '../../games/common/scenes/BaseScene';
 
 const WarGame = () => {
   const [game, setGame] = useState<GameType>(); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   useEffect(() => {
-    const initPhaser = async () => {
+    async function initPhaser() {
       const Phaser = await import('phaser');
+
+      const { default: PlayScene } = await import(
+        '../../games/war/scenes/PlayScene'
+      );
 
       const { default: BetScene } = await import(
         '../../games/war/scenes/BetScene'
       );
-      const { default: MainScene } = await import(
-        '../../games/war/scenes/MainScene'
+
+      const { default: PreloadScene } = await import(
+        '../../games/common/scenes/PreloadScene'
       );
 
-      const phaserGame = new Phaser.Game({
+      const SHARED_CONFIG = {
+        width: window.innerWidth,
+        height: window.innerHeight
+      };
+
+      const Scenes: Array<BaseScene> = [
+        PreloadScene,
+        BetScene,
+        PlayScene
+      ];
+      const createScene = (Scene: BaseScene) =>
+        new Scene(SHARED_CONFIG);
+      const initScenes = () => Scenes.map(createScene);
+
+      const config = {
         type: Phaser.AUTO,
         parent: 'game-content',
-        width: window.innerWidth,
-        height: window.innerHeight,
-        scene: [BetScene, MainScene],
-        backgroundColor: '#26723B'
-      });
+        ...SHARED_CONFIG,
+        backgroundColor: '#26723B',
+        physics: {
+          arcade: {
+            debug: true
+          }
+        },
+        scene: initScenes()
+      };
+
+      const phaserGame = new Phaser.Game(config);
       setGame(phaserGame);
-    };
+    }
     initPhaser();
   }, []);
 
