@@ -4,7 +4,16 @@ const style = {
     fill: '#FFFFFF',
     stroke: '#000000',
     strokeThickness: 5
-    // fontSize: '32px', fill: '#000000'
+  },
+  deckSize: {
+    font: 'normal 24px Impact',
+    fill: '#FFFFFF'
+  },
+  timer: {
+    font: 'normal 300px Impact',
+    fill: '#2051e5',
+    stroke: '#000000',
+    strokeThickness: 5
   },
   gutter_size: 20
 } as const;

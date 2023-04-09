@@ -1,18 +1,19 @@
-/* eslint-disable */
-import {
-  HIGH_SCORE_STORAGE,
-  textStyle
-} from '../constants/constants';
+/* eslint no-underscore-dangle: 0 */
+// TODO: この画面を他のゲームでも共通して使用する
+import BaseScene from '../../common/scenes/BaseScene';
+
+import game from '../../common/constants/game';
+import style from '../../common/constants/style';
+import ImageUtility from '../../common/utility/ImageUtility';
+
 import Image = Phaser.GameObjects.Image;
 import Text = Phaser.GameObjects.Text;
-import TextUtility from '../utility/TextUtility';
-import ImageUtility from '../utility/ImageUtility';
 import Zone = Phaser.GameObjects.Zone;
 
-export default class BetScene extends Phaser.Scene {
+export default class BetScene extends BaseScene {
   public money = 1000;
 
-  public bet: number = 0;
+  public bet = 0;
 
   public moneyText: Text | undefined;
 
@@ -26,54 +27,26 @@ export default class BetScene extends Phaser.Scene {
 
   public scale: any | unknown;
 
-  constructor() {
-    super({
-      key: 'BetScene'
-    });
-  }
-
-  preload(): void {
-    this.load.image(
-      'redChip',
-      '/game_assets/common/images/chipRed.png'
-    );
-
-    this.load.image(
-      'whiteChip',
-      '/game_assets/common/images/chipWhite.png'
-    );
-    this.load.image(
-      'blueChip',
-      '/game_assets/common/images/chipBlue.png'
-    );
-    this.load.image(
-      'orangeChip',
-      '/game_assets/common/images/chipOrange.png'
-    );
-    this.load.image(
-      'orangeChip2',
-      '/game_assets/common/images/chipOrange.png'
-    );
-    this.load.image(
-      'yellowChip',
-      '/game_assets/common/images/chipYellow.png'
-    );
+  constructor(config: any) {
+    super('BetScene', config);
   }
 
   create(): void {
     if (this.money === 0) {
       this.gameOver();
     } else {
-      this.highScore = new Number(
-        localStorage.getItem(HIGH_SCORE_STORAGE)
-      ).valueOf();
+      this.highScore = Number(
+        localStorage.getItem(
+          game.storage.high_score_storage
+        )
+      );
       if (this.bet > this.money) this.bet = this.money;
-      const width: number = new Number(
+      const width = Number(
         this.scene.manager.game.config.width
-      ).valueOf();
-      const height: number = new Number(
+      );
+      const height = Number(
         this.scene.manager.game.config.height
-      ).valueOf();
+      );
       this.gameZone = this.add.zone(
         width * 0.5,
         height * 0.5,
@@ -89,11 +62,11 @@ export default class BetScene extends Phaser.Scene {
   }
 
   private setUpTitle(): void {
-    let textTitle: Text = this.add.text(
+    const textTitle: Text = this.add.text(
       0,
       20,
       'Place your bet',
-      textStyle
+      style.text
     );
     Phaser.Display.Align.In.Center(
       textTitle as Text,
@@ -106,14 +79,14 @@ export default class BetScene extends Phaser.Scene {
   setUpHoverButtons(image: Image): void {
     image.on(
       'pointerover',
-      function (this: BetScene) {
+      () => {
         image.setScale(1.2 * this.scale);
       },
       this
     );
     image.on(
       'pointerout',
-      function (this: BetScene) {
+      () => {
         image.setScale(1 * this.scale);
       },
       this
@@ -121,9 +94,14 @@ export default class BetScene extends Phaser.Scene {
   }
 
   private setUpText(): void {
-    this.moneyText = this.add.text(0, 0, '', textStyle);
-    this.betText = this.add.text(0, 0, '', textStyle);
-    this.highScoreText = this.add.text(0, 0, '', textStyle);
+    this.moneyText = this.add.text(0, 0, '', style.text);
+    this.betText = this.add.text(0, 0, '', style.text);
+    this.highScoreText = this.add.text(
+      0,
+      0,
+      '',
+      style.text
+    );
 
     this.updateMoneyText();
     this.updateBetText();
@@ -131,7 +109,7 @@ export default class BetScene extends Phaser.Scene {
   }
 
   private updateMoneyText(): void {
-    this.moneyText?.setText('Money: $' + this.money);
+    this.moneyText?.setText(`Money: $${this.money}`);
     Phaser.Display.Align.In.TopRight(
       this.moneyText as Phaser.GameObjects.GameObject,
       this.gameZone as Phaser.GameObjects.GameObject,
@@ -141,7 +119,7 @@ export default class BetScene extends Phaser.Scene {
   }
 
   private updateBetText() {
-    this.betText?.setText('Bet: $' + this.bet);
+    this.betText?.setText(`Bet: $${this.bet}`);
     Phaser.Display.Align.To.BottomLeft(
       this.betText as Phaser.GameObjects.GameObject,
       this.moneyText as Phaser.GameObjects.GameObject
@@ -149,7 +127,7 @@ export default class BetScene extends Phaser.Scene {
   }
 
   public updateBetDoubleText() {
-    this.betText?.setText('Bet: $' + this.bet * 2);
+    this.betText?.setText(`Bet: $${this.bet * 2}`);
     Phaser.Display.Align.To.BottomLeft(
       this.betText as Phaser.GameObjects.GameObject,
       this.moneyText as Phaser.GameObjects.GameObject
@@ -158,7 +136,7 @@ export default class BetScene extends Phaser.Scene {
 
   private updateHighScoreText() {
     this.highScoreText?.setText(
-      'High score: $' + this.highScore
+      `High score: $${this.highScore}`
     );
     Phaser.Display.Align.In.TopCenter(
       this.highScoreText as Phaser.GameObjects.GameObject,
@@ -167,62 +145,72 @@ export default class BetScene extends Phaser.Scene {
   }
 
   private setUpButtons(): void {
-    let whiteChip = this.add
-      .image(100, 300, 'whiteChip')
+    const whiteChip = this.add
+      .image(100, 300, game.table.whiteChip_key)
       .setScale(this.scale);
     whiteChip.setInteractive();
     whiteChip.setDataEnabled();
     whiteChip.data.set('value', 5);
     this.setUpHoverButtons(whiteChip);
-    let add5 = this.add.text(175, 375, '5', textStyle);
+    const add5 = this.add.text(175, 375, '5', style.text);
 
-    let redChip = this.add
-      .image(200, 300, 'redChip')
+    const redChip = this.add
+      .image(200, 300, game.table.redChip_key)
       .setScale(this.scale);
-    let add20 = this.add.text(260, 375, '20', textStyle);
+    const add20 = this.add.text(260, 375, '20', style.text);
     redChip.setInteractive();
     redChip.setDataEnabled();
     redChip.data.set('value', 20);
     this.setUpHoverButtons(redChip);
 
-    let orangeChip = this.add
-      .image(500, 300, 'orangeChip2')
+    const orangeChip = this.add
+      .image(500, 300, game.table.orangeChip_key)
       .setScale(this.scale);
-    let add50 = this.add.text(900, 375, '50', textStyle);
+    const add50 = this.add.text(900, 375, '50', style.text);
     orangeChip.setInteractive();
     orangeChip.setDataEnabled();
     orangeChip.data.set('value', 50);
     this.setUpHoverButtons(orangeChip);
 
-    let blueChip = this.add
-      .image(600, 300, 'blueChip')
+    const blueChip = this.add
+      .image(600, 300, game.table.blueChip_key)
       .setScale(this.scale);
     blueChip.setInteractive();
     blueChip.setDataEnabled();
     blueChip.data.set('value', 100);
     this.setUpHoverButtons(blueChip);
-    let add100 = this.add.text(550, 375, '100', textStyle);
+    const add100 = this.add.text(
+      550,
+      375,
+      '100',
+      style.text
+    );
 
     this.data.set('money', 1000);
-    let chips: Image[] = new Array<Image>();
+    const chips: Image[] = new Array<Image>();
     chips.push(whiteChip);
     chips.push(redChip);
     chips.push(orangeChip);
     chips.push(blueChip);
 
-    let clearButton = this.add
+    const clearButton = this.add
       .image(0, 500, 'yellowChip')
       .setScale(1.2 * this.scale);
-    let clearText = this.add.text(
+    const clearText = this.add.text(
       0,
       575,
       'Clear',
-      textStyle
+      style.text
     );
-    let dealButton = this.add
+    const dealButton = this.add
       .image(0, 500, 'orangeChip')
       .setScale(1.2 * this.scale);
-    let dealText = this.add.text(0, 575, 'Deal', textStyle);
+    const dealText = this.add.text(
+      0,
+      575,
+      'Deal',
+      style.text
+    );
     Phaser.Display.Align.In.BottomCenter(
       clearButton as Image,
       this.gameZone as Phaser.GameObjects.GameObject,
@@ -265,7 +253,7 @@ export default class BetScene extends Phaser.Scene {
     this.setUpHoverButtons(dealButton);
     clearButton.on(
       'pointerdown',
-      function (this: BetScene) {
+      () => {
         this.bet = 0;
         this.updateBetText();
       },
@@ -273,8 +261,8 @@ export default class BetScene extends Phaser.Scene {
     );
     dealButton.on(
       'pointerdown',
-      function (this: BetScene) {
-        this.scene.start('MainScene');
+      () => {
+        this.scene.start('PlayScene');
       },
       this
     );
@@ -302,7 +290,7 @@ export default class BetScene extends Phaser.Scene {
     buttons.forEach((button) => {
       button.on(
         'pointerdown',
-        function (this: BetScene) {
+        () => {
           this.addChip(button.data.get('value'));
         },
         this
@@ -323,19 +311,15 @@ export default class BetScene extends Phaser.Scene {
     const square = new Phaser.Geom.Rectangle(
       0,
       0,
-      new Number(
-        this.scene.manager.game.config.width
-      ).valueOf(),
-      new Number(
-        this.scene.manager.game.config.height
-      ).valueOf()
+      Number(this.scene.manager.game.config.width),
+      Number(this.scene.manager.game.config.height)
     );
     graphics.fillRectShape(square);
     const resultText: Text = this.add.text(
       0,
       0,
       "You're Broke! Here's another grand on the house.",
-      textStyle
+      style.text
     );
     resultText.setColor('#ffde3d');
     Phaser.Display.Align.In.Center(
@@ -344,10 +328,10 @@ export default class BetScene extends Phaser.Scene {
     );
     this.input.once(
       'pointerdown',
-      function (this: BetScene) {
+      () => {
         this.input.once(
           'pointerup',
-          function (this: BetScene) {
+          () => {
             this.money = 1000;
             this.bet = 0;
             this.scene.restart();

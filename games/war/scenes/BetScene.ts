@@ -1,15 +1,20 @@
 /* eslint-disable */
+import BaseScene from '../../common/scenes/BaseScene';
+
 import {
   HIGH_SCORE_STORAGE,
   textStyle
 } from '../../blackjack/constants/constants';
+
+import game from '../../common/constants/game';
+
 import Image = Phaser.GameObjects.Image;
 import Text = Phaser.GameObjects.Text;
 import TextUtility from '../../blackjack/utility/TextUtility';
 import ImageUtility from '../../blackjack/utility/ImageUtility';
 import Zone = Phaser.GameObjects.Zone;
 
-export default class BetScene extends Phaser.Scene {
+export default class BetScene extends BaseScene {
   public money = 1000;
 
   public bet = 0;
@@ -26,35 +31,33 @@ export default class BetScene extends Phaser.Scene {
 
   public scale: any | unknown;
 
-  constructor() {
-    super({
-      key: 'BetScene'
-    });
+  constructor(config: any) {
+    super('BetScene', config);
   }
 
-  preload(): void {
-    this.load.image(
-      'redChip',
-      '/game_assets/common/images/chipRed.png'
-    );
+  // preload(): void {
+  //   this.load.image(
+  //     'redChip',
+  //     '/game_assets/common/images/chipRed.png'
+  //   );
 
-    this.load.image(
-      'whiteChip',
-      '/game_assets/common/images/chipWhite.png'
-    );
-    this.load.image(
-      'blueChip',
-      '/game_assets/common/images/chipBlue.png'
-    );
-    this.load.image(
-      'orangeChip',
-      '/game_assets/common/images/chipOrange.png'
-    );
-    this.load.image(
-      'yellowChip',
-      '/game_assets/common/images/chipYellow.png'
-    );
-  }
+  //   this.load.image(
+  //     'whiteChip',
+  //     '/game_assets/common/images/chipWhite.png'
+  //   );
+  //   this.load.image(
+  //     'blueChip',
+  //     '/game_assets/common/images/chipBlue.png'
+  //   );
+  //   this.load.image(
+  //     'orangeChip',
+  //     '/game_assets/common/images/chipOrange.png'
+  //   );
+  //   this.load.image(
+  //     'yellowChip',
+  //     '/game_assets/common/images/chipYellow.png'
+  //   );
+  // }
 
   create(): void {
     if (this.money <= 0) {
@@ -156,7 +159,7 @@ export default class BetScene extends Phaser.Scene {
 
   private setUpButtons(): void {
     let whiteChip = this.add
-      .image(200, 300, 'whiteChip')
+      .image(200, 300, game.table.whiteChip_key)
       .setScale(this.scale);
     whiteChip.setInteractive();
     whiteChip.setDataEnabled();
@@ -165,7 +168,7 @@ export default class BetScene extends Phaser.Scene {
     let add1 = this.add.text(175, 375, '1', textStyle);
 
     let redChip = this.add
-      .image(400, 300, 'redChip')
+      .image(400, 300, game.table.redChip_key)
       .setScale(this.scale);
     let add25 = this.add.text(360, 375, '25', textStyle);
     redChip.setInteractive();
@@ -173,7 +176,7 @@ export default class BetScene extends Phaser.Scene {
     redChip.data.set('value', 25);
     this.setUpHoverButtons(redChip);
     let blueChip = this.add
-      .image(600, 300, 'blueChip')
+      .image(600, 300, game.table.blueChip_key)
       .setScale(this.scale);
     blueChip.setInteractive();
     blueChip.setDataEnabled();
@@ -186,7 +189,7 @@ export default class BetScene extends Phaser.Scene {
     chips.push(redChip);
     chips.push(blueChip);
     let clearButton = this.add
-      .image(0, 500, 'yellowChip')
+      .image(0, 500, game.table.yellowChip_key)
       .setScale(1.2 * this.scale);
     let clearText = this.add.text(
       0,
@@ -195,7 +198,7 @@ export default class BetScene extends Phaser.Scene {
       textStyle
     );
     let dealButton = this.add
-      .image(0, 500, 'orangeChip')
+      .image(0, 500, game.table.redChip_key)
       .setScale(1.2 * this.scale);
     let dealText = this.add.text(0, 575, 'Bet', textStyle);
     Phaser.Display.Align.In.BottomCenter(
@@ -243,7 +246,7 @@ export default class BetScene extends Phaser.Scene {
     dealButton.on(
       'pointerdown',
       function (this: BetScene) {
-        this.scene.start('WarScene');
+        this.scene.start('PlayScene');
       },
       this
     );

@@ -1,4 +1,3 @@
-// <reference path="../../scenes/blackjack/bindings/phaser.d.ts"/>
 import React, { useState, useEffect } from 'react';
 import { Game as GameType } from 'phaser';
 

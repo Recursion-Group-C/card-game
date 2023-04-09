@@ -63,6 +63,11 @@ export default abstract class Table {
     );
   }
 
+  resetAndShuffleDeck(): void {
+    this.deck = new Deck();
+    this.deck.shuffle();
+  }
+
   // Deal the Cards at the beginning of the game
   abstract assignPlayerHands(): void;
 

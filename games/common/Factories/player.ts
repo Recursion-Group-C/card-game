@@ -1,6 +1,8 @@
+/* eslint no-param-reassign: ["error", { "props": false }] */
+
+import game from '../constants/game';
 import Card from './card';
 import GameDecision from './gameDecision';
-import game from '../constants/game';
 
 export default abstract class Player {
   readonly #name: string; // if a player has logged in, use the player name fetched from the DB, otherwise use "
@@ -79,6 +81,11 @@ export default abstract class Player {
 
   // Array cannot simply use setter, so I create addCardToHand function instead of setter
   addCardToHand(card: Card) {
+    this.#hand.push(card);
+  }
+
+  addCardFaceDownToHand(card: Card) {
+    card.faceDown = true;
     this.#hand.push(card);
   }
 

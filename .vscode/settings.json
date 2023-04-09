@@ -1,0 +1,13 @@
+{
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "vim.useSystemClipboard": true,
+    "vim.hlsearch": true,
+    "vim.vimrc.enable": true,
+    "vim.vimrc.path": "c:\\Users\\10001222407\\.vimrc",
+    "editor.quickSuggestions": {
+        "strings": true
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+}

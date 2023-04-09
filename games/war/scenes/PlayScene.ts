@@ -1,24 +1,17 @@
 /* eslint-disable  */
-
-import {
-  CARD_ATLAS_KEY,
-  CARD_HEIGHT,
-  CARD_WIDTH,
-  CardFactory
-} from '../../common/Factories/cardFactory';
-import GameResult from '../constants/gameResult';
+import ImageUtility from '@/games/blackjack/utility/ImageUtility';
+import game from '../../common/constants/game';
 import style from '../../common/constants/style';
+import BaseScene from '../../common/scenes/BaseScene';
+import GameResult from '../constants/gameResult';
 import WarTable from '../models/warTable';
+import BetScene from './BetScene';
 import Text = Phaser.GameObjects.Text;
 import Texture = Phaser.Textures.Texture;
 import Image = Phaser.GameObjects.Image;
 import Zone = Phaser.GameObjects.Zone;
-import BetScene from './BetScene';
-import Card from '../../common/Factories/card';
-import ImageUtility from '@/games/blackjack/utility/ImageUtility';
-import TextUtility from '@/games/blackjack/utility/TextUtility';
 
-export default class MainScene extends Phaser.Scene {
+export default class MainScene extends BaseScene {
   private atlasTexture: Texture | undefined;
 
   //   private CARD_MARGIN: number = 10;
@@ -59,40 +52,17 @@ export default class MainScene extends Phaser.Scene {
 
   private initBet: number | undefined;
 
-  constructor() {
-    super({
-      key: 'WarScene'
-    });
+  constructor(config: any) {
+    super('PlayScene', config);
     this.warTable = new WarTable(
       'betting',
       [1, 5, 10, 25, 50]
     );
   }
 
-  preload(): void {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const cardFactory: CardFactory = new CardFactory(
-      this,
-      '/game_assets/common/images/playingCards.png',
-      '/game_assets/common/images/playingCards.xml'
-    );
-    this.load.image(
-      'cardBack',
-      '/game_assets/common/images/card_back_red.png'
-    );
-    this.atlasTexture = this.textures.get(CARD_ATLAS_KEY);
-    this.load.image(
-      'orangeChip',
-      '/game_assets/common/images/chipOrange.png'
-    );
-    this.load.image(
-      'yellowChip',
-      '/game_assets/common/images/chipYellow.png'
-    );
-    this.betScene = <BetScene>this.scene.get('BetScene');
-  }
-
   create(): void {
+    this.betScene = <BetScene>this.scene.get('BetScene');
+
     let width: number = new Number(
       this.scene.manager.game.config.width
     ).valueOf();
@@ -112,8 +82,8 @@ export default class MainScene extends Phaser.Scene {
     this.playerHandZone = this.add.zone(
       0,
       0,
-      CARD_WIDTH,
-      CARD_HEIGHT
+      game.card.width,
+      game.card.height
     );
     Phaser.Display.Align.To.BottomLeft(
       this.playerHandZone as Zone,
@@ -124,8 +94,8 @@ export default class MainScene extends Phaser.Scene {
     this.dealerHandZone = this.add.zone(
       0,
       0,
-      CARD_WIDTH,
-      CARD_HEIGHT
+      game.card.width,
+      game.card.height
     );
     Phaser.Display.Align.To.BottomLeft(
       this.dealerHandZone as Zone,
@@ -502,7 +472,7 @@ export default class MainScene extends Phaser.Scene {
       cardImage = this.add.image(
         0,
         0,
-        CARD_ATLAS_KEY,
+        game.card.atlas_key,
         card!.getAtlasFrame()
       );
     } else {

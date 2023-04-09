@@ -1,7 +1,7 @@
 import { Game as GameType } from 'phaser';
 import { useEffect, useState } from 'react';
 
-const WarGame = () => {
+const Game = () => {
   const [game, setGame] = useState<GameType>(); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   useEffect(() => {
@@ -9,11 +9,11 @@ const WarGame = () => {
       const Phaser = await import('phaser');
 
       const { default: PlayScene } = await import(
-        '../../games/war/scenes/PlayScene'
+        '../../games/speed/scenes/PlayScene'
       );
 
       const { default: BetScene } = await import(
-        '../../games/war/scenes/BetScene'
+        '../../games/speed/scenes/BetScene'
       );
 
       const { default: PreloadScene } = await import(
@@ -60,4 +60,4 @@ const WarGame = () => {
   );
 };
 
-export default WarGame;
+export default Game;

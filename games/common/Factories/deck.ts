@@ -3,7 +3,7 @@ import Card from './card';
 import game from '../constants/game';
 
 export default class Deck {
-  #cardList: Array<Card> = [];
+  protected cardList: Array<Card> = [];
 
   constructor() {
     const suitChoices: Array<string> = [
@@ -15,7 +15,7 @@ export default class Deck {
 
     for (let s = 0; s < suitChoices.length; s += 1) {
       for (let r = 0; r < rankChoices.length; r += 1) {
-        this.#cardList.push(
+        this.cardList.push(
           new Card(suitChoices[s], rankChoices[r])
         );
       }
@@ -23,13 +23,13 @@ export default class Deck {
   }
 
   shuffle(): void {
-    for (let i = 0; i < this.#cardList.length; i += 1) {
+    for (let i = 0; i < this.cardList.length; i += 1) {
       const randomIndex: number = Math.floor(
-        Math.random() * this.#cardList.length
+        Math.random() * this.cardList.length
       );
-      const temp: Card = this.#cardList[i];
-      this.#cardList[i] = this.#cardList[randomIndex];
-      this.#cardList[randomIndex] = temp;
+      const temp: Card = this.cardList[i];
+      this.cardList[i] = this.cardList[randomIndex];
+      this.cardList[randomIndex] = temp;
     }
   }
 
@@ -40,10 +40,14 @@ export default class Deck {
       );
       return undefined;
     }
-    return this.#cardList.pop();
+    return this.cardList.pop();
   }
 
   isEmpty(): boolean {
-    return this.#cardList.length === 0;
+    return this.cardList.length === 0;
+  }
+
+  getDeckSize(): number {
+    return this.cardList.length;
   }
 }
