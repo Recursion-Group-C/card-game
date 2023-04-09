@@ -9,6 +9,13 @@ import GameObject = Phaser.GameObjects.GameObject;
 import game from '../constants/game';
 import style from '../constants/style';
 
+/**
+ * カードを裏返すアニメーションを実行する関数。
+ *
+ * @param {Phaser.Scene} scene - アニメーションを実行するシーン。
+ * @param {Phaser.GameObjects.Image} cardBack - 裏面のカードイメージ。
+ * @param {Phaser.GameObjects.Image} cardFront - 表面のカードイメージ。
+ */
 function flipOverCard(
   scene: Scene,
   cardBack: Image,
@@ -29,6 +36,15 @@ function flipOverCard(
   });
 }
 
+/**
+ * カードを指定された座標に移動するアニメーションを実行する関数。
+ *
+ * @param {Phaser.Scene} scene - アニメーションを実行するシーン。
+ * @param {Phaser.GameObjects.Image} image - 移動させるカードイメージ。
+ * @param {number} x - X軸方向の目標座標。
+ * @param {number} y - Y軸方向の目標座標。
+ * @param {number} [duration=500] - アニメーションの実行時間（ミリ秒）。省略時は500ミリ秒になる。
+ */
 function createCardTween(
   scene: Scene,
   image: Image,
@@ -45,6 +61,12 @@ function createCardTween(
   });
 }
 
+/**
+ * ゲームオーバー時に画面上に結果を表示する関数。
+ *
+ * @param {Phaser.Scene} scene - シーン。
+ * @param {Phaser.GameObjects.Zone} gameZone - ゲーム領域を表すゾーン。
+ */
 function gameOver(scene: Scene, gameZone: Zone) {
   const graphics = scene.add.graphics({
     fillStyle: { color: 0x000000, alpha: 0.75 }
@@ -83,7 +105,13 @@ function gameOver(scene: Scene, gameZone: Zone) {
   );
 }
 
-// 画像ファイル名（例えば、card-Hearts-10.png）を受け取り、suitとrankを返す
+/**
+ * 画像ファイル名から、カードのスートとランクを抽出して、配列で返す関数。
+ *
+ * @param {string} cardString - カードの画像ファイル名。
+ * @returns {Array<string>} スートとランクの文字列が格納された配列。
+ * @example const [suit, rank] = parseCardString('card-Hearts-10.png');
+ */
 function parseCardString(
   cardString: string
 ): Array<string> {
@@ -93,6 +121,14 @@ function parseCardString(
   return [suit, rank];
 }
 
+/**
+ * 指定されたスートとランクのカードイメージを検索し、返す関数。
+ *
+ * @param {Phaser.Scene} scene - シーン。
+ * @param {string} suit - スート。
+ * @param {string} rank - ランク。
+ * @returns {Phaser.GameObjects.Image|undefined} 検索されたカードイメージ。見つからなかった場合はundefinedを返す。
+ */
 function searchCardImage(
   scene: Scene,
   suit: string,
