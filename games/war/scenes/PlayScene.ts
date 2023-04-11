@@ -1,7 +1,7 @@
 /* eslint-disable  */
 import ImageUtility from '@/games/blackjack/utility/ImageUtility';
-import game from '../../common/constants/game';
-import style from '../../common/constants/style';
+import GAME from '../../common/constants/game';
+import STYLE from '../../common/constants/style';
 import BaseScene from '../../common/scenes/BaseScene';
 import GameResult from '../constants/gameResult';
 import WarTable from '../models/warTable';
@@ -82,26 +82,26 @@ export default class MainScene extends BaseScene {
     this.playerHandZone = this.add.zone(
       0,
       0,
-      game.card.width,
-      game.card.height
+      GAME.CARD.WIDTH,
+      GAME.CARD.HEIGHT
     );
     Phaser.Display.Align.To.BottomLeft(
       this.playerHandZone as Zone,
       this.playerScoreText as Phaser.GameObjects.GameObject,
       0,
-      style.gutter_size
+      STYLE.GUTTER_SIZE
     );
     this.dealerHandZone = this.add.zone(
       0,
       0,
-      game.card.width,
-      game.card.height
+      GAME.CARD.WIDTH,
+      GAME.CARD.HEIGHT
     );
     Phaser.Display.Align.To.BottomLeft(
       this.dealerHandZone as Zone,
       this.dealerScoreText as Phaser.GameObjects.GameObject,
       0,
-      style.gutter_size
+      STYLE.GUTTER_SIZE
     );
 
     this.initBet = this.betScene?.bet as number;
@@ -174,7 +174,7 @@ export default class MainScene extends BaseScene {
       this.gameZone!.width * 0.33,
       this.gameZone!.height * 0.5,
       'War',
-      style.text
+      STYLE.TEXT
     );
     Phaser.Display.Align.In.Center(
       this.textWar,
@@ -220,7 +220,7 @@ export default class MainScene extends BaseScene {
       this.gameZone!.width * 0.33,
       this.gameZone!.height * 0.5,
       'Surrender',
-      style.text
+      STYLE.TEXT
     );
     Phaser.Display.Align.In.Center(
       this.textSurrender,
@@ -242,12 +242,12 @@ export default class MainScene extends BaseScene {
     whiteChip.setDataEnabled();
     whiteChip.data.set('value', 1);
     this.setUpHoverStyles(whiteChip);
-    let add1 = this.add.text(175, 375, '1', style.text);
+    let add1 = this.add.text(175, 375, '1', STYLE.TEXT);
 
     let redChip = this.add
       .image(400, 300, 'redChip')
       .setScale(this.betScene?.scale);
-    let add25 = this.add.text(360, 375, '25', style.text);
+    let add25 = this.add.text(360, 375, '25', STYLE.TEXT);
     redChip.setInteractive();
     redChip.setDataEnabled();
     redChip.data.set('value', 25);
@@ -259,7 +259,7 @@ export default class MainScene extends BaseScene {
     blueChip.setDataEnabled();
     blueChip.data.set('value', 100);
     this.setUpHoverStyles(blueChip);
-    let add100 = this.add.text(550, 375, '100', style.text);
+    let add100 = this.add.text(550, 375, '100', STYLE.TEXT);
     this.data.set('money', 1000);
     let chips: Image[] = new Array<Image>();
     chips.push(whiteChip);
@@ -272,12 +272,12 @@ export default class MainScene extends BaseScene {
       0,
       575,
       'Clear',
-      style.text
+      STYLE.TEXT
     );
     let dealButton = this.add
       .image(30, 500, 'orangeChip')
       .setScale(1.2 * this.betScene?.scale);
-    let dealText = this.add.text(0, 575, 'Bet', style.text);
+    let dealText = this.add.text(0, 575, 'Bet', STYLE.TEXT);
 
     Phaser.Display.Align.In.BottomCenter(
       clearButton as Image,
@@ -364,7 +364,7 @@ export default class MainScene extends BaseScene {
     this.betScene!.bet += value;
     if (this.betScene!.bet > this.betScene!.money)
       this.betScene!.bet = this.betScene!.money;
-    let betText: Text = this.add.text(0, 0, '', style.text);
+    let betText: Text = this.add.text(0, 0, '', STYLE.TEXT);
 
     this.updateBetText();
   }
@@ -398,8 +398,8 @@ export default class MainScene extends BaseScene {
   }
 
   private setUpMoneyText(): void {
-    this.moneyText = this.add.text(0, 0, '', style.text);
-    this.betText = this.add.text(0, 0, '', style.text);
+    this.moneyText = this.add.text(0, 0, '', STYLE.TEXT);
+    this.betText = this.add.text(0, 0, '', STYLE.TEXT);
 
     this.updateMoneyText();
     this.updateBetText();
@@ -430,7 +430,7 @@ export default class MainScene extends BaseScene {
       0,
       200,
       '',
-      style.text
+      STYLE.TEXT
     );
     // this.setDealerScoreText();
     Phaser.Display.Align.In.TopCenter(
@@ -446,7 +446,7 @@ export default class MainScene extends BaseScene {
       0,
       300,
       '',
-      style.text
+      STYLE.TEXT
     );
     // this.setPlayerScoreText();e
     Phaser.Display.Align.In.BottomCenter(
@@ -472,7 +472,7 @@ export default class MainScene extends BaseScene {
       cardImage = this.add.image(
         0,
         0,
-        game.card.atlas_key,
+        GAME.CARD.ATLAS_KEY,
         card!.getAtlasFrame()
       );
     } else {
@@ -544,7 +544,7 @@ export default class MainScene extends BaseScene {
         0,
         0,
         <string>result,
-        style.text
+        STYLE.TEXT
       );
       resultText.setColor('#ffde3d');
       resultText.setStroke('#000000', 5);

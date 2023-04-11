@@ -2,7 +2,7 @@
 // import Card from '@/games/common/Factories/card';
 import Table from '../../common/Factories/table';
 // import Deck from '@/games/common/Factories/deck';
-import game from '../../common/constants/game';
+import GAME from '../../common/constants/game';
 import WarPlayer from './warPlayer';
 
 export default class WarTable extends Table {
@@ -11,7 +11,7 @@ export default class WarTable extends Table {
   constructor(
     gamePhase: string,
     betDenominations: Array<number> = [
-      ...game.table.betDenominations
+      ...GAME.TABLE.BET_DENOMINATIONS
     ]
   ) {
     super(gamePhase, betDenominations);

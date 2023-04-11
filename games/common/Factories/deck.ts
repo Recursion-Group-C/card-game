@@ -1,16 +1,16 @@
 /* eslint no-underscore-dangle: 0 */
+import GAME from '../constants/game';
 import Card from './card';
-import game from '../constants/game';
 
 export default class Deck {
   protected cardList: Array<Card> = [];
 
   constructor() {
     const suitChoices: Array<string> = [
-      ...game.card.suitChoices
+      ...GAME.CARD.SUIT_CHOICES
     ];
     const rankChoices: Array<string> = [
-      ...game.card.rankChoices
+      ...GAME.CARD.RANK_CHOICES
     ];
 
     for (let s = 0; s < suitChoices.length; s += 1) {

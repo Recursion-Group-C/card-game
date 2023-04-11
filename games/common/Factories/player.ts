@@ -1,7 +1,7 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 
-import game from '../constants/game';
-import Card from './card';
+import GAME from '../constants/game';
+import Card from './cardImage';
 import GameDecision from './gameDecision';
 
 export default abstract class Player {
@@ -25,7 +25,7 @@ export default abstract class Player {
     winAmount: number,
     gameStatus: string,
     name = 'Player',
-    chips: number = game.player.chips
+    chips: number = GAME.PLAYER.CHIPS
   ) {
     this.#name = name;
     this.#playerType = playerType;

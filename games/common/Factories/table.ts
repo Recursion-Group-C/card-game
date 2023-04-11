@@ -1,6 +1,6 @@
+import GAME from '../constants/game';
 import Deck from './deck';
 import Player from './player';
-import game from '../constants/game';
 
 export default abstract class Table {
   readonly #betDenominations: Array<number> = [];
@@ -18,7 +18,7 @@ export default abstract class Table {
   constructor(
     gamePhase: string,
     betDenominations: Array<number> = [
-      ...game.table.betDenominations
+      ...GAME.TABLE.BET_DENOMINATIONS
     ]
   ) {
     this.#betDenominations = betDenominations;
