@@ -13,7 +13,10 @@ import {
   HIGH_SCORE_STORAGE,
   textStyle
 } from '../constants/constants';
-import BetScene from './BetScene';
+
+import BaseScene from '../../common/scenes/BaseScene';
+import BetScene from '../../common/scenes/BetScene';
+
 import updateBetDoubleText from './BetScene';
 import GameResult from '../models/gameResult';
 import Text = Phaser.GameObjects.Text;
@@ -21,7 +24,7 @@ import Texture = Phaser.Textures.Texture;
 import Image = Phaser.GameObjects.Image;
 import Zone = Phaser.GameObjects.Zone;
 
-export default class MainScene extends Phaser.Scene {
+export default class PlayScene extends BaseScene {
   private dealerHand: Hand | undefined;
 
   private playerHand: Hand | undefined;
@@ -50,8 +53,6 @@ export default class MainScene extends Phaser.Scene {
 
   private betScene: BetScene | undefined;
 
-  private gameZone: Zone | undefined;
-
   private stayButton: Image | undefined;
 
   private hitButton: Image | undefined;
@@ -70,55 +71,13 @@ export default class MainScene extends Phaser.Scene {
 
   private CARD_FLIP_TIME = 600;
 
-  constructor() {
-    super({
-      key: 'MainScene'
-    });
-  }
-
-  preload(): void {
-    let cardFactory: CardFactory = new CardFactory(
-      this,
-      '/game_assets/common/images/playingCards.png',
-      '/game_assets/common/images/playingCards.xml'
-    );
-    this.load.image(
-      'cardBack',
-      '/game_assets/common/images/card_back_red.png'
-    );
-    this.atlasTexture = this.textures.get(CARD_ATLAS_KEY);
-    this.betScene = <BetScene>this.scene.get('BetScene');
-    this.load.image(
-      'orangeChip',
-      '/game_assets/common/images/chipOrange.png'
-    );
-    this.load.image(
-      'yellowChip',
-      '/game_assets/common/images/chipYellow.png'
-    );
-    this.load.image(
-      'whiteChip',
-      '/game_assets/common/images/chipWhite.png'
-    );
-    this.load.image(
-      'blueChip',
-      '/game_assets/common/images/chipBlue.png'
-    );
+  constructor(config: any) {
+    super('PlayScene', config);
   }
 
   create(): void {
-    let width: number = new Number(
-      this.scene.manager.game.config.width
-    ).valueOf();
-    let height: number = new Number(
-      this.scene.manager.game.config.height
-    ).valueOf();
-    this.gameZone = this.add.zone(
-      width * 0.5,
-      height * 0.5,
-      width,
-      height
-    );
+    this.createGameZone();
+
     this.setUpMoneyText();
     this.setUpNewGame();
 
