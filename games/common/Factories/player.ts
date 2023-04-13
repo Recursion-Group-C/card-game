@@ -84,11 +84,6 @@ export default abstract class Player {
     this.#hand.push(card);
   }
 
-  addCardFaceDownToHand(card: Card) {
-    card.faceDown = true;
-    this.#hand.push(card);
-  }
-
   abstract promptPlayer(userData: number): GameDecision;
 
   abstract getHandScore(): number;
