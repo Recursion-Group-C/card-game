@@ -1,6 +1,7 @@
 import { Game as GameType } from 'phaser';
 import { useEffect, useState } from 'react';
 
+// TODO: Sceneのインポート以外を共通化する
 const Game = () => {
   const [game, setGame] = useState<GameType>(); // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -13,16 +14,17 @@ const Game = () => {
       );
 
       const { default: BetScene } = await import(
-        '../../games/speed/scenes/BetScene'
+        '../../games/common/scenes/BetScene'
       );
 
       const { default: PreloadScene } = await import(
         '../../games/common/scenes/PreloadScene'
       );
 
-      const SHARED_CONFIG = {
+      const CONFIG = {
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
+        game: 'speed'
       };
 
       const Scenes: Array<any> = [
@@ -30,21 +32,21 @@ const Game = () => {
         BetScene,
         PlayScene
       ];
-      const createScene = (Scene: any) =>
-        new Scene(SHARED_CONFIG);
+      const createScene = (Scene: any) => new Scene(CONFIG);
       const initScenes = () => Scenes.map(createScene);
 
       const config = {
         type: Phaser.AUTO,
         parent: 'game-content',
-        ...SHARED_CONFIG,
+        ...CONFIG,
         backgroundColor: '#26723B',
         physics: {
           arcade: {
             debug: true
           }
         },
-        scene: initScenes()
+        scene: initScenes(),
+        game: 'speed'
       };
 
       const phaserGame = new Phaser.Game(config);

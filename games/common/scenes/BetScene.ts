@@ -1,8 +1,7 @@
 /* eslint no-underscore-dangle: 0 */
-// TODO: この画面を他のゲームでも共通して使用する
 import BaseScene from './BaseScene';
 
-import Chip from '../Factories/chip';
+import Chip from '../Factories/chipImage';
 
 import GAME from '../constants/game';
 import STYLE from '../constants/style';
@@ -31,11 +30,8 @@ export default class BetScene extends BaseScene {
     if (this.money === 0) {
       this.gameOver();
     } else {
-      this.highScore = Number(
-        localStorage.getItem(
-          GAME.STORAGE.HIGH_SCORE_STORAGE
-        )
-      );
+      this.highScore = this.getHighScore();
+
       if (this.bet > this.money) this.bet = this.money;
 
       this.createGameZone();
@@ -43,6 +39,49 @@ export default class BetScene extends BaseScene {
       this.createChips();
       this.createButtons();
       this.createText();
+    }
+  }
+
+  private getHighScore(): number {
+    switch (this.config.game) {
+      case 'speed':
+        return Number(
+          localStorage.getItem(
+            GAME.STORAGE.SPEED_HIGH_SCORE_STORAGE
+          )
+        );
+      case 'blackjack':
+        return Number(
+          localStorage.getItem(
+            GAME.STORAGE.BLACKJACK_HIGH_SCORE_STORAGE
+          )
+        );
+      case 'war':
+        return Number(
+          localStorage.getItem(
+            GAME.STORAGE.WAR_HIGH_SCORE_STORAGE
+          )
+        );
+      case 'rummy':
+        return Number(
+          localStorage.getItem(
+            GAME.STORAGE.RUMMY_HIGH_SCORE_STORAGE
+          )
+        );
+      case 'porker':
+        return Number(
+          localStorage.getItem(
+            GAME.STORAGE.PORKER_HIGH_SCORE_STORAGE
+          )
+        );
+      case 'holdem':
+        return Number(
+          localStorage.getItem(
+            GAME.STORAGE.HOLDEM_HIGH_SCORE_STORAGE
+          )
+        );
+      default:
+        return 0;
     }
   }
 
@@ -57,7 +96,7 @@ export default class BetScene extends BaseScene {
       textTitle as Text,
       this.gameZone as Phaser.GameObjects.GameObject,
       0,
-      -(this.gameZone!.height * 0.25)
+      -(this.config.height * 0.25)
     );
   }
 
@@ -70,27 +109,9 @@ export default class BetScene extends BaseScene {
       '',
       STYLE.TEXT
     );
-    this.setMoneyText();
-    this.setBetText();
+    this.setMoneyText(this.money);
+    this.setBetText(this.bet);
     this.setHighScoreText();
-  }
-
-  private setMoneyText(): void {
-    this.moneyText?.setText(`Money: $${this.money}`);
-    Phaser.Display.Align.In.TopRight(
-      this.moneyText as Phaser.GameObjects.GameObject,
-      this.gameZone as Phaser.GameObjects.GameObject,
-      -20,
-      -20
-    );
-  }
-
-  private setBetText() {
-    this.betText?.setText(`Bet: $${this.bet}`);
-    Phaser.Display.Align.To.BottomLeft(
-      this.betText as Phaser.GameObjects.GameObject,
-      this.moneyText as Phaser.GameObjects.GameObject
-    );
   }
 
   private setHighScoreText() {
@@ -105,39 +126,39 @@ export default class BetScene extends BaseScene {
 
   private createChips(): void {
     const chipHeight: number =
-      Number(this.scene.manager.game.config.height) / 2;
+      Number(this.config.height) / 2;
 
     const whiteChip = new Chip(
-      '10',
-      10,
       this,
       0,
       chipHeight,
-      GAME.TABLE.WHITE_CHIP_KEY
+      GAME.TABLE.WHITE_CHIP_KEY,
+      '10',
+      10
     );
     const redChip = new Chip(
-      '20',
-      20,
       this,
       0,
       chipHeight,
-      GAME.TABLE.RED_CHIP_KEY
+      GAME.TABLE.RED_CHIP_KEY,
+      '20',
+      20
     );
     const orangeChip = new Chip(
-      '50',
-      50,
       this,
       0,
       chipHeight,
-      GAME.TABLE.ORANGE_CHIP_KEY
+      GAME.TABLE.ORANGE_CHIP_KEY,
+      '50',
+      50
     );
     const blueChip = new Chip(
-      '100',
-      100,
       this,
       0,
       chipHeight,
-      GAME.TABLE.BLUE_CHIP_KEY
+      GAME.TABLE.BLUE_CHIP_KEY,
+      '100',
+      100
     );
 
     const chips: Chip[] = new Array<Chip>();
@@ -151,8 +172,7 @@ export default class BetScene extends BaseScene {
       this.scene
     );
     chips.forEach((chip) => {
-      chip.setText();
-      chip.setPushAction(() =>
+      chip.setClickHandler(() =>
         this.addChip(chip.getChipValue())
       );
     });
@@ -160,30 +180,30 @@ export default class BetScene extends BaseScene {
 
   private createButtons(): void {
     const buttonHeight: number =
-      Number(this.scene.manager.game.config.height) - 100;
+      Number(this.config.height) - 100;
 
     const clearButton = new Chip(
-      'Clear',
-      0,
       this,
       0,
       buttonHeight,
-      GAME.TABLE.YELLOW_CHIP_KEY
+      GAME.TABLE.YELLOW_CHIP_KEY,
+      'Clear',
+      0
     );
-    clearButton.setPushAction(() => {
+    clearButton.setClickHandler(() => {
       this.bet = 0;
-      this.setBetText();
+      this.setBetText(this.bet);
     });
 
     const dealButton = new Chip(
-      'Deal',
-      0,
       this,
       0,
       buttonHeight,
-      GAME.TABLE.ORANGE_CHIP_KEY
+      GAME.TABLE.ORANGE_CHIP_KEY,
+      'Deal',
+      0
     );
-    dealButton.setPushAction(() => {
+    dealButton.setClickHandler(() => {
       this.scene.start('PlayScene');
     });
 
@@ -195,15 +215,12 @@ export default class BetScene extends BaseScene {
       buttons,
       this.scene
     );
-    buttons.forEach((chip) => {
-      chip.setText();
-    });
   }
 
   private addChip(value: number) {
     this.bet += value;
     if (this.bet > this.money) this.bet = this.money;
-    this.setBetText();
+    this.setBetText(this.bet);
   }
 
   private gameOver() {
