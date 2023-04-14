@@ -1,5 +1,5 @@
 import Scene = Phaser.Scene;
-import game from '../constants/game';
+import GAME from '../constants/game';
 
 export default class CardFactory {
   constructor(
@@ -8,7 +8,7 @@ export default class CardFactory {
     atlasUrl: string
   ) {
     scene.load.atlasXML(
-      game.card.atlas_key,
+      GAME.CARD.ATLAS_KEY,
       textureUrl,
       atlasUrl
     );

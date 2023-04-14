@@ -1,13 +1,10 @@
-import game from '../../common/constants/game';
-import Deck from '../../common/Factories/deck';
+import Phaser from 'phaser';
+import Deck from '../../common/Factories/deckImage';
+
+const SUIT_CHOICES = ['Hearts', 'Diamonds'];
 
 export default class RedDeck extends Deck {
-  constructor() {
-    super();
-    this.cardList = this.cardList.filter(
-      (card) =>
-        card.suit === game.card.suitChoices[2] ||
-        card.suit === game.card.suitChoices[3]
-    );
+  constructor(scene: Phaser.Scene, x: number, y: number) {
+    super(scene, x, y, SUIT_CHOICES);
   }
 }

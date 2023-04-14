@@ -1,22 +1,50 @@
 /* eslint no-underscore-dangle: 0 */
-import GAME from '../constants/game';
-import Card from './card';
+import Phaser from 'phaser';
+import Card from './cardImage';
+
+const SUIT_CHOICES = [
+  'Spades',
+  'Clubs',
+  'Hearts',
+  'Diamonds'
+];
+const RANK_CHOICES = [
+  'A',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '10',
+  'J',
+  'Q',
+  'K'
+];
 
 export default class Deck {
-  protected cardList: Array<Card> = [];
+  cardList: Array<Card> = [];
 
-  constructor() {
-    const suitChoices: Array<string> = [
-      ...GAME.CARD.SUIT_CHOICES
-    ];
-    const rankChoices: Array<string> = [
-      ...GAME.CARD.RANK_CHOICES
-    ];
-
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    suitChoices = SUIT_CHOICES,
+    rankChoices = RANK_CHOICES
+  ) {
     for (let s = 0; s < suitChoices.length; s += 1) {
       for (let r = 0; r < rankChoices.length; r += 1) {
         this.cardList.push(
-          new Card(suitChoices[s], rankChoices[r])
+          new Card(
+            scene,
+            x,
+            y,
+            suitChoices[s],
+            rankChoices[r],
+            true
+          )
         );
       }
     }
@@ -35,9 +63,6 @@ export default class Deck {
 
   drawOne(): Card | undefined {
     if (this.isEmpty()) {
-      console.log(
-        'no more cards left. refresh to start new game.'
-      );
       return undefined;
     }
     return this.cardList.pop();
@@ -47,7 +72,7 @@ export default class Deck {
     return this.cardList.length === 0;
   }
 
-  getDeckSize(): number {
+  getSize(): number {
     return this.cardList.length;
   }
 }

@@ -13,16 +13,17 @@ const WarGame = () => {
       );
 
       const { default: BetScene } = await import(
-        '../../games/war/scenes/BetScene'
+        '../../games/common/scenes/BetScene'
       );
 
       const { default: PreloadScene } = await import(
         '../../games/common/scenes/PreloadScene'
       );
 
-      const SHARED_CONFIG = {
+      const CONFIG = {
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
+        game: 'war'
       };
 
       const Scenes: Array<any> = [
@@ -30,21 +31,21 @@ const WarGame = () => {
         BetScene,
         PlayScene
       ];
-      const createScene = (Scene: any) =>
-        new Scene(SHARED_CONFIG);
+      const createScene = (Scene: any) => new Scene(CONFIG);
       const initScenes = () => Scenes.map(createScene);
 
       const config = {
         type: Phaser.AUTO,
         parent: 'game-content',
-        ...SHARED_CONFIG,
+        ...CONFIG,
         backgroundColor: '#26723B',
         physics: {
           arcade: {
             debug: true
           }
         },
-        scene: initScenes()
+        scene: initScenes(),
+        game: 'war'
       };
 
       const phaserGame = new Phaser.Game(config);

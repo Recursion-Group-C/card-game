@@ -1,315 +1,200 @@
-/* eslint-disable */
 /* eslint no-param-reassign: ["error", { "props": false }] */
-// TODO: 山札から台札に出すカードより先に、CPUのカードが台に出されて、一番上のカードの絵柄がずれてしまうバグを修正する
-// TODO: AIが1枚だけ持っていて、ゲームが停滞したときに、持ち札から台札にカードが送られない
 
-import Card from '../../common/Factories/card';
-import game from '../../common/constants/game';
-import style from '../../common/constants/style';
-import {
-  createCardTween,
-  flipOverCard,
-  parseCardString,
-  searchCardImage
-} from '../../common/utility/utility';
+import Card from '../../common/Factories/cardImage';
+import GAME from '../../common/constants/game';
+import STYLE from '../../common/constants/style';
 import GameResult from '../constants/gameResult';
 import BlackDeck from '../models/blackDeck';
 import SpeedPlayer from '../models/player';
 import RedDeck from '../models/redDeck';
 
-import BaseScene from '../../common/scenes/BaseScene';
+import Table from '../../common/Factories/tableScene';
 
 import Text = Phaser.GameObjects.Text;
-import Texture = Phaser.Textures.Texture;
 import Zone = Phaser.GameObjects.Zone;
-import Image = Phaser.GameObjects.Image;
 import GameObject = Phaser.GameObjects.GameObject;
-import { Game } from 'phaser';
+import TimeEvent = Phaser.Time.TimerEvent;
 
-export default class PlayScene extends BaseScene {
-  private redDeck: RedDeck;
+const GAME_PHASE = {
+  BETTING: 'betting',
+  PLAYING: 'playing',
+  GAME_END: 'game_end'
+};
 
-  private blackDeck: BlackDeck;
+export default class PlayScene extends Table {
+  private redDeck: RedDeck | undefined;
 
-  private player: SpeedPlayer;
-
-  private ai: SpeedPlayer;
-
-  private faceDownImages: Array<Image> = [];
-
-  private atlasTexture: Texture | undefined;
-
-  public moneyText: Text | undefined;
-
-  public betText: Text | undefined;
-
-  private playerNameText: Text | undefined;
-
-  private aiNameText: Text | undefined;
+  private blackDeck: BlackDeck | undefined;
 
   private playerDeckSizeText: Text | undefined;
 
   private aiDeckSizeText: Text | undefined;
 
-  private timerText: Text | undefined;
+  private rightDropZone: Zone | undefined;
 
-  private gameZone: Zone | undefined;
+  private leftDropZone: Zone | undefined;
 
-  private dropCardZone: any = {
-    right: undefined,
-    left: undefined
-  };
+  private rightDropCardRank = 0;
 
-  private dropCardRank = { right: 0, left: 0 };
+  private leftDropCardRank = 0;
 
-  private playerDeckImage: Image | undefined;
+  private timeEvent: TimeEvent | undefined;
 
-  private aiDeckImage: Image | undefined;
+  private aiTimeEvent: TimeEvent | undefined;
 
-  private playerHandZone: Zone | undefined;
-
-  private aiHandZone: Zone | undefined;
-
-  private timer = 3;
-
-  private timeEvent: any;
-
-  private DROP_CARD_ZONE_RIGHT = 'dropCardZoneRight';
-
-  private DROP_CARD_ZONE_LEFT = 'dropCardZoneLeft';
+  private houseTimeEvent: TimeEvent | undefined;
 
   constructor(config: any) {
     super('PlayScene', config);
-
-    this.redDeck = new RedDeck();
-    this.blackDeck = new BlackDeck();
-
-    // create player instance
-    this.player = new SpeedPlayer(
-      'player',
-      0,
-      0,
-      'deal',
-      'Okuma',
-      100
-    );
-
-    this.ai = new SpeedPlayer(
-      'ai',
-      0,
-      0,
-      'deal',
-      'AI',
-      100
-    );
   }
 
   create(): void {
+    super.create();
+
+    // TODO: 必要かどうか要検討
+    this.gamePhase = GAME_PHASE.BETTING;
+
+    this.createAiNameText();
+    this.createPlayerNameText();
+
+    this.createPlayerHandZone();
+    this.createAiHandZone();
+
+    this.createAiDeckSizeText();
+    this.createPlayerDeckSizeText();
+
+    this.createLeftDropZone();
+    this.createRightDropZone();
+    this.createDropZoneEvent();
+
     this.setUpNewGame();
 
-    // create player instance
-    this.player = new SpeedPlayer(
-      'player',
-      0,
-      0,
-      'deal',
-      'Okuma',
-      100
-    );
-
-    this.ai = new SpeedPlayer(
-      'ai',
-      0,
-      0,
-      'deal',
-      'AI',
-      100
-    );
-
-    const width = Number(
-      this.scene.manager.game.config.width
-    );
-    const height = Number(
-      this.scene.manager.game.config.height
-    );
-    this.gameZone = this.add.zone(
-      width * 0.5,
-      height * 0.5,
-      width,
-      height
-    );
-
-    this.setUpAiNameText();
-    this.setUpPlayerNameText();
-
-    // create player hand zone
-    this.playerHandZone = this.add.zone(
-      0,
-      0,
-      game.card.width * 5,
-      game.card.height
-    );
-    Phaser.Display.Align.To.TopCenter(
-      this.playerHandZone as Zone,
-      this.playerNameText as Text,
-      0,
-      style.gutter_size
-    );
-
-    // create ai hand zone
-    this.aiHandZone = this.add.zone(
-      0,
-      0,
-      game.card.width * 5,
-      game.card.height
-    );
-    Phaser.Display.Align.To.BottomCenter(
-      this.aiHandZone as Zone,
-      this.aiNameText as GameObject,
-      0,
-      style.gutter_size
-    );
-
-    this.setUpAiDeckSizeText();
-    this.setUpPlayerDeckSizeText();
-
-    // create card drop zone
-    this.dropCardZone.left = this.add
-      .zone(
-        0,
-        0,
-        game.card.width * 1.5,
-        game.card.height * 1.5
-      )
-      .setRectangleDropZone(
-        game.card.width,
-        game.card.height
-      )
-      .setName(this.DROP_CARD_ZONE_LEFT);
-    this.dropCardZone.right = this.add
-      .zone(
-        0,
-        0,
-        game.card.width * 1.5,
-        game.card.height * 1.5
-      )
-      .setRectangleDropZone(
-        game.card.width,
-        game.card.height
-      )
-      .setName(this.DROP_CARD_ZONE_RIGHT);
-
-    this.setUpCardDropZone(this.dropCardZone);
-
-    this.setDeckImage(true);
-    this.setDeckImage(false);
     this.dealInitialCards();
 
-    this.timer = 3;
+    // ゲームのカウントダウン
     this.time.delayedCall(3000, () => {
-      this.setUpTimerText();
-      // ゲームのカウントダウン
-      this.time.addEvent({
-        delay: 800,
-        callback: this.countDownGame,
+      this.createTimerText();
+      this.timeEvent = this.time.addEvent({
+        delay: 1000,
+        callback: () => {
+          this.countDown(() => {
+            this.enableCardDraggable();
+            if (this.timeEvent) this.timeEvent.remove();
+            this.gamePhase = GAME_PHASE.PLAYING;
+          });
+        },
         callbackScope: this,
-        repeat: 4
+        loop: true
+      });
+    });
+
+    // AIの始動
+    this.time.delayedCall(7000, () => {
+      this.aiTimeEvent = this.time.addEvent({
+        delay: 2000,
+        callback: this.playAiTurn,
+        callbackScope: this,
+        loop: true
+      });
+    });
+
+    // Houseの始動（ゲーム停滞時のカード配布）
+    this.time.delayedCall(7000, () => {
+      this.houseTimeEvent = this.time.addEvent({
+        delay: 5000,
+        callback: this.playHouse,
+        callbackScope: this,
+        loop: true
       });
     });
   }
 
   update(): void {
     const result = this.deriveGameResult();
-    if (result !== GameResult.PLAYING) {
+
+    if (this.gamePhase === GAME_PHASE.PLAYING && result) {
       this.endHand(result);
     }
   }
 
-  private countDownGame(): void {
-    if (this.timer > 0) {
-      this.setTimerText(`${String(this.timer)}`);
-      this.timer -= 1;
-    } else if (this.timer === 0) {
-      this.setTimerText('GO!!');
-      Phaser.Display.Align.In.Center(
-        this.timerText as Text,
-        this.gameZone as GameObject,
+  private createLeftDropZone(): void {
+    this.leftDropZone = this.add
+      .zone(
         0,
-        -20
+        0,
+        GAME.CARD.WIDTH * 1.5,
+        GAME.CARD.HEIGHT * 1.5
+      )
+      .setRectangleDropZone(
+        GAME.CARD.WIDTH,
+        GAME.CARD.HEIGHT
       );
-      this.timer -= 1;
-    } else {
-      this.timerText?.destroy();
-      this.enableCardDraggable();
+    this.alignCardDropZone(
+      this.leftDropZone,
+      -GAME.CARD.WIDTH
+    );
+  }
 
-      const timerEvent = this.time.addEvent({
-        delay: 3000,
-        callback: () => {
-          if (!this.isAiStagnant()) {
-            this.putDownCardFromHand();
-          } else if (this.isGameStagnant()) {
-            console.log('AI cannot put down card');
-            this.dealLeadCards();
-          }
-        },
-        callbackScope: this,
-        loop: true
-      });
+  private createRightDropZone(): void {
+    this.rightDropZone = this.add
+      .zone(
+        0,
+        0,
+        GAME.CARD.WIDTH * 1.5,
+        GAME.CARD.HEIGHT * 1.5
+      )
+      .setRectangleDropZone(
+        GAME.CARD.WIDTH,
+        GAME.CARD.HEIGHT
+      );
+    this.alignCardDropZone(
+      this.rightDropZone,
+      GAME.CARD.WIDTH
+    );
+  }
+
+  private playAiTurn(): void {
+    if (!this.isAiStagnant()) {
+      this.putDownCardFromHand();
     }
-
-    Phaser.Display.Align.In.Center(
-      this.timerText as Text,
-      this.gameZone as GameObject,
-      0,
-      -20
-    );
   }
 
-  private setTimerText(time: string): void {
-    this.timerText!.setText(`${time}`);
-  }
-
-  private setUpTimerText(): void {
-    this.timerText = this.add.text(0, 0, '', style.timer);
-    this.setTimerText(`${String(this.timer)}`);
-    Phaser.Display.Align.In.Center(
-      this.timerText as Text,
-      this.gameZone as GameObject,
-      0,
-      -20
-    );
+  private playHouse(): void {
+    if (this.isGameStagnant()) {
+      this.dealLeadCards();
+    }
   }
 
   private disableCardDraggable(): void {
-    const cardImages = this.children.list.filter(
-      (object: any) =>
-        object.type === 'Image' &&
-        object.texture.key === game.card.atlas_key &&
-        object.input?.draggable
+    this.player?.hand.forEach((card) =>
+      card.disableInteractive()
     );
-    for (let i = 0; i < cardImages.length; i += 1) {
-      this.input.disable(cardImages[i]);
-    }
   }
 
   private enableCardDraggable(): void {
-    const cardImages = this.children.list.filter(
-      (object: any) =>
-        object.type === 'Image' &&
-        object.texture.key === game.card.atlas_key &&
-        object.input?.draggable
+    this.player?.hand.forEach((card) =>
+      card.setInteractive()
     );
-    for (let i = 0; i < cardImages.length; i += 1) {
-      this.input.enable(cardImages[i]);
-    }
   }
 
   private setUpNewGame() {
-    // setup new game
-    this.redDeck = new RedDeck();
-    this.redDeck.shuffle();
-    this.blackDeck = new BlackDeck();
-    this.blackDeck.shuffle();
+    if (this.playerHandZone) {
+      this.redDeck = new RedDeck(
+        this,
+        this.playerHandZone.x + GAME.CARD.WIDTH * 2,
+        this.playerHandZone.y
+      );
+      this.redDeck.shuffle();
+    }
+
+    if (this.aiHandZone) {
+      this.blackDeck = new BlackDeck(
+        this,
+        this.aiHandZone.x - GAME.CARD.WIDTH * 2,
+        this.aiHandZone.y
+      );
+      this.blackDeck.shuffle();
+    }
   }
 
   private alignCardDropZone(
@@ -324,137 +209,63 @@ export default class PlayScene extends BaseScene {
     );
   }
 
-  private setUpCardDropZone(dropCardZone: {
-    right: Zone;
-    left: Zone;
-  }): void {
-    this.alignCardDropZone(
-      dropCardZone.right,
-      game.card.width
-    );
-    this.alignCardDropZone(
-      dropCardZone.left,
-      -game.card.width
-    );
+  private createDropZoneEvent(): void {
+    this.createCardDragStartEvent();
+    this.createCardDragEvent();
+    this.createCardDropEvent();
+    this.createCardDragEndEvent();
+  }
 
-    this.input.on(
-      'dragstart',
-      (pointer: any, gameObject: any) => {
-        this.children.bringToTop(gameObject);
-      },
-      this
-    );
-
-    this.input.on(
-      'drag',
-      (
-        pointer: Phaser.Input.Pointer,
-        gameObject: any,
-        dragX: number,
-        dragY: number
-      ) => {
-        gameObject.x = dragX;
-        gameObject.y = dragY;
-      }
-    );
-
-    // 1. カードが置けるかどうか判断する
-    // 2. カードが置ける場合は、ユーザーか、AIどちらのカードか判定し、置いたユーザーの手札を追加する
-
+  private createCardDropEvent(): void {
     this.input.on(
       'drop',
       (
         pointer: Phaser.Input.Pointer,
-        gameObject: any,
+        card: Card,
         dropZone: Zone
       ) => {
-        if (
-          (dropZone.name === this.DROP_CARD_ZONE_RIGHT &&
-            PlayScene.isNextRank(
-              this.dropCardRank.right,
-              Number(gameObject.name)
-            )) ||
-          (dropZone.name === this.DROP_CARD_ZONE_LEFT &&
-            PlayScene.isNextRank(
-              this.dropCardRank.left,
-              Number(gameObject.name)
-            ))
-        ) {
-          // カードが置けると判定した場合
-          gameObject.x = dropZone.x;
-          gameObject.y = dropZone.y;
-          gameObject.input.enabled = false;
+        if (this.canDropCard(dropZone, card)) {
+          card.setPosition(dropZone.x, dropZone.y);
+          card.disableInteractive();
 
-          if (dropZone.name === this.DROP_CARD_ZONE_RIGHT) {
-            this.dropCardRank.right = Number(
-              gameObject.name
-            );
+          if (dropZone === this.rightDropZone) {
+            this.rightDropCardRank =
+              card.getRankNumber('speed');
           } else {
-            this.dropCardRank.left = Number(
-              gameObject.name
-            );
+            this.leftDropCardRank =
+              card.getRankNumber('speed');
           }
 
-          // カードを補充する
-          // handからカードを削除する
-          const [suit, rank] = parseCardString(
-            gameObject.frame.name
-          );
-          this.player?.removeCardFromHand(suit, rank);
-
-          if (this.redDeck.getDeckSize() > 0) {
-            // デッキにカードが残っている場合
+          if (this.player)
+            this.player.removeCardFromHand(card);
+          if (this.playerHandZone) {
             this.handOutCard(
-              this.redDeck,
-              this.player,
-              this.playerHandZone!.x + game.card.width * 2,
-              this.playerHandZone!.y,
-              gameObject.input.dragStartX,
-              this.playerHandZone!.y,
+              this.redDeck as RedDeck,
+              this.player as SpeedPlayer,
+              card.input.dragStartX,
+              this.playerHandZone.y,
               false
             );
-
-            this.setPlayerDeckSizeText();
           }
-          if (this.redDeck?.getDeckSize() === 0) {
-            // デッキが空の場合
-            this.removeDeckImage(true);
-            this.removePlayerDeckSizeText();
-          }
-
-          console.log(
-            `Player turn left: ${this.dropCardRank.left} right: ${this.dropCardRank.right}`
-          );
-
-          // ゲームが停滞したら、山札から台札にカードを出す
-          // const dealLeadCardEvent = this.time.addEvent({
-          //   delay: 2000,
-          //   callback: () => {
-          //     if (this.isGameStagnant()) this.dealLeadCards();
-          //     else dealLeadCardEvent.remove(false);
-          //   },
-          //   callbackScope: this,
-          //   loop: true
-          // });
-
-          // Gameのresult確認
         } else {
-          // カードが置けない場合
-          gameObject.x = gameObject.input.dragStartX;
-          gameObject.y = gameObject.input.dragStartY;
-        }
-      },
-      dropCardZone
-    );
-
-    this.input.on(
-      'dragend',
-      (pointer: any, gameObject: any, dropped: boolean) => {
-        if (!dropped) {
-          gameObject.x = gameObject.input.dragStartX;
-          gameObject.y = gameObject.input.dragStartY;
+          card.returnToOrigin();
         }
       }
+    );
+  }
+
+  private canDropCard(dropZone: Zone, card: Card): boolean {
+    return (
+      (dropZone === this.rightDropZone &&
+        PlayScene.isNextRank(
+          this.rightDropCardRank,
+          card.getRankNumber('speed')
+        )) ||
+      (dropZone === this.leftDropZone &&
+        PlayScene.isNextRank(
+          this.leftDropCardRank,
+          card.getRankNumber('speed')
+        ))
     );
   }
 
@@ -471,64 +282,37 @@ export default class PlayScene extends BaseScene {
   }
 
   private isPlayerStagnant(): boolean {
-    let isGameContinuable = false;
-    for (let i = 0; i < this.player!.hand.length; i += 1) {
-      isGameContinuable =
-        isGameContinuable ||
-        PlayScene.isNextRank(
-          this.player!.hand[i].getRankNumber('speed'),
-          this.dropCardRank.right
-        );
-      isGameContinuable =
-        isGameContinuable ||
-        PlayScene.isNextRank(
-          this.player!.hand[i].getRankNumber('speed'),
-          this.dropCardRank.left
-        );
-    }
-    return !isGameContinuable;
+    let isPlayerContinuable = false;
+    this.player?.hand.forEach((card) => {
+      isPlayerContinuable =
+        isPlayerContinuable ||
+        this.canDropCard(this.rightDropZone as Zone, card);
+      isPlayerContinuable =
+        isPlayerContinuable ||
+        this.canDropCard(this.leftDropZone as Zone, card);
+    });
+    return !isPlayerContinuable;
   }
 
   private isAiStagnant(): boolean {
-    let isGameContinuable = false;
-    for (let i = 0; i < this.ai!.hand.length; i += 1) {
-      isGameContinuable =
-        isGameContinuable ||
-        PlayScene.isNextRank(
-          this.ai!.hand[i].getRankNumber('speed'),
-          this.dropCardRank.right
-        );
-      isGameContinuable =
-        isGameContinuable ||
-        PlayScene.isNextRank(
-          this.ai!.hand[i].getRankNumber('speed'),
-          this.dropCardRank.left
-        );
-    }
-    return !isGameContinuable;
+    let isAiContinuable = false;
+    this.ai?.hand.forEach((card) => {
+      isAiContinuable =
+        isAiContinuable ||
+        this.canDropCard(this.rightDropZone as Zone, card);
+      isAiContinuable =
+        isAiContinuable ||
+        this.canDropCard(this.leftDropZone as Zone, card);
+    });
+    return !isAiContinuable;
   }
 
-  private setUpAiNameText(): void {
-    this.aiNameText = this.add.text(
-      0,
-      200,
-      'AI',
-      style.text
-    );
-    Phaser.Display.Align.In.TopCenter(
-      this.aiNameText,
-      this.gameZone as GameObject,
-      0,
-      -20
-    );
-  }
-
-  private setUpAiDeckSizeText(): void {
+  private createAiDeckSizeText(): void {
     this.aiDeckSizeText = this.add.text(
       0,
       200,
       '',
-      style.deckSize
+      STYLE.DECK_SIZE
     );
 
     Phaser.Display.Align.In.BottomLeft(
@@ -540,36 +324,21 @@ export default class PlayScene extends BaseScene {
   }
 
   private setAiDeckSizeText(): void {
-    this.aiDeckSizeText!.setText(
-      `${this.blackDeck?.getDeckSize()} 枚`
-    );
+    if (!this.blackDeck?.isEmpty()) {
+      this.aiDeckSizeText?.setText(
+        `${this.blackDeck?.getSize()} 枚`
+      );
+    } else {
+      this.aiDeckSizeText?.setText('');
+    }
   }
 
-  private removeAiDeckSizeText(): void {
-    this.aiDeckSizeText?.destroy();
-  }
-
-  private setUpPlayerNameText(): void {
-    this.playerNameText = this.add.text(
-      0,
-      300,
-      'Player',
-      style.text
-    );
-    Phaser.Display.Align.In.BottomCenter(
-      this.playerNameText,
-      this.gameZone as GameObject,
-      0,
-      -20
-    );
-  }
-
-  private setUpPlayerDeckSizeText(): void {
+  private createPlayerDeckSizeText(): void {
     this.playerDeckSizeText = this.add.text(
       0,
       300,
       '',
-      style.deckSize
+      STYLE.DECK_SIZE
     );
 
     Phaser.Display.Align.In.BottomRight(
@@ -581,263 +350,154 @@ export default class PlayScene extends BaseScene {
   }
 
   private setPlayerDeckSizeText(): void {
-    this.playerDeckSizeText!.setText(
-      `${this.redDeck?.getDeckSize()} 枚`
-    );
-  }
-
-  private removePlayerDeckSizeText(): void {
-    this.playerDeckSizeText?.destroy();
-  }
-
-  // 山札を表示する関数
-  // TODO: 山札が0になった場合(=handが5枚以下の場合)は非表示にする
-  private setDeckImage(isPlayer: boolean) {
-    if (isPlayer) {
-      this.playerDeckImage = this.add.image(
-        this.playerHandZone!.x + game.card.width * 2,
-        this.playerHandZone!.y,
-        game.card.back_key
+    if (!this.redDeck?.isEmpty()) {
+      this.playerDeckSizeText?.setText(
+        `${this.redDeck?.getSize()} 枚`
       );
     } else {
-      this.aiDeckImage = this.add.image(
-        this.aiHandZone!.x - game.card.width * 2,
-        this.aiHandZone!.y,
-        game.card.back_key
-      );
-    }
-  }
-
-  private removeDeckImage(isPlayer: boolean) {
-    if (isPlayer) {
-      this.playerDeckImage?.destroy();
-    } else {
-      this.aiDeckImage?.destroy();
+      this.playerDeckSizeText?.setText('');
     }
   }
 
   // ゲーム開始時にカードを配る関数
-  // 裏返しで配って、配り終えたら裏返す
   private dealInitialCards() {
-    if (this.player) {
-      for (let i = 0; i < 4; i += 1) {
-        this.time.delayedCall(200 * i, () => {
-          if (this.player) {
-            this.handOutCard(
-              this.redDeck,
-              this.player,
-              this.playerHandZone!.x + game.card.width * 2,
-              this.playerHandZone!.y,
-              this.playerHandZone!.x -
-                game.card.width * 2 +
-                i * game.card.width,
-              this.playerHandZone!.y,
-              true
-            );
-          }
-        });
-      }
-    }
-
-    if (this.ai) {
-      for (let i = 0; i < 4; i += 1) {
-        this.time.delayedCall(200 * i, () => {
-          if (this.ai) {
-            this.handOutCard(
-              this.blackDeck,
-              this.ai,
-              this.aiHandZone!.x - game.card.width * 2,
-              this.aiHandZone!.y,
-              this.aiHandZone!.x +
-                game.card.width * 2 -
-                i * game.card.width,
-              this.aiHandZone!.y,
-              true
-            );
-          }
-        });
-      }
-    }
-
-    // カードを裏返す
-    this.time.delayedCall(1500, () => {
-      const playerCardImages = this.faceDownImages.filter(
-        (gameObject) =>
-          gameObject?.y === this.playerHandZone?.y
-      );
-      for (let i = 0; i < playerCardImages.length; i += 1) {
-        if (this.player) {
-          this.handleFlipOver(
-            this.player.hand[i],
-            playerCardImages[i]
-          );
-        }
-      }
-
-      const aiCardImages = this.faceDownImages.filter(
-        (gameObject) => gameObject?.y === this.aiHandZone?.y
-      );
-      for (let i = 0; i < aiCardImages.length; i += 1) {
-        if (this.ai) {
-          this.handleFlipOver(
-            this.ai.hand[i],
-            aiCardImages[i],
-            false
-          );
-        }
-      }
-      this.faceDownImages = [];
-
-      this.setAiDeckSizeText();
-      this.setPlayerDeckSizeText();
-      this.disableCardDraggable();
-    });
-
     // 中央の台札をセットする
     this.dealLeadCards();
-  }
 
-  // 山札から台札にカードを裏向きに配って、裏返す
-  // 山札がない場合は、手札から出す
-  // TODO: デッキの数の表示を更新するタイミングを考える
-  private dealLeadCards(): void {
-    if (
-      this.blackDeck &&
-      this.blackDeck?.getDeckSize() > 0
-    ) {
-      this.handOutLeadCardFromDeck(
-        this.blackDeck,
-        this.aiHandZone!.x - game.card.width * 2,
-        this.aiHandZone!.y,
-        this.dropCardZone.left?.x,
-        this.dropCardZone.left?.y
-      );
-    } else {
-      this.handOutLeadCardFromHand(
-        this.ai,
-        this.dropCardZone.left?.x,
-        this.dropCardZone.left?.y
-      );
-    }
+    if (this.player && this.ai) {
+      let i = 0;
+      this.timeEvent = this.time.addEvent({
+        delay: 200,
+        callback: () => {
+          if (i >= 3 && this.timeEvent)
+            this.timeEvent.remove();
 
-    if (this.redDeck.getDeckSize() > 0) {
-      this.handOutLeadCardFromDeck(
-        this.redDeck,
-        this.playerHandZone!.x + game.card.width * 2,
-        this.playerHandZone!.y,
-        this.dropCardZone.right?.x,
-        this.dropCardZone.right?.y
-      );
-    } else {
-      this.handOutLeadCardFromHand(
-        this.player,
-        this.dropCardZone.right?.x,
-        this.dropCardZone.right?.y
-      );
-    }
+          if (this.playerHandZone) {
+            this.handOutCard(
+              this.redDeck as RedDeck,
+              this.player as SpeedPlayer,
+              this.playerHandZone.x -
+                GAME.CARD.WIDTH * 2 +
+                i * GAME.CARD.WIDTH,
+              this.playerHandZone.y,
+              true
+            );
+          }
+          if (this.aiHandZone) {
+            this.handOutCard(
+              this.blackDeck as BlackDeck,
+              this.ai as SpeedPlayer,
+              this.aiHandZone.x +
+                GAME.CARD.WIDTH * 2 -
+                i * GAME.CARD.WIDTH,
+              this.aiHandZone.y,
+              true
+            );
+          }
+          i += 1;
+        },
+        callbackScope: this,
+        loop: true
+      });
 
-    this.setAiDeckSizeText();
-    this.setPlayerDeckSizeText();
-  }
-
-  private handleFlipOver(
-    card: Card,
-    faceDownImage: Image,
-    isInteractive = true
-  ) {
-    if (card.faceDown) {
-      card.faceDown = !card.faceDown;
-      // 表向きのcardを作成する
-      const cardFront = this.add.image(
-        faceDownImage!.x,
-        faceDownImage!.y,
-        game.card.atlas_key,
-        card!.getAtlasFrame()
-      );
-
-      if (isInteractive) {
-        cardFront.setInteractive();
-        this.input.setDraggable(cardFront);
-      }
-
-      cardFront.name = String(card.getRankNumber('speed'));
-      cardFront.setScale(0, 1);
-      flipOverCard(this, faceDownImage, cardFront);
+      // カードを裏返す
+      this.time.delayedCall(1500, () => {
+        this.player?.hand.forEach((card) => {
+          card.playFlipOverTween();
+        });
+        this.ai?.hand.forEach((card) =>
+          card.playFlipOverTween()
+        );
+        this.disableCardDraggable();
+      });
     }
   }
 
   private handOutCard(
     deck: RedDeck | BlackDeck,
     player: SpeedPlayer,
-    originX: number,
-    originY: number,
     toX: number,
     toY: number,
-    faceDownCard: boolean
+    isFaceDown: boolean
   ) {
     const card: Card | undefined = deck.drawOne();
-    let cardImage: Image;
 
     if (card) {
-      if (!faceDownCard) {
-        player.addCardToHand(card);
-        cardImage = this.add.image(
-          originX,
-          originY,
-          game.card.atlas_key,
-          card.getAtlasFrame()
-        );
-        cardImage.name = String(
-          card.getRankNumber('speed')
-        );
-        if (player.playerType === 'player') {
-          cardImage.setInteractive();
-          this.input.setDraggable(cardImage);
-        }
-      } else {
-        player.addCardFaceDownToHand(card);
-        cardImage = this.add.image(
-          originX,
-          originY,
-          game.card.back_key
-        );
-        this.faceDownImages.push(cardImage);
+      if (!isFaceDown) {
+        card.setFaceUp();
       }
-      createCardTween(this, cardImage, toX, toY, 350);
+      if (player.playerType === 'player') {
+        card.setDraggable();
+      }
+      player.addCardToHand(card);
+
+      this.children.bringToTop(card);
+      card.playMoveTween(toX, toY);
+    } else {
+      return;
     }
+
+    this.setAiDeckSizeText();
+    this.setPlayerDeckSizeText();
+  }
+
+  // 山札から台札にカードを裏向きに配って、裏返す
+  // 山札がない場合は、手札から出す
+  private dealLeadCards(): void {
+    if (this.leftDropZone) {
+      if (!this.blackDeck?.isEmpty()) {
+        this.handOutLeadCardFromDeck(
+          this.blackDeck as BlackDeck,
+          this.leftDropZone.x,
+          this.leftDropZone.y
+        );
+      } else {
+        this.handOutLeadCardFromHand(
+          this.ai as SpeedPlayer,
+          this.leftDropZone.x,
+          this.leftDropZone.y
+        );
+      }
+    }
+
+    if (this.rightDropZone) {
+      if (!this.redDeck?.isEmpty()) {
+        this.handOutLeadCardFromDeck(
+          this.redDeck as RedDeck,
+          this.rightDropZone.x,
+          this.rightDropZone.y
+        );
+      } else {
+        this.handOutLeadCardFromHand(
+          this.player as SpeedPlayer,
+          this.rightDropZone.x,
+          this.rightDropZone.y
+        );
+      }
+    }
+
+    this.setAiDeckSizeText();
+    this.setPlayerDeckSizeText();
   }
 
   private handOutLeadCardFromDeck(
     deck: RedDeck | BlackDeck,
-    originX: number,
-    originY: number,
     toX: number,
     toY: number
   ): void {
     const card: Card | undefined = deck.drawOne();
 
     if (card) {
-      card.faceDown = true;
       if (deck.constructor === RedDeck) {
-        this.dropCardRank.right =
+        this.rightDropCardRank =
           card.getRankNumber('speed');
       } else {
-        this.dropCardRank.left =
-          card.getRankNumber('speed');
+        this.leftDropCardRank = card.getRankNumber('speed');
       }
-
-      const cardImage = this.add.image(
-        originX,
-        originY,
-        game.card.back_key
-      );
-      this.faceDownImages.push(cardImage);
-      this.children.bringToTop(cardImage);
-
-      createCardTween(this, cardImage, toX, toY, 350);
-      // カードを裏返す
+      this.children.bringToTop(card);
+      card.playMoveTween(toX, toY);
       this.time.delayedCall(1500, () => {
-        this.handleFlipOver(card, cardImage, false);
+        card.playFlipOverTween();
       });
     }
   }
@@ -848,160 +508,134 @@ export default class PlayScene extends BaseScene {
     toY: number
   ): void {
     const card = player.hand[0];
-    // gameObjectの中から、cardに一致するgameObjectを取得する
-    const cardImage: Image | undefined = searchCardImage(
-      this,
-      card.suit,
-      card.rank
-    );
-    // handからcard削除
-    player.removeCardFromHand(card.suit, card.rank);
-    if (cardImage) {
-      this.children.bringToTop(cardImage);
-      createCardTween(this, cardImage, toX, toY, 350);
+    if (card) {
+      if (player.playerType === 'player') {
+        this.rightDropCardRank =
+          card.getRankNumber('speed');
+      } else {
+        this.leftDropCardRank = card.getRankNumber('speed');
+      }
+      player.removeCardFromHand(card);
+      this.children.bringToTop(card);
+      card.playMoveTween(toX, toY);
     }
   }
 
-  // CPUのhandから場にカードを出す
   private putDownCardFromHand(): void {
-    let card: Card | undefined;
-    let isRight = true;
-
-    for (let i = 0; i < this.ai.hand.length; i += 1) {
-      if (
-        PlayScene.isNextRank(
-          this.ai?.hand[i].getRankNumber('speed'),
-          this.dropCardRank.left
-        )
-      ) {
-        card = this.ai.hand[i];
-        this.ai?.removeCardFromHand(card.suit, card.rank);
-        this.dropCardRank.left =
-          card.getRankNumber('speed');
-        isRight = false;
-        break;
-      } else if (
-        PlayScene.isNextRank(
-          this.ai.hand[i].getRankNumber('speed'),
-          this.dropCardRank.right
-        )
-      ) {
-        card = this.ai.hand[i];
-        this.ai?.removeCardFromHand(card.suit, card.rank);
-        this.dropCardRank.right =
-          card.getRankNumber('speed');
-        break;
-      }
-    }
-
-    let cardImage: Image | undefined;
+    const [card, dropZone] =
+      this.getAvailableCardFromHand();
     if (card) {
-      cardImage = searchCardImage(
-        this,
-        card.suit,
-        card.rank
-      );
-
-      if (cardImage) {
-        this.children.bringToTop(cardImage);
-        if (isRight)
-          createCardTween(
-            this,
-            cardImage,
-            this.dropCardZone.right?.x,
-            this.dropCardZone.right.y
-          );
-        else
-          createCardTween(
-            this,
-            cardImage,
-            this.dropCardZone.left?.x,
-            this.dropCardZone.left.y
-          );
+      this.children.bringToTop(card);
+      if (
+        dropZone === this.rightDropZone &&
+        this.rightDropZone
+      ) {
+        this.rightDropCardRank =
+          card.getRankNumber('speed');
+        card.playMoveTween(
+          this.rightDropZone.x,
+          this.rightDropZone.y
+        );
+      } else if (
+        dropZone === this.leftDropZone &&
+        this.leftDropZone
+      ) {
+        this.leftDropCardRank = card.getRankNumber('speed');
+        card.playMoveTween(
+          this.leftDropZone.x,
+          this.leftDropZone.y
+        );
       } else {
         return;
       }
 
-      if (
-        this.blackDeck &&
-        this.blackDeck.getDeckSize() > 0
-      ) {
-        this.handOutCard(
-          this.blackDeck,
-          this.ai,
-          this.aiHandZone!.x - game.card.width * 2,
-          this.aiHandZone!.y,
-          cardImage.x,
-          cardImage.y,
-          false
-        );
-
-        this.setAiDeckSizeText();
-      }
-      if (this.blackDeck?.getDeckSize() === 0) {
-        this.removeDeckImage(false);
-        this.removeAiDeckSizeText();
-      }
+      this.handOutCard(
+        this.blackDeck as BlackDeck,
+        this.ai as SpeedPlayer,
+        card.x,
+        card.y,
+        false
+      );
     }
   }
 
-  private deriveGameResult(): string {
+  private getAvailableCardFromHand(): [
+    Card | undefined,
+    Zone | undefined
+  ] {
+    let result: [Card | undefined, Zone | undefined] = [
+      undefined,
+      undefined
+    ];
+
+    this.ai?.hand.forEach((card) => {
+      if (
+        this.ai &&
+        PlayScene.isNextRank(
+          card.getRankNumber('speed'),
+          this.leftDropCardRank
+        )
+      ) {
+        this.ai.removeCardFromHand(card);
+        result = [card, this.leftDropZone];
+      }
+      if (
+        this.ai &&
+        PlayScene.isNextRank(
+          card.getRankNumber('speed'),
+          this.rightDropCardRank
+        )
+      ) {
+        this.ai.removeCardFromHand(card);
+        result = [card, this.rightDropZone];
+      }
+    });
+    return result;
+  }
+
+  deriveGameResult(): string | undefined {
     let result;
     if (
+      this.player &&
       this.player.getHandScore() === 0 &&
+      this.ai &&
       this.ai.getHandScore() === 0
     ) {
       result = GameResult.DRAW;
-    } else if (this.player.getHandScore() === 0) {
+    } else if (
+      this.player &&
+      this.player.getHandScore() === 0
+    ) {
       result = GameResult.WIN;
-    } else if (this.ai.getHandScore() === 0) {
+    } else if (this.ai && this.ai.getHandScore() === 0) {
       result = GameResult.LOSS;
     } else {
-      result = GameResult.PLAYING; // まだゲームが終わっていない
+      result = undefined; // まだゲームが終わっていない
     }
     return result;
   }
 
-  private endHand(result: string) {
-    // payout
+  payOut(result: string): void {
+    if (this.betScene && this.betScene.money) {
+      if (result === GameResult.WIN) {
+        this.betScene.money += this.betScene.bet * 2;
+      } else if (result === GameResult.LOSS) {
+        this.betScene.money -= this.betScene.bet;
+      }
+      this.setMoneyText(this.betScene.money);
 
-    const graphics = this.add.graphics({
-      fillStyle: { color: 0x000000, alpha: 0.75 }
-    });
-    const square = new Phaser.Geom.Rectangle(
-      0,
-      0,
-      Number(this.scene.manager.game.config.width),
-      Number(this.scene.manager.game.config.height)
-    );
-    graphics.fillRectShape(square);
-    const resultText: Text = this.add.text(
-      0,
-      0,
-      result,
-      style.text
-    );
-    resultText.setColor('#ffde3d');
-    resultText.setStroke('#000000', 5);
-    resultText.setFontSize(60);
-    Phaser.Display.Align.In.Center(
-      resultText,
-      this.gameZone as Phaser.GameObjects.GameObject
-    );
-    this.input.once(
-      'pointerdown',
-      () => {
-        this.input.once(
-          'pointerup',
-          () => {
-            this.scene.stop();
-            this.scene.start('BetScene');
-            console.log('Return to BetScene');
-          },
-          this
+      const highScore = localStorage.getItem(
+        GAME.STORAGE.SPEED_HIGH_SCORE_STORAGE
+      );
+      if (
+        !highScore ||
+        this.betScene.money > Number(highScore)
+      ) {
+        localStorage.setItem(
+          GAME.STORAGE.SPEED_HIGH_SCORE_STORAGE,
+          String(this.betScene.money)
         );
-      },
-      this
-    );
+      }
+    }
   }
 }
