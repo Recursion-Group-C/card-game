@@ -1,5 +1,6 @@
 /* eslint-disable */
 import GameDecision from '@/games/common/Factories/gameDecision';
+import Card from '../../common/Factories/cardImage';
 import Player from '../../common/Factories/player';
 
 export default class SpeedPlayer extends Player {
@@ -22,11 +23,11 @@ export default class SpeedPlayer extends Player {
     );
   }
 
-  removeCardFromHand(suit: string, rank: string): void {
+  removeCardFromHand(card: Card): void {
     for (let i = 0; i < this.hand.length; i += 1) {
       if (
-        this.hand[i].suit === suit &&
-        this.hand[i].rank === rank
+        this.hand[i].suit === card.suit &&
+        this.hand[i].rank === card.rank
       ) {
         this.hand.splice(i, 1);
       }
