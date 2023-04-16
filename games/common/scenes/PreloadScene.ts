@@ -2,7 +2,7 @@ import path from 'path';
 
 import Phaser from 'phaser';
 
-import game from '../constants/game';
+import GAME from '../constants/game';
 
 export default class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -11,52 +11,52 @@ export default class PreloadScene extends Phaser.Scene {
 
   preload() {
     this.load.atlasXML(
-      game.card.atlas_key,
+      GAME.CARD.ATLAS_KEY,
       path.join(
-        game.card.common_assets_path,
+        GAME.CARD.COMMON_ASSETS_PATH,
         'playingCards.png'
       ),
       path.join(
-        game.card.common_assets_path,
+        GAME.CARD.COMMON_ASSETS_PATH,
         'playingCards.xml'
       )
     );
     this.load.image(
-      game.card.back_key,
+      GAME.CARD.BACK_KEY,
       path.join(
-        game.card.common_assets_path,
+        GAME.CARD.COMMON_ASSETS_PATH,
         'card_back_red.png'
       )
     );
     this.load.image(
-      game.table.redChip_key,
-      path.join(game.card.common_assets_path, 'chipRed.png')
+      GAME.TABLE.RED_CHIP_KEY,
+      path.join(GAME.CARD.COMMON_ASSETS_PATH, 'chipRed.png')
     );
     this.load.image(
-      game.table.whiteChip_key,
+      GAME.TABLE.WHITE_CHIP_KEY,
       path.join(
-        game.card.common_assets_path,
+        GAME.CARD.COMMON_ASSETS_PATH,
         'chipWhite.png'
       )
     );
     this.load.image(
-      game.table.blueChip_key,
+      GAME.TABLE.BLUE_CHIP_KEY,
       path.join(
-        game.card.common_assets_path,
+        GAME.CARD.COMMON_ASSETS_PATH,
         'chipBlue.png'
       )
     );
     this.load.image(
-      game.table.orangeChip_key,
+      GAME.TABLE.ORANGE_CHIP_KEY,
       path.join(
-        game.card.common_assets_path,
+        GAME.CARD.COMMON_ASSETS_PATH,
         'chipOrange.png'
       )
     );
     this.load.image(
-      game.table.yellowChip_key,
+      GAME.TABLE.YELLOW_CHIP_KEY,
       path.join(
-        game.card.common_assets_path,
+        GAME.CARD.COMMON_ASSETS_PATH,
         'chipYellow.png'
       )
     );

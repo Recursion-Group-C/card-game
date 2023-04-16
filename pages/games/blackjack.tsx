@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
 import { Game as GameType } from 'phaser';
+import { useEffect, useState } from 'react';
 
 const Game = () => {
   const [game, setGame] = useState<GameType>(); // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -8,21 +8,47 @@ const Game = () => {
     async function initPhaser() {
       const Phaser = await import('phaser');
 
-      const { default: BetScene } = await import(
-        '../../games/blackjack/scenes/BetScene'
-      );
-      const { default: MainScene } = await import(
-        '../../games/blackjack/scenes/MainScene'
+      const { default: PlayScene } = await import(
+        '../../games/blackjack/scenes/PlayScene'
       );
 
-      const phaserGame = new Phaser.Game({
-        type: Phaser.AUTO,
-        parent: 'game-content',
+      const { default: BetScene } = await import(
+        '../../games/common/scenes/BetScene'
+      );
+
+      const { default: PreloadScene } = await import(
+        '../../games/common/scenes/PreloadScene'
+      );
+
+      const CONFIG = {
         width: window.innerWidth,
         height: window.innerHeight,
-        scene: [BetScene, MainScene],
-        backgroundColor: '#26723B'
-      });
+        game: 'blackjack'
+      };
+
+      const Scenes: Array<any> = [
+        PreloadScene,
+        BetScene,
+        PlayScene
+      ];
+      const createScene = (Scene: any) => new Scene(CONFIG);
+      const initScenes = () => Scenes.map(createScene);
+
+      const config = {
+        type: Phaser.AUTO,
+        parent: 'game-content',
+        ...CONFIG,
+        backgroundColor: '#26723B',
+        physics: {
+          arcade: {
+            debug: true
+          }
+        },
+        scene: initScenes(),
+        game: 'blackjack'
+      };
+
+      const phaserGame = new Phaser.Game(config);
       setGame(phaserGame);
     }
     initPhaser();
