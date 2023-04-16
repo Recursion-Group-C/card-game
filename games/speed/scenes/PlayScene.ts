@@ -42,8 +42,6 @@ export default class PlayScene extends Table {
       new SpeedPlayer('house', 0, 0, 'bet', 'House', 0)
     ];
 
-    this.resetAndShuffleDeck();
-
     this.createPlayerNameTexts();
     this.createPlayerHandZones(
       GAME.CARD.WIDTH * 5,
@@ -52,6 +50,8 @@ export default class PlayScene extends Table {
     this.createDeckSizeTexts();
     this.createDropZones();
     this.createDropZoneEvent();
+
+    this.resetAndShuffleDeck();
     this.dealInitialCards();
 
     // ゲームのカウントダウン
