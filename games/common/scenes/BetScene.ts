@@ -22,6 +22,8 @@ export default class BetScene extends BaseScene {
 
   public highScore: number | undefined;
 
+  #enterGameSound: Phaser.Sound.BaseSound | undefined;
+
   constructor(config: any) {
     super('BetScene', config);
   }
@@ -39,6 +41,11 @@ export default class BetScene extends BaseScene {
       this.createChips();
       this.createButtons();
       this.createText();
+
+      this.#enterGameSound = this.scene.scene.sound.add(
+        GAME.TABLE.ENTER_GAME_SOUND_KEY,
+        { volume: 0.3 }
+      );
     }
   }
 
@@ -205,6 +212,7 @@ export default class BetScene extends BaseScene {
     );
     dealButton.setClickHandler(() => {
       this.scene.start('PlayScene');
+      this.#enterGameSound?.play();
     });
 
     const buttons: Chip[] = new Array<Chip>();
