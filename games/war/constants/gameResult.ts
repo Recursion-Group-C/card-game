@@ -1,9 +1,9 @@
 enum GameResult {
   WIN = 'WIN',
-  LOSE = 'LOSE',
+  LOSS = 'LOSS',
   TIE = 'TIE',
-  WAR_WIN = 'WAR_WIN',
-  WAR_TIE = 'WAR_TIE',
+  WAR_WIN = 'WAR WIN',
+  WAR_TIE = 'WAR TIE',
   SURRENDER = 'SURRENDER'
 }
 
