@@ -13,7 +13,11 @@ const GAME = {
     WHITE_CHIP_KEY: 'whiteChip',
     BLUE_CHIP_KEY: 'blueChip',
     ORANGE_CHIP_KEY: 'orangeChip',
-    YELLOW_CHIP_KEY: 'yellowChip'
+    YELLOW_CHIP_KEY: 'yellowChip',
+    COUNT_DOWN_SOUND_KEY: 'coundDown',
+    ENTER_GAME_SOUND_KEY: 'enterGame',
+    WIN_GAME_SOUND_KEY: 'winGame',
+    LOSS_GAME_SOUND_KEY: 'lossGame'
   },
   PLAYER: {
     CHIPS: 1000
@@ -40,8 +44,14 @@ const GAME = {
     FLIP_TIME: 800,
     ATLAS_KEY: 'cards',
     BACK_KEY: 'cardBack',
-    COMMON_ASSETS_PATH: '/game_assets/common/images'
-  }
+    FLIP_OVER_SOUND_KEY: 'flipOverCard',
+    PUT_DOWN_SOUND_KEY: 'putDownCard'
+  },
+  CHIP: {
+    CLICK_SOUND_KEY: 'clickChip'
+  },
+  COMMON_IMG_ASSETS_PATH: '/game_assets/common/images',
+  COMMON_SOUND_ASSETS_PATH: '/game_assets/common/sounds'
 } as const;
 
 export default GAME;
