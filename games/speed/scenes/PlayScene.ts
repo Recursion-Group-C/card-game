@@ -340,10 +340,6 @@ export default class PlayScene extends Table {
     this.timeEvent = this.time.addEvent({
       delay: 200,
       callback: () => {
-        if (i >= 3 && this.timeEvent) {
-          this.timeEvent.remove();
-        }
-
         this.players.forEach((player, index) => {
           if (player.playerType === 'player') {
             this.handOutCard(
@@ -370,7 +366,7 @@ export default class PlayScene extends Table {
         i += 1;
       },
       callbackScope: this,
-      loop: true
+      repeat: 3
     });
 
     // カードを裏返す
