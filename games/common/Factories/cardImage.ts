@@ -12,6 +12,15 @@ export default class Card extends Phaser.GameObjects.Image {
 
   #isFaceDown: boolean;
 
+  /**
+   * コンストラクタ
+   * @param scene - このカードが属するPhaserシーン
+   * @param x - カードの初期位置のx座標
+   * @param y - カードの初期位置のy座標
+   * @param suit - カードのスート
+   * @param rank - カードのランク
+   * @param isFaceDown - カードが初期状態で裏向きかどうか
+   */
   constructor(
     scene: Phaser.Scene,
     x: number,
@@ -44,13 +53,21 @@ export default class Card extends Phaser.GameObjects.Image {
     return this.#isFaceDown;
   }
 
+  /**
+   * カードを表向きにし、表面の画像を設定
+   * @returns なし。
+   */
   setFaceUp(): void {
     this.#isFaceDown = false;
     this.setTexture(CARD_FRONT_KEY);
     this.setFrame(this.getAtlasFrame());
   }
 
-  // カードを裏返す関数（裏面->表面）
+  /**
+   * カードを裏返すアニメーションを再生。
+   * アニメーション完了後、カードの表面に更新する。
+   * @returns なし
+   */
   playFlipOverTween(): void {
     this.scene.tweens.add({
       targets: this,
@@ -71,6 +88,11 @@ export default class Card extends Phaser.GameObjects.Image {
     });
   }
 
+  /**
+   * カードを新しい位置に移動するアニメーション
+   * @param toX 移動先のx座標
+   * @param toY 移動先のy座標
+   */
   playMoveTween(toX: number, toY: number): void {
     this.scene.tweens.add({
       targets: this,
@@ -81,12 +103,17 @@ export default class Card extends Phaser.GameObjects.Image {
     });
   }
 
+  /**
+   * ドラッグ可能な状態に設定する
+   */
   setDraggable(): void {
     this.setInteractive();
     this.scene.input.setDraggable(this);
   }
 
-  // カードを元の位置に戻す関数
+  /**
+   * カードを元の位置に戻す関数
+   */
   returnToOrigin(): void {
     this.setPosition(
       this.input.dragStartX,
@@ -94,6 +121,10 @@ export default class Card extends Phaser.GameObjects.Image {
     );
   }
 
+  /**
+   * カードの表面の画像フレーム取得
+   * @returns カードの表面の画像ファイル名
+   */
   getAtlasFrame(): string {
     return `card-${this.#suit}-${this.#rank}.png`;
   }
