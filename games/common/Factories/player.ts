@@ -96,6 +96,10 @@ export default abstract class Player {
     this.#bet += bet;
   }
 
+  getHandSize(): number {
+    return this.hand.length;
+  }
+
   removeCardFromHand(card: Card): void {
     for (let i = 0; i < this.hand.length; i += 1) {
       if (
