@@ -84,6 +84,33 @@ export default abstract class Player {
     this.#hand.push(card);
   }
 
+  clearHand() {
+    this.#hand = [];
+  }
+
+  clearBet() {
+    this.#bet = 0;
+  }
+
+  addBet(bet: number) {
+    this.#bet += bet;
+  }
+
+  getHandSize(): number {
+    return this.hand.length;
+  }
+
+  removeCardFromHand(card: Card): void {
+    for (let i = 0; i < this.hand.length; i += 1) {
+      if (
+        this.hand[i].suit === card.suit &&
+        this.hand[i].rank === card.rank
+      ) {
+        this.hand.splice(i, 1);
+      }
+    }
+  }
+
   abstract promptPlayer(userData: number): GameDecision;
 
   abstract getHandScore(): number;

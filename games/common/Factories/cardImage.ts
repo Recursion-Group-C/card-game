@@ -40,7 +40,7 @@ export default class Card extends Phaser.GameObjects.Image {
     return this.#rank;
   }
 
-  get faceDown(): boolean {
+  get isFaceDown(): boolean {
     return this.#isFaceDown;
   }
 

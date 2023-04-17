@@ -1,8 +1,7 @@
-const GameResult = {
-  WIN: 'WIN',
-  LOSS: 'LOSS',
-  DRAW: 'DRAW',
-  PLAYING: 'PLAYING'
-} as const;
+enum GameResult {
+  WIN = 'WIN',
+  LOSS = 'LOSS',
+  TIE = 'TIE'
+}
 
 export default GameResult;
