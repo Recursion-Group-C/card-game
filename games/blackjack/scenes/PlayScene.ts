@@ -1,58 +1,25 @@
-/* eslint-disable */
-
-import {
-  CARD_ATLAS_KEY,
-  CARD_HEIGHT,
-  CARD_WIDTH
-} from '../Factories/cardFactory';
-
-import Deck from '../models/deck';
-import Hand from '../models/hand';
+import Card from '../../common/Factories/cardImage';
+import Chip from '../../common/Factories/chipImage';
+import Deck from '../../common/Factories/deckImage';
+import Table from '../../common/Factories/tableScene';
 
 import GAME from '../../common/constants/game';
 import STYLE from '../../common/constants/style';
+import GamePhase from '../constants/gamePhase';
+import GameResult from '../constants/gameResult';
 
-import BaseScene from '../../common/scenes/BaseScene';
-import BetScene from '../../common/scenes/BetScene';
+import BlackjackPlayer from '../models/BlackjackPlayer';
 
-import Chip from '../../common/Factories/chipImage';
+import ImageUtility from '../../common/utility/ImageUtility';
 
-import GameResult from '../models/gameResult';
 import Text = Phaser.GameObjects.Text;
-import Texture = Phaser.Textures.Texture;
-import Image = Phaser.GameObjects.Image;
 import Zone = Phaser.GameObjects.Zone;
+import TimeEvent = Phaser.Time.TimerEvent;
 
-export default class PlayScene extends BaseScene {
-  private dealerHand: Hand | undefined;
+export default class PlayScene extends Table {
+  private playerScoreTexts: Array<Text> = [];
 
-  private playerHand: Hand | undefined;
-
-  private deck: Deck | undefined;
-
-  private atlasTexture: Texture | undefined;
-
-  private CARD_MARGIN: Number = 10;
-
-  private dealerScoreText: Text | undefined;
-
-  private playerScoreText: Text | undefined;
-
-  private textHit: Text | undefined;
-
-  private textStay: Text | undefined;
-
-  private textDouble: Text | undefined;
-
-  private textSurrender: Text | undefined;
-
-  private moneyText: Text | undefined;
-
-  private cardImages: Image[] | undefined;
-
-  private betScene: BetScene | undefined;
-
-  private stayButton: Chip | undefined;
+  private standButton: Chip | undefined;
 
   private hitButton: Chip | undefined;
 
@@ -60,647 +27,479 @@ export default class PlayScene extends BaseScene {
 
   private surrenderButton: Chip | undefined;
 
-  private playerHandZone: Zone | undefined;
-
-  private dealerHandZone: Zone | undefined;
-
-  private faceDownImage: Image | undefined;
-
-  private gamePhase: string = 'default';
-
-  private CARD_FLIP_TIME = 600;
+  private timeEvent: TimeEvent | undefined;
 
   constructor(config: any) {
     super('PlayScene', config);
   }
 
   create(): void {
-    this.betScene = this.scene.get('BetScene') as BetScene;
+    super.create();
+    this.gamePhase = GamePhase.BETTING;
+    this.players = [
+      new BlackjackPlayer(
+        'player',
+        0,
+        0,
+        'ready',
+        'Player',
+        0
+      ),
+      new BlackjackPlayer(
+        'house',
+        0,
+        0,
+        'ready',
+        'House',
+        0
+      )
+    ];
 
-    this.createGameZone();
+    this.createPlayerNameTexts();
+    this.createPlayerHandZones(
+      GAME.CARD.WIDTH,
+      GAME.CARD.HEIGHT
+    );
+    this.createPlayerScoreTexts();
 
-    this.setUpMoneyText();
-    this.setUpNewGame();
-
-    this.playerHandZone = this.add.zone(
-      0,
-      0,
-      CARD_WIDTH,
-      CARD_HEIGHT
-    );
-    Phaser.Display.Align.To.TopLeft(
-      this.playerHandZone as Zone,
-      this.playerScoreText as Phaser.GameObjects.GameObject,
-      0,
-      STYLE.GUTTER_SIZE
-    );
-    this.dealerHandZone = this.add.zone(
-      0,
-      0,
-      CARD_WIDTH,
-      CARD_HEIGHT
-    );
-    Phaser.Display.Align.To.BottomLeft(
-      this.dealerHandZone as Zone,
-      this.dealerScoreText as Phaser.GameObjects.GameObject,
-      0,
-      STYLE.GUTTER_SIZE
-    );
+    this.resetAndShuffleDeck();
     this.dealInitialCards();
+
+    this.time.delayedCall(1500, () => {
+      this.gamePhase = GamePhase.ACTING;
+      this.createButtons();
+    });
   }
 
-  private dealInitialCards() {
-    setTimeout(
-      this.handOutCard.bind(this),
-      1,
-      this.playerHand,
-      false
-    );
-    setTimeout(
-      this.handOutCard.bind(this),
-      500,
-      this.dealerHand,
-      false
-    );
-    setTimeout(
-      this.handOutCard.bind(this),
-      1000,
-      this.playerHand,
-      false
-    );
-    setTimeout(
-      this.handOutCard.bind(this),
-      1500,
-      this.dealerHand,
-      true
-    );
-    setTimeout(this.checkForBlackJack.bind(this), 1500);
-  }
+  update(): void {
+    let result: GameResult | undefined;
 
-  private checkForBlackJack() {
+    if (this.gamePhase === GamePhase.ROUND_OVER) {
+      result = this.deriveGameResult();
+    }
+
     if (
-      this.playerHand?.getBlackjackScore() === 21 &&
-      this.gamePhase !== 'Surrender'
+      this.gamePhase === GamePhase.END_OF_GAME &&
+      result
     ) {
-      this.endHand(GameResult.BLACKJACK);
+      this.time.delayedCall(1000, () => {
+        this.endHand(result as GameResult);
+      });
     }
   }
 
-  private createCardTween(
-    image: Image,
-    x: number,
-    y: number,
-    duration: number = 500
-  ) {
-    this.tweens.add({
-      targets: image,
-      x: x,
-      y: y,
-      duration: duration,
-      ease: 'Linear'
+  private dealInitialCards() {
+    const player = this.players[0];
+    const playerHandZone = this.playerHandZones[0];
+    const house = this.players[1];
+    const houseHandZone = this.playerHandZones[1];
+
+    this.time.delayedCall(300, () => {
+      if (this.deck) {
+        this.handOutCard(
+          this.deck,
+          player,
+          playerHandZone.x - GAME.CARD.WIDTH * 0.15,
+          playerHandZone.y,
+          false
+        );
+      }
+    });
+
+    this.time.delayedCall(600, () => {
+      if (this.deck) {
+        this.handOutCard(
+          this.deck,
+          house,
+          houseHandZone.x - GAME.CARD.WIDTH * 0.15,
+          houseHandZone.y,
+          false
+        );
+      }
+    });
+
+    this.time.delayedCall(900, () => {
+      if (this.deck) {
+        this.handOutCard(
+          this.deck,
+          player,
+          playerHandZone.x + GAME.CARD.WIDTH * 0.15,
+          playerHandZone.y,
+          false
+        );
+      }
+    });
+
+    this.time.delayedCall(1200, () => {
+      if (this.deck) {
+        this.handOutCard(
+          this.deck,
+          house,
+          houseHandZone.x + GAME.CARD.WIDTH * 0.15,
+          houseHandZone.y,
+          true
+        );
+      }
+      this.setPlayerScoreTexts(true);
     });
   }
 
-  private flipOverCard(cardBack: Image, cardFront: Image) {
-    this.tweens.add({
-      targets: cardBack,
-      scaleX: 0,
-      duration: this.CARD_FLIP_TIME / 2,
-      ease: 'Linear'
+  private createPlayerScoreTexts(): void {
+    this.playerScoreTexts = []; // 前回のゲームで作成したものが残っている可能性があるので、初期化する
+    this.players.forEach((player, index) => {
+      const playerScoreText = this.add.text(
+        0,
+        200,
+        '',
+        STYLE.TEXT
+      );
+
+      if (player.playerType === 'player') {
+        Phaser.Display.Align.To.TopCenter(
+          playerScoreText as Text,
+          this.playerHandZones[index] as Zone,
+          0,
+          0
+        );
+      } else if (player.playerType === 'house') {
+        Phaser.Display.Align.To.BottomCenter(
+          playerScoreText as Text,
+          this.playerHandZones[index] as Zone,
+          0,
+          0
+        );
+      }
+
+      this.playerScoreTexts.push(playerScoreText);
     });
-    this.tweens.add({
-      targets: cardFront,
-      scaleX: 1,
-      duration: this.CARD_FLIP_TIME / 2,
-      delay: this.CARD_FLIP_TIME / 2,
-      ease: 'Linear'
+  }
+
+  private setPlayerScoreTexts(disableHouse: boolean): void {
+    this.players.forEach((player, index) => {
+      const playerScoreText = this.playerScoreTexts[index];
+
+      if (player.playerType === 'player') {
+        playerScoreText.setText(
+          String(player.getHandScore())
+        );
+        Phaser.Display.Align.To.TopCenter(
+          playerScoreText as Text,
+          this.playerHandZones[index] as Zone,
+          0,
+          0
+        );
+      } else if (player.playerType === 'house') {
+        if (!disableHouse) {
+          playerScoreText.setText(
+            String(player.getHandScore())
+          );
+        }
+        Phaser.Display.Align.To.BottomCenter(
+          playerScoreText as Text,
+          this.playerHandZones[index] as Zone,
+          0,
+          0
+        );
+      }
     });
   }
 
-  private setUpMoneyText(): void {
-    this.moneyText = this.add.text(0, 0, '', STYLE.TEXT);
-    let betText = this.add.text(0, 0, '', STYLE.TEXT);
+  private createButtons(): void {
+    this.createStandButton();
+    this.createHitButton();
+    this.createDoubleButton();
+    this.createSurrenderButton();
 
-    this.updateMoneyText();
-    this.updateBetText(betText);
-  }
+    const buttons: Chip[] = new Array<Chip>();
+    buttons.push(this.standButton as Chip);
+    buttons.push(this.hitButton as Chip);
+    buttons.push(this.doubleButton as Chip);
+    buttons.push(this.surrenderButton as Chip);
 
-  private updateMoneyText(): void {
-    this.moneyText!.setText(
-      'Money: $' + this.betScene?.money
-    );
-    Phaser.Display.Align.In.TopRight(
-      this.moneyText! as Phaser.GameObjects.GameObject,
-      this.gameZone as Phaser.GameObjects.GameObject,
-      -20,
-      -20
-    );
-  }
-
-  private updateBetText(text: Text) {
-    text.setText('Bet: $' + this.betScene?.bet);
-    Phaser.Display.Align.To.BottomLeft(
-      text,
-      this.moneyText as Phaser.GameObjects.GameObject
+    ImageUtility.spaceOutImagesEvenlyHorizontally(
+      buttons,
+      this.scene
     );
   }
 
-  private setUpDealerScoreText(): void {
-    this.dealerScoreText = this.add.text(
-      0,
-      200,
-      '',
-      STYLE.TEXT
-    );
-    this.setDealerScoreText();
-    Phaser.Display.Align.In.TopCenter(
-      this.dealerScoreText,
-      this.gameZone as Phaser.GameObjects.GameObject,
-      0,
-      -20
-    );
+  private destroyButtons(): void {
+    this.hitButton?.destroy();
+    this.standButton?.destroy();
+    this.doubleButton?.destroy();
+    this.surrenderButton?.destroy();
   }
 
-  private setUpPlayerScoreText(): void {
-    this.playerScoreText = this.add.text(
-      0,
-      300,
-      '',
-      STYLE.TEXT
-    );
-    this.setPlayerScoreText();
-    Phaser.Display.Align.In.BottomCenter(
-      this.playerScoreText,
-      this.gameZone as Phaser.GameObjects.GameObject,
-      0,
-      -20
-    );
-  }
-
-  private setUpHitButton(): void {
+  private createHitButton(): void {
+    const buttonHeight = Number(this.config.height) / 2;
     this.hitButton = new Chip(
       this,
-      this.config.width * 0.33,
-      this.config.height * 0.5,
+      0,
+      buttonHeight,
       GAME.TABLE.YELLOW_CHIP_KEY,
       'Hit'
     );
     this.hitButton.setClickHandler(() => this.handleHit());
-
-    // this.hitButton = this.add
-    //   .image(
-    //     this.gameZone!.width * 0.33,
-    //     this.gameZone!.height * 0.5,
-    //     'yellowChip'
-    //   )
-    //   .setScale(1.2 * this.betScene!.scale);
-    // this.textHit = this.add.text(
-    //   this.gameZone!.width * 0.33,
-    //   this.gameZone!.height * 0.5,
-    //   'Hit',
-    //   textStyle
-    // );
-    // Phaser.Display.Align.In.Center(
-    //   this.textHit,
-    //   this.hitButton
-    // );
-    // this.hitButton.setInteractive();
-    // this.setUpHoverStyles(this.hitButton);
-    // this.setUpClickHandler(this.hitButton, this.handleHit);
   }
 
-  private setUpStayButton(): void {
-    this.stayButton = new Chip(
+  private createStandButton(): void {
+    const buttonHeight = Number(this.config.height) / 2;
+    this.standButton = new Chip(
       this,
-      this.config.width * 0.66,
-      this.config.height * 0.5,
+      0,
+      buttonHeight,
       GAME.TABLE.ORANGE_CHIP_KEY,
-      'Stay'
+      'Stand'
     );
-    this.stayButton.setClickHandler(() =>
-      this.handleStay()
+    this.standButton.setClickHandler(() =>
+      this.handleStand()
     );
-    // this.stayButton = this.add
-    //   .image(
-    //     this.gameZone!.width * 0.66,
-    //     this.gameZone!.height * 0.5,
-    //     'orangeChip'
-    //   )
-    //   .setScale(1.2 * this.betScene!.scale);
-    // this.textStay = this.add.text(
-    //   this.gameZone!.width * 0.66,
-    //   this.gameZone!.height * 0.5,
-    //   'Stay',
-    //   textStyle
-    // );
-    // Phaser.Display.Align.In.Center(
-    //   this.textStay,
-    //   this.stayButton
-    // );
-    // this.stayButton.setInteractive();
-    // this.setUpHoverStyles(this.stayButton);
-    // this.setUpClickHandler(
-    //   this.stayButton,
-    //   this.handleStay
-    // );
   }
 
-  private setUpDoubleButton(): void {
-    this.gamePhase = 'Double';
+  private createDoubleButton(): void {
+    const buttonHeight = Number(this.config.height) / 2;
 
     this.doubleButton = new Chip(
       this,
-      this.config.width * 0.15,
-      this.config.height * 0.5,
+      0,
+      buttonHeight,
       GAME.TABLE.WHITE_CHIP_KEY,
       'Double'
     );
     this.doubleButton.setClickHandler(() =>
       this.handleDouble()
     );
-
-    // this.doubleButton = this.add
-    //   .image(
-    //     this.gameZone!.width * 0.15,
-    //     this.gameZone!.height * 0.5,
-    //     'whiteChip'
-    //   )
-    //   .setScale(1.2 * this.betScene?.scale);
-    // this.textDouble = this.add.text(
-    //   this.gameZone!.width * 0.15,
-    //   this.gameZone!.height * 0.5,
-    //   'Double',
-    //   textStyle
-    // );
-    // Phaser.Display.Align.In.Center(
-    //   this.textDouble,
-    //   this.doubleButton
-    // );
-    // this.doubleButton.setInteractive();
-    // this.setUpHoverStyles(this.doubleButton);
-    // this.setUpClickHandler(
-    //   this.doubleButton,
-    //   this.handleDouble
-    // );
   }
 
-  private setUpSurrenderButton() {
-    this.gamePhase = 'Surrender';
+  private createSurrenderButton() {
+    const buttonHeight = Number(this.config.height) / 2;
 
     this.surrenderButton = new Chip(
       this,
-      this.config.width * 0.84,
-      this.config.height * 0.5,
+      0,
+      buttonHeight,
       GAME.TABLE.BLUE_CHIP_KEY,
       'Surrender'
     );
     this.surrenderButton.setClickHandler(() =>
       this.handleSurrender()
     );
-
-    // this.surrenderButton = this.add
-    //   .image(
-    //     this.gameZone!.width * 0.84,
-    //     this.gameZone!.height * 0.5,
-    //     'blueChip'
-    //   )
-    //   .setScale(1.2 * this.betScene?.scale);
-    // this.textSurrender = this.add.text(
-    //   this.gameZone!.width * 0.84,
-    //   this.gameZone!.height * 0.5,
-    //   'Surrender',
-    //   textStyle
-    // );
-    // Phaser.Display.Align.In.Center(
-    //   this.textSurrender,
-    //   this.surrenderButton
-    // );
-    // this.surrenderButton.setInteractive();
-    // this.setUpHoverStyles(this.surrenderButton);
-    // this.setUpClickHandler(
-    //   this.surrenderButton,
-    //   this.handleSurrender
-    // );
   }
 
-  // private setUpHoverStyles(image: Image) {
-  //   image.on(
-  //     'pointerover',
-  //     function (this: any) {
-  //       // thisの型指定できていない
-  //       image.setScale(1.4 * this.betScene.scale);
-  //     },
-  //     this
-  //   );
-  //   image.on(
-  //     'pointerout',
-  //     function (this: any) {
-  //       image.setScale(1 * this.betScene.scale);
-  //     },
-  //     this
-  //   );
-  // }
-
-  private setUpNewGame() {
-    this.deck = new Deck();
-    this.dealerHand = new Hand();
-    this.playerHand = new Hand();
-    this.setUpHitButton();
-    this.setUpStayButton();
-    this.setUpDoubleButton();
-    this.setUpSurrenderButton();
-    this.setUpDealerScoreText();
-    this.setUpPlayerScoreText();
+  private playHouseFlipOver(): void {
+    const house = this.players[1];
+    house.hand.forEach((card) => {
+      if (card.isFaceDown) {
+        card.playFlipOverTween();
+      }
+    });
   }
-
-  // private setUpClickHandler(
-  //   image: Image,
-  //   handlerFunction: Function
-  // ) {
-  //   let mainScene: MainScene = this;
-  //   image.on('pointerdown', function () {
-  //     handlerFunction(mainScene);
-  //   });
-  // }
 
   private handleHit(): void {
-    this.handOutCard(this.playerHand as Hand, false);
-    this.setPlayerScoreText();
-    if (this.playerHand!.getBlackjackScore() > 21) {
-      // this.textHit!.destroy();
-      // this.textStay!.destroy();
-      this.endHand(GameResult.BUST);
+    const player = this.players[0];
+    const playerHandZone = this.playerHandZones[0];
+    player.gameStatus = 'hit';
+
+    this.doubleButton?.destroy();
+
+    this.handOutCard(
+      this.deck as Deck,
+      player,
+      playerHandZone.x +
+        GAME.CARD.WIDTH *
+          (player.getHandSize() * 0.3 - 0.15),
+      playerHandZone.y,
+      false
+    );
+    this.setPlayerScoreTexts(true);
+
+    if (player.getHandScore() > 21) {
+      this.destroyButtons();
+      this.playHouseFlipOver();
+      this.setPlayerScoreTexts(false);
+      player.gameStatus = 'bust';
+      this.gamePhase = GamePhase.ROUND_OVER;
     }
   }
 
-  private handleStay(): void {
-    // this.textStay!.destroy();
-    // this.textHit!.destroy();
-    this.handleFlipOver();
-    setTimeout(
-      this.drawCardsUntil17,
-      this.CARD_FLIP_TIME,
-      this
+  private handleStand(): void {
+    const player = this.players[0];
+
+    this.playHouseFlipOver();
+    this.setPlayerScoreTexts(false);
+    this.destroyButtons();
+
+    if (PlayScene.isBlackjack(player)) {
+      player.gameStatus = 'blackjack';
+    } else {
+      player.gameStatus = 'stand';
+    }
+
+    this.time.delayedCall(1000, () =>
+      this.drawCardsUntil17()
     );
   }
 
   private handleDouble(): void {
-    this.handOutCard(this.playerHand as Hand, false);
-    this.setPlayerScoreText();
-    if (this.playerHand!.getBlackjackScore() > 21) {
-      this.textHit!.destroy();
-      this.textStay!.destroy();
-      this.endHand(GameResult.BUST);
-    }
-    // mainScene.textStay!.destroy();
-    // mainScene.textHit!.destroy();
-    this.handleFlipOver();
-    setTimeout(
-      this.drawCardsUntil17,
-      this.CARD_FLIP_TIME,
-      this
+    const player = this.players[0];
+    const playerHandZone = this.playerHandZones[0];
+
+    this.setBetDouble();
+
+    this.handOutCard(
+      this.deck as Deck,
+      player,
+      playerHandZone.x +
+        GAME.CARD.WIDTH *
+          (player.getHandSize() * 0.3 - 0.15),
+      playerHandZone.y,
+      false
     );
+
+    this.handleStand();
+
+    if (player.getHandScore() > 21) {
+      player.gameStatus = 'bust';
+    }
   }
 
   private handleSurrender() {
-    this.handOutCard(this.playerHand as Hand, false);
-    // mainScene.textStay!.destroy();
-    // mainScene.textHit!.destroy();
-    this.endHand(GameResult.SURRENDER);
-    this.handleFlipOver();
-    setTimeout(
-      this.drawCardsUntil17,
-      this.CARD_FLIP_TIME,
-      this
+    const player = this.players[0];
+    const house = this.players[1];
+
+    this.destroyButtons();
+    player.gameStatus = 'surrender';
+    house.gameStatus = 'stand';
+
+    this.gamePhase = GamePhase.ROUND_OVER;
+  }
+
+  private drawCardsUntil17(): void {
+    const house = this.players[1];
+    const houseHandZone = this.playerHandZones[1];
+
+    this.timeEvent = this.time.addEvent({
+      delay: 800,
+      callback: () => {
+        const houseScore = house.getHandScore();
+        if (houseScore < 17) {
+          house.gameStatus = 'hit';
+          this.handOutCard(
+            this.deck as Deck,
+            house,
+            houseHandZone.x +
+              GAME.CARD.WIDTH *
+                (house.getHandSize() * 0.3 - 0.15),
+            houseHandZone.y,
+            false
+          );
+          this.setPlayerScoreTexts(false);
+        } else {
+          if (this.timeEvent) this.timeEvent.remove();
+          if (house.getHandScore() > 21) {
+            house.gameStatus = 'bust';
+          } else if (PlayScene.isBlackjack(house)) {
+            house.gameStatus = 'blackjack';
+          } else {
+            house.gameStatus = 'stand';
+          }
+          this.gamePhase = GamePhase.ROUND_OVER;
+        }
+      },
+      callbackScope: this,
+      loop: true
+    });
+  }
+
+  private static isBlackjack(
+    player: BlackjackPlayer
+  ): boolean {
+    return (
+      player.getHandSize() === 2 &&
+      player.getHandScore() === 21
     );
   }
 
-  private drawCardsUntil17() {
-    let dealerScore: number =
-      this.dealerHand!.getBlackjackScore();
-    let playerScore: number =
-      this.playerHand!.getBlackjackScore();
-    let result: unknown = null;
-    if (
-      dealerScore < 17 &&
-      this.gamePhase !== 'Surrender'
-    ) {
-      this.handOutCard(this.dealerHand as Hand, false);
-      setTimeout(this.drawCardsUntil17, 500, this);
-      return;
-    }
-    result = this.deriveGameResult(
-      dealerScore,
-      playerScore,
-      result as GameResult
-    );
-    setTimeout(this.endHand.bind(this), 1000, result);
-  }
+  private deriveGameResult(): GameResult | undefined {
+    let result: GameResult | undefined;
+    const player = this.players[0];
+    const playerHandScore = player.getHandScore();
+    const house = this.players[1];
+    const houseHandScore = house.getHandScore();
 
-  private deriveGameResult(
-    dealerScore: number,
-    playerScore: number,
-    result: GameResult
-  ) {
-    if (this.gamePhase === 'Surrender') {
-      result = GameResult.LOSS;
-    } else {
-      if (
-        dealerScore > 21 ||
-        (playerScore < 22 && playerScore > dealerScore)
-      ) {
-        result = GameResult.WIN;
-      } else if (dealerScore === playerScore) {
+    if (player.gameStatus === 'bust') {
+      result = GameResult.BUST;
+    } else if (player.gameStatus === 'blackjack') {
+      if (house.gameStatus === 'blackjack') {
         result = GameResult.PUSH;
       } else {
+        result = GameResult.BLACKJACK;
+      }
+    } else if (player.gameStatus === 'stand') {
+      if (
+        house.gameStatus === 'bust' ||
+        playerHandScore > houseHandScore
+      ) {
+        result = GameResult.WIN;
+      } else if (
+        house.gameStatus === 'blackjack' ||
+        houseHandScore > playerHandScore
+      ) {
         result = GameResult.LOSS;
+      } else if (houseHandScore === playerHandScore) {
+        result = GameResult.PUSH;
       }
-      return result;
+    } else if (player.gameStatus === 'surrender') {
+      result = GameResult.SURRENDER;
     }
+    this.gamePhase = GamePhase.END_OF_GAME;
+    return result;
   }
 
-  private handleFlipOver() {
-    this.dealerHand!.getCards()!.forEach((card) => {
-      if (card.getFaceDown()) {
-        card.setFaceDown(false);
-        let cardFront = this.add.image(
-          this.faceDownImage!.x,
-          this.faceDownImage!.y,
-          CARD_ATLAS_KEY,
-          card.getAtlasFrame()
-        );
-        cardFront.setScale(0, 1);
-        this.flipOverCard(
-          this.faceDownImage as Image,
-          cardFront
-        );
+  handOutCard(
+    deck: Deck,
+    player: BlackjackPlayer,
+    toX: number,
+    toY: number,
+    isFaceDown: boolean
+  ): void {
+    const card: Card | undefined = deck.drawOne();
+
+    if (card) {
+      if (!isFaceDown) {
+        card.setFaceUp();
       }
-    });
-    this.setDealerScoreText();
-  }
-
-  private handOutCard(hand: Hand, faceDownCard: boolean) {
-    let card = this.deck!.drawCard();
-    let cardImage: Image;
-    if (!faceDownCard) {
-      hand.receiveCard(card!);
-      cardImage = this.add.image(
-        0,
-        0,
-        CARD_ATLAS_KEY,
-        card!.getAtlasFrame()
-      );
-    } else {
-      hand.receiveCardFaceDown(card!);
-      cardImage = this.add.image(0, 0, 'cardBack');
-      this.faceDownImage = cardImage;
-    }
-    let xOffset = (hand.getCards()!.length - 1) * 50;
-    if (hand === this.playerHand) {
-      this.createCardTween(
-        cardImage,
-        this.playerHandZone!.x + xOffset,
-        this.playerHandZone!.y
-      );
-      this.setPlayerScoreText();
-    } else {
-      this.createCardTween(
-        cardImage,
-        this.dealerHandZone!.x + xOffset,
-        this.dealerHandZone!.y,
-        350
-      );
-      this.setDealerScoreText();
+      player.addCardToHand(card);
+      this.children.bringToTop(card);
+      card.playMoveTween(toX, toY);
     }
   }
 
-  private setDealerScoreText() {
-    this.dealerScoreText!.setText(
-      this.dealerHand!.getBlackjackScore() > 0
-        ? 'Dealer Score: ' +
-            this.dealerHand!.getBlackjackScore()
-        : 'Dealer Score: 0'
-    );
-  }
-
-  private setPlayerScoreText() {
-    this.playerScoreText!.setText(
-      this.playerHand!.getBlackjackScore() > 0
-        ? 'Your Score: ' +
-            this.playerHand!.getBlackjackScore()
-        : 'Your Score: 0'
-    );
-  }
-
-  private endHand(result: GameResult) {
-    this.payout(result, this.gamePhase);
-    this.payout(result, this.gamePhase);
-    let graphics = this.add.graphics({
-      fillStyle: { color: 0x000000, alpha: 0.75 }
-    });
-    let square = new Phaser.Geom.Rectangle(
-      0,
-      0,
-      new Number(this.config.width).valueOf(),
-      new Number(this.config.height).valueOf()
-    );
-    graphics.fillRectShape(square);
-    let resultText: Text = this.add.text(
-      0,
-      0,
-      <string>result,
-      STYLE.TEXT
-    );
-    resultText.setColor('#ffde3d');
-    resultText.setStroke('#000000', 10);
-    resultText.setFontSize(100);
-    Phaser.Display.Align.In.LeftCenter(
-      resultText,
-      this.gameZone as Phaser.GameObjects.GameObject
-    );
-    this.input.once(
-      'pointerdown',
-      function (this: any) {
-        //thisの型指定できていない
-        this.input.once(
-          'pointerup',
-          function (this: any) {
-            this.scene.start('BetScene');
-          },
-          this
-        );
-      },
-      this
-    );
-  }
-
-  //payout()を実装する　また、handleDouble()でhandlestay()の中身を使えるように
-
-  private payout(result: GameResult, gamePhase: string) {
-    if (gamePhase === 'Double') {
+  payOut(result: GameResult) {
+    if (this.betScene && this.betScene.money) {
       if (result === GameResult.WIN) {
-        this.betScene!.money += this.betScene!.bet * 2;
-        // } else if (result === GameResult.BLACKJACK) {
-        //   this.betScene!.money += Math.floor(
-        //     this.betScene!.bet * 1.5
-        //   );
-      } else {
-        this.betScene!.money -= this.betScene!.bet * 2;
-      }
-      this.updateMoneyText();
-      let highScore = localStorage.getItem(
-        GAME.STORAGE.BLACKJACK_HIGH_SCORE_STORAGE
-      );
-      if (
-        !highScore ||
-        this.betScene!.money >
-          new Number(highScore).valueOf()
-      ) {
-        localStorage.setItem(
-          GAME.STORAGE.BLACKJACK_HIGH_SCORE_STORAGE,
-          new String(this.betScene!.money).valueOf()
-        );
-      }
-    } else if (gamePhase === 'Surrender') {
-      // 半分にするlogic
-      this.betScene!.money -= this.betScene!.bet / 2;
-
-      this.updateMoneyText();
-      let highScore = localStorage.getItem(
-        GAME.STORAGE.BLACKJACK_HIGH_SCORE_STORAGE
-      );
-      if (
-        !highScore ||
-        this.betScene!.money >
-          new Number(highScore).valueOf()
-      ) {
-        localStorage.setItem(
-          GAME.STORAGE.BLACKJACK_HIGH_SCORE_STORAGE,
-          new String(this.betScene!.money).valueOf()
-        );
-      }
-    } else {
-      if (result === GameResult.WIN) {
-        this.betScene!.money += this.betScene!.bet;
+        this.betScene.money += this.betScene.bet;
       } else if (result === GameResult.BLACKJACK) {
-        this.betScene!.money += Math.floor(
-          this.betScene!.bet * 1.5
-        );
-      } else {
-        this.betScene!.money -= this.betScene!.bet;
+        this.betScene.money += this.betScene.bet * 1.5;
+      } else if (result === GameResult.SURRENDER) {
+        this.betScene.money -= this.betScene.bet * 0.5;
+      } else if (
+        result === GameResult.LOSS ||
+        result === GameResult.BUST
+      ) {
+        this.betScene.money -= this.betScene.bet;
       }
-      this.updateMoneyText();
-      let highScore = localStorage.getItem(
+      this.setMoneyText(this.betScene.money);
+
+      const highScore = localStorage.getItem(
         GAME.STORAGE.BLACKJACK_HIGH_SCORE_STORAGE
       );
       if (
         !highScore ||
-        this.betScene!.money >
-          new Number(highScore).valueOf()
+        this.betScene.money > Number(highScore)
       ) {
         localStorage.setItem(
           GAME.STORAGE.BLACKJACK_HIGH_SCORE_STORAGE,
-          new String(this.betScene!.money).valueOf()
+          String(this.betScene.money)
         );
       }
     }

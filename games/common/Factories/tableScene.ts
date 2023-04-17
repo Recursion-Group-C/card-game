@@ -10,18 +10,8 @@ import Zone = Phaser.GameObjects.Zone;
 import Text = Phaser.GameObjects.Text;
 import GameObject = Phaser.GameObjects.GameObject;
 
-const GAME_PHASE = {
-  BETTING: 'betting',
-  PLAYING: 'playing',
-  GAME_END: 'game_end'
-};
-
 export default abstract class Table extends BaseScene {
   protected playerHandZones: Array<Zone> = [];
-
-  protected playerHandZone: Zone | undefined;
-
-  protected houseHandZone: Zone | undefined;
 
   protected timerText: Text | undefined;
 
@@ -234,6 +224,13 @@ export default abstract class Table extends BaseScene {
     );
   }
 
+  protected setBetDouble(): void {
+    if (this.betScene) {
+      this.betScene.bet *= 2;
+      this.setBetText(this.betScene.bet);
+    }
+  }
+
   abstract handOutCard(
     deck: Deck,
     player: Player,
@@ -247,7 +244,6 @@ export default abstract class Table extends BaseScene {
     this.time.delayedCall(500, () =>
       this.createResultText(result)
     );
-    this.gamePhase = GAME_PHASE.GAME_END;
     this.clearPlayerHandsAndBets();
   }
 

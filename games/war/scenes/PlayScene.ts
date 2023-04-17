@@ -126,11 +126,6 @@ export default class PlayScene extends Table {
     return false;
   }
 
-  private setBetDouble(): void {
-    this.betScene!.bet *= 2;
-    this.setBetText(this.betScene!.bet);
-  }
-
   private dealCards(): void {
     this.time.delayedCall(500, () => {
       this.players.forEach((player, index) => {
