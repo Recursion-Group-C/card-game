@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import GAME from '../constants/game';
 
 const CARD_BACK_KEY = 'cardBack';
 const CARD_FRONT_KEY = 'cards';
@@ -11,6 +12,10 @@ export default class Card extends Phaser.GameObjects.Image {
   readonly #rank: string;
 
   #isFaceDown: boolean;
+
+  #flipOverSound: Phaser.Sound.BaseSound;
+
+  #putDownSound: Phaser.Sound.BaseSound;
 
   constructor(
     scene: Phaser.Scene,
@@ -25,6 +30,14 @@ export default class Card extends Phaser.GameObjects.Image {
     this.#suit = suit;
     this.#rank = rank;
     this.#isFaceDown = isFaceDown;
+    this.#flipOverSound = this.scene.sound.add(
+      GAME.CARD.FLIP_OVER_SOUND_KEY,
+      { volume: 0.3 }
+    );
+    this.#putDownSound = this.scene.sound.add(
+      GAME.CARD.PUT_DOWN_SOUND_KEY,
+      { volume: 0.3 }
+    );
 
     // 初期状態が表向きの場合は、表面のImageに更新する
     if (!isFaceDown) {
@@ -60,6 +73,7 @@ export default class Card extends Phaser.GameObjects.Image {
       onComplete: () => {
         // アニメーション完了後に実行するコールバック関数を追加
         this.setFaceUp();
+        this.#flipOverSound.play();
         this.scene.tweens.add({
           targets: this,
           scaleX: 1,
@@ -72,6 +86,7 @@ export default class Card extends Phaser.GameObjects.Image {
   }
 
   playMoveTween(toX: number, toY: number): void {
+    this.#putDownSound.play();
     this.scene.tweens.add({
       targets: this,
       x: toX,

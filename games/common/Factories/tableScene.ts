@@ -1,3 +1,4 @@
+import GAME from '../constants/game';
 import STYLE from '../constants/style';
 
 import Card from './cardImage';
@@ -27,17 +28,38 @@ export default abstract class Table extends BaseScene {
 
   protected turnCounter = 0;
 
-  protected initialTime = 3;
+  protected initialTime = 2;
+
+  #winGameSound: Phaser.Sound.BaseSound | undefined;
+
+  #lossGameSound: Phaser.Sound.BaseSound | undefined;
 
   create(): void {
     super.create();
     this.betScene = this.scene.get('BetScene') as BetScene;
     this.turnCounter = 0;
-    this.initialTime = 3;
+    this.initialTime = 2;
     this.createMoneyText(
       this.betScene.money,
       this.betScene.bet
     );
+
+    this.#winGameSound = this.scene.scene.sound.add(
+      GAME.TABLE.WIN_GAME_SOUND_KEY,
+      { volume: 0.3 }
+    );
+    this.#lossGameSound = this.scene.scene.sound.add(
+      GAME.TABLE.LOSS_GAME_SOUND_KEY,
+      { volume: 0.3 }
+    );
+  }
+
+  get winGameSound(): Phaser.Sound.BaseSound | undefined {
+    return this.#winGameSound;
+  }
+
+  get lossGameSound(): Phaser.Sound.BaseSound | undefined {
+    return this.#lossGameSound;
   }
 
   protected resetAndShuffleDeck(): void {
@@ -117,6 +139,7 @@ export default abstract class Table extends BaseScene {
   }
 
   protected countDown(callback: () => void) {
+    this.initialTime -= 1;
     if (this.initialTime > 0) {
       this.setTimerText(`${String(this.initialTime)}`);
     } else if (this.initialTime === 0) {
@@ -132,7 +155,6 @@ export default abstract class Table extends BaseScene {
       this.setTimerText('');
       callback();
     }
-    this.initialTime -= 1;
   }
 
   protected createTimerText(): void {
@@ -241,9 +263,10 @@ export default abstract class Table extends BaseScene {
 
   protected endHand(result: string): void {
     this.payOut(result);
-    this.time.delayedCall(500, () =>
-      this.createResultText(result)
-    );
+    this.time.delayedCall(500, () => {
+      this.createResultText(result);
+      this.playGameResultSound(result);
+    });
     this.clearPlayerHandsAndBets();
   }
 
@@ -255,6 +278,8 @@ export default abstract class Table extends BaseScene {
   }
 
   abstract payOut(result: string): void;
+
+  abstract playGameResultSound(result: string): void;
 
   // abstract deriveGameResult(): string | undefined;
 }

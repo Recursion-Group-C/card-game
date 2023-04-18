@@ -16,6 +16,7 @@ import GameObject = Phaser.GameObjects.GameObject;
 import TimeEvent = Phaser.Time.TimerEvent;
 
 export default class PlayScene extends Table {
+  // TODO: private->#に変更する
   private playerDecks: Array<Deck> = []; // player, house
 
   private deckSizeTexts: Array<Text> = []; // player, house
@@ -29,6 +30,8 @@ export default class PlayScene extends Table {
   private houseTimeEvent: TimeEvent | undefined;
 
   private houseTimeEvent2: TimeEvent | undefined;
+
+  #countDownSound: Phaser.Sound.BaseSound | undefined;
 
   constructor(config: any) {
     super('PlayScene', config);
@@ -54,9 +57,15 @@ export default class PlayScene extends Table {
     this.resetAndShuffleDeck();
     this.dealInitialCards();
 
+    this.#countDownSound = this.scene.scene.sound.add(
+      GAME.TABLE.COUNT_DOWN_SOUND_KEY,
+      { volume: 0.3 }
+    );
+
     // ゲームのカウントダウン
     this.time.delayedCall(3000, () => {
       this.createTimerText();
+      if (this.#countDownSound) this.#countDownSound.play();
       this.timeEvent = this.time.addEvent({
         delay: 1000,
         callback: () => {
@@ -531,6 +540,14 @@ export default class PlayScene extends Table {
           String(this.betScene.money)
         );
       }
+    }
+  }
+
+  playGameResultSound(result: string): void {
+    if (result === GameResult.WIN) {
+      this.winGameSound?.play();
+    } else {
+      this.lossGameSound?.play();
     }
   }
 }

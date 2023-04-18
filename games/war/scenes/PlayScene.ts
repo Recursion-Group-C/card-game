@@ -226,4 +226,16 @@ export default class PlayScene extends Table {
       }
     }
   }
+
+  playGameResultSound(result: string): void {
+    if (
+      result === GameResult.WIN ||
+      result === GameResult.WAR_WIN ||
+      result === GameResult.WAR_TIE
+    ) {
+      this.winGameSound?.play();
+    } else {
+      this.lossGameSound?.play();
+    }
+  }
 }

@@ -504,4 +504,15 @@ export default class PlayScene extends Table {
       }
     }
   }
+
+  playGameResultSound(result: string): void {
+    if (
+      result === GameResult.WIN ||
+      result === GameResult.BLACKJACK
+    ) {
+      this.winGameSound?.play();
+    } else {
+      this.lossGameSound?.play();
+    }
+  }
 }
