@@ -8,7 +8,7 @@ type Props = {
 };
 
 const Layout = ({ children }: Props) => (
-  <div>
+  <div data-theme="dark">
     <Head>
       <title>Card Game Stadium</title>
       <meta
@@ -18,7 +18,7 @@ const Layout = ({ children }: Props) => (
       <link rel="icon" href="/favicon.ico" />
     </Head>
 
-    <div className="navbar bg-base-100">
+    <div className="navbar bg-base-300">
       <div className="flex-1">
         <Link
           href="/"
