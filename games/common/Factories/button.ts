@@ -1,24 +1,25 @@
 import Phaser from 'phaser';
-import GAME from '../constants/game';
 import STYLE from '../constants/style';
 import Text = Phaser.GameObjects.Text;
 
 const MOVE_TIME = 200;
 
-export default class Chip extends Phaser.GameObjects.Image {
+export default class Button extends Phaser.GameObjects
+  .Image {
   #key: string;
 
   #initScale: number;
 
   #text: Text;
 
-  #clickSound: Phaser.Sound.BaseSound;
+  #clickSound: Phaser.Sound.BaseSound | undefined;
 
   constructor(
     scene: Phaser.Scene,
     x: number,
     y: number,
     texture: string,
+    soundKey = '',
     key = '',
     value = 0,
     textStyle = STYLE.TEXT
@@ -42,10 +43,11 @@ export default class Chip extends Phaser.GameObjects.Image {
     );
     Phaser.Display.Align.In.Center(this.#text, this);
 
-    this.#clickSound = this.scene.sound.add(
-      GAME.CHIP.CLICK_SOUND_KEY,
-      { volume: 0.6 }
-    );
+    if (soundKey) {
+      this.#clickSound = this.scene.sound.add(soundKey, {
+        volume: 0.6
+      });
+    }
 
     this.setScale(this.#initScale);
     this.setInteractive();
@@ -79,7 +81,7 @@ export default class Chip extends Phaser.GameObjects.Image {
     this.on(
       'pointerdown',
       () => {
-        this.#clickSound.play();
+        if (this.#clickSound) this.#clickSound.play();
         pushHandler();
       },
       this
