@@ -1,7 +1,7 @@
 /* eslint no-underscore-dangle: 0 */
 import BaseScene from './BaseScene';
 
-import Chip from '../Factories/chipImage';
+import Button from '../Factories/button';
 
 import GAME from '../constants/game';
 import STYLE from '../constants/style';
@@ -135,47 +135,51 @@ export default class BetScene extends BaseScene {
     const chipHeight: number =
       Number(this.config.height) / 2;
 
-    const whiteChip = new Chip(
+    const whiteChip = new Button(
       this,
       0,
       chipHeight,
       GAME.TABLE.WHITE_CHIP_KEY,
+      GAME.TABLE.CHIP_CLICK_SOUND_KEY,
       '10',
       10
     );
-    const redChip = new Chip(
+    const redChip = new Button(
       this,
       0,
       chipHeight,
       GAME.TABLE.RED_CHIP_KEY,
+      GAME.TABLE.CHIP_CLICK_SOUND_KEY,
       '20',
       20
     );
-    const orangeChip = new Chip(
+    const orangeChip = new Button(
       this,
       0,
       chipHeight,
       GAME.TABLE.ORANGE_CHIP_KEY,
+      GAME.TABLE.CHIP_CLICK_SOUND_KEY,
       '50',
       50
     );
-    const blueChip = new Chip(
+    const blueChip = new Button(
       this,
       0,
       chipHeight,
       GAME.TABLE.BLUE_CHIP_KEY,
+      GAME.TABLE.CHIP_CLICK_SOUND_KEY,
       '100',
       100
     );
 
-    const chips: Chip[] = new Array<Chip>();
+    const chips: Button[] = new Array<Button>();
     chips.push(whiteChip);
     chips.push(redChip);
     chips.push(orangeChip);
     chips.push(blueChip);
 
     ImageUtility.spaceOutImagesEvenlyHorizontally(
-      chips as Chip[],
+      chips as Button[],
       this.scene
     );
     chips.forEach((chip) => {
@@ -189,11 +193,12 @@ export default class BetScene extends BaseScene {
     const buttonHeight: number =
       Number(this.config.height) - 100;
 
-    const clearButton = new Chip(
+    const clearButton = new Button(
       this,
       0,
       buttonHeight,
       GAME.TABLE.YELLOW_CHIP_KEY,
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Clear',
       0
     );
@@ -202,11 +207,12 @@ export default class BetScene extends BaseScene {
       this.setBetText(this.bet);
     });
 
-    const dealButton = new Chip(
+    const dealButton = new Button(
       this,
       0,
       buttonHeight,
       GAME.TABLE.ORANGE_CHIP_KEY,
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Deal',
       0
     );
@@ -215,7 +221,7 @@ export default class BetScene extends BaseScene {
       this.#enterGameSound?.play();
     });
 
-    const buttons: Chip[] = new Array<Chip>();
+    const buttons: Button[] = new Array<Button>();
     buttons.push(clearButton);
     buttons.push(dealButton);
 

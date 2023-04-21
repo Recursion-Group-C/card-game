@@ -59,7 +59,7 @@ export default class PreloadScene extends Phaser.Scene {
     );
 
     this.load.audio(
-      GAME.CHIP.CLICK_SOUND_KEY,
+      GAME.TABLE.CHIP_CLICK_SOUND_KEY,
       path.join(
         GAME.COMMON_SOUND_ASSETS_PATH,
         'chipClick.mp3'
@@ -107,6 +107,13 @@ export default class PreloadScene extends Phaser.Scene {
         'gameLoss.mp3'
       )
     );
+    this.load.audio(
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
+      path.join(
+        GAME.COMMON_SOUND_ASSETS_PATH,
+        'buttonClick.mp3'
+      )
+    )
   }
 
   create() {

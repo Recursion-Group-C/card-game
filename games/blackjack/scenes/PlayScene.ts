@@ -1,5 +1,5 @@
+import Button from '../../common/Factories/button';
 import Card from '../../common/Factories/cardImage';
-import Chip from '../../common/Factories/chipImage';
 import Deck from '../../common/Factories/deckImage';
 import Table from '../../common/Factories/tableScene';
 
@@ -19,13 +19,13 @@ import TimeEvent = Phaser.Time.TimerEvent;
 export default class PlayScene extends Table {
   private playerScoreTexts: Array<Text> = [];
 
-  private standButton: Chip | undefined;
+  private standButton: Button | undefined;
 
-  private hitButton: Chip | undefined;
+  private hitButton: Button | undefined;
 
-  private doubleButton: Chip | undefined;
+  private doubleButton: Button | undefined;
 
-  private surrenderButton: Chip | undefined;
+  private surrenderButton: Button | undefined;
 
   private timeEvent: TimeEvent | undefined;
 
@@ -210,11 +210,11 @@ export default class PlayScene extends Table {
     this.createDoubleButton();
     this.createSurrenderButton();
 
-    const buttons: Chip[] = new Array<Chip>();
-    buttons.push(this.standButton as Chip);
-    buttons.push(this.hitButton as Chip);
-    buttons.push(this.doubleButton as Chip);
-    buttons.push(this.surrenderButton as Chip);
+    const buttons: Button[] = new Array<Button>();
+    buttons.push(this.standButton as Button);
+    buttons.push(this.hitButton as Button);
+    buttons.push(this.doubleButton as Button);
+    buttons.push(this.surrenderButton as Button);
 
     ImageUtility.spaceOutImagesEvenlyHorizontally(
       buttons,
@@ -231,11 +231,12 @@ export default class PlayScene extends Table {
 
   private createHitButton(): void {
     const buttonHeight = Number(this.config.height) / 2;
-    this.hitButton = new Chip(
+    this.hitButton = new Button(
       this,
       0,
       buttonHeight,
       GAME.TABLE.YELLOW_CHIP_KEY,
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Hit'
     );
     this.hitButton.setClickHandler(() => this.handleHit());
@@ -243,11 +244,12 @@ export default class PlayScene extends Table {
 
   private createStandButton(): void {
     const buttonHeight = Number(this.config.height) / 2;
-    this.standButton = new Chip(
+    this.standButton = new Button(
       this,
       0,
       buttonHeight,
       GAME.TABLE.ORANGE_CHIP_KEY,
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Stand'
     );
     this.standButton.setClickHandler(() =>
@@ -258,11 +260,12 @@ export default class PlayScene extends Table {
   private createDoubleButton(): void {
     const buttonHeight = Number(this.config.height) / 2;
 
-    this.doubleButton = new Chip(
+    this.doubleButton = new Button(
       this,
       0,
       buttonHeight,
       GAME.TABLE.WHITE_CHIP_KEY,
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Double'
     );
     this.doubleButton.setClickHandler(() =>
@@ -273,11 +276,12 @@ export default class PlayScene extends Table {
   private createSurrenderButton() {
     const buttonHeight = Number(this.config.height) / 2;
 
-    this.surrenderButton = new Chip(
+    this.surrenderButton = new Button(
       this,
       0,
       buttonHeight,
       GAME.TABLE.BLUE_CHIP_KEY,
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Surrender'
     );
     this.surrenderButton.setClickHandler(() =>
