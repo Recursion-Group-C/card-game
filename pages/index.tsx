@@ -18,7 +18,7 @@ const Home = () => (
         alt="homePage"
       />
 
-      <div className="my-10 mx-3 rounded-md border-4 border-red-600 p-4">
+      <div className="my-10 mx-3 rounded-md border-4 border-red-600 p-2">
         <p className="mb-3 text-center text-3xl underline decoration-red-600 decoration-2">
           SELECT GAME
         </p>
