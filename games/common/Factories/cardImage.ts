@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Phaser from 'phaser';
 import GAME from '../constants/game';
 
@@ -43,6 +45,8 @@ export default class Card extends Phaser.GameObjects.Image {
     if (!isFaceDown) {
       this.setFaceUp();
     }
+
+    this.setInteractive();
   }
 
   get suit(): string {

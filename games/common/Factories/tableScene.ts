@@ -62,14 +62,22 @@ export default abstract class Table extends BaseScene {
     return this.#lossGameSound;
   }
 
-  protected resetAndShuffleDeck(): void {
-    this.deck = new Deck(this, 0, 0);
+  /**
+   * デッキをリセットしてシャッフルする。
+   * @param x デッキのx座標（オプション）
+   * @param y デッキのy座標（オプション）
+   */
+  protected resetAndShuffleDeck(
+    x?: number,
+    y?: number
+  ): void {
+    this.deck = new Deck(this, x ?? 0, y ?? 0);
     this.deck.cardList.forEach((card) => {
       Phaser.Display.Align.In.Center(
         card as Card,
         this.gameZone as Zone,
-        0,
-        0
+        x ?? 0,
+        y ?? 0
       );
     });
     this.deck.shuffle();
@@ -93,6 +101,13 @@ export default abstract class Table extends BaseScene {
           -20
         );
       } else if (player.playerType === 'house') {
+        Phaser.Display.Align.In.TopCenter(
+          playerNameText as Text,
+          this.gameZone as Zone,
+          0,
+          -20
+        );
+      } else if (player.playerType === 'cpu') {
         Phaser.Display.Align.In.TopCenter(
           playerNameText as Text,
           this.gameZone as Zone,
@@ -126,6 +141,13 @@ export default abstract class Table extends BaseScene {
           STYLE.GUTTER_SIZE
         );
       } else if (player.playerType === 'house') {
+        Phaser.Display.Align.To.BottomCenter(
+          playerHandZone as Zone,
+          this.playerNameTexts[index] as GameObject,
+          0,
+          STYLE.GUTTER_SIZE
+        );
+      } else if (player.playerType === 'cpu') {
         Phaser.Display.Align.To.BottomCenter(
           playerHandZone as Zone,
           this.playerNameTexts[index] as GameObject,
@@ -277,7 +299,10 @@ export default abstract class Table extends BaseScene {
     });
   }
 
-  abstract payOut(result: string): void;
+  abstract payOut(
+    gameResult: string,
+    playerIndex?: number
+  ): void;
 
   abstract playGameResultSound(result: string): void;
 

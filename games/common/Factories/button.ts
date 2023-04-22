@@ -49,6 +49,24 @@ export default class Button extends Phaser.GameObjects
       });
     }
 
+    if (soundKey) {
+      this.#clickSound = this.scene.sound.add(soundKey, {
+        volume: 0.6
+      });
+    }
+
+    if (soundKey) {
+      this.#clickSound = this.scene.sound.add(soundKey, {
+        volume: 0.6
+      });
+    }
+
+    if (soundKey) {
+      this.#clickSound = this.scene.sound.add(soundKey, {
+        volume: 0.6
+      });
+    }
+
     this.setScale(this.#initScale);
     this.setInteractive();
     this.setDataEnabled();
@@ -93,8 +111,16 @@ export default class Button extends Phaser.GameObjects
     super.destroy();
   }
 
-  setX(x: number): any {
+  /**
+   * Chipオブジェクトの座標を設定する
+   * @remarks
+   * Chipオブジェクトのx座標設定後、テキストをChipの中央に配置
+   * @param x Chipオブジェクトのx座標
+   * @param y Chipオブジェクトのy座標
+   */
+  setXY(x?: number, y?: number): void {
     super.setX(x);
+    super.setY(y);
     Phaser.Display.Align.In.Center(this.#text, this);
   }
 
