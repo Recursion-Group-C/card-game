@@ -1,3 +1,4 @@
+import LobbyScene from '@/games/poker/scenes/LobbyScene';
 import GAME from '../constants/game';
 import STYLE from '../constants/style';
 
@@ -5,6 +6,7 @@ import Card from './cardImage';
 import Deck from './deckImage';
 
 import BaseScene from '../scenes/BaseScene';
+
 import BetScene from '../scenes/BetScene';
 import Player from './player';
 import Zone = Phaser.GameObjects.Zone;
@@ -22,6 +24,8 @@ export default abstract class Table extends BaseScene {
 
   protected betScene: BetScene | undefined;
 
+  protected lobbyScene: LobbyScene | undefined;
+
   protected deck: Deck | undefined;
 
   protected gamePhase: string | undefined;
@@ -36,13 +40,23 @@ export default abstract class Table extends BaseScene {
 
   create(): void {
     super.create();
-    this.betScene = this.scene.get('BetScene') as BetScene;
+    if (this.config.game === 'poker') {
+      this.lobbyScene = this.scene.get(
+        'LobbyScene'
+      ) as LobbyScene;
+      this.createMoneyText(this.lobbyScene.money, 0);
+    } else {
+      this.betScene = this.scene.get(
+        'BetScene'
+      ) as BetScene;
+      this.createMoneyText(
+        this.betScene.money,
+        this.betScene.bet
+      );
+    }
+
     this.turnCounter = 0;
     this.initialTime = 2;
-    this.createMoneyText(
-      this.betScene.money,
-      this.betScene.bet
-    );
 
     this.#winGameSound = this.scene.scene.sound.add(
       GAME.TABLE.WIN_GAME_SOUND_KEY,
