@@ -1,5 +1,5 @@
+import Button from '../../common/Factories/button';
 import Card from '../../common/Factories/cardImage';
-import Chip from '../../common/Factories/chipImage';
 import Deck from '../../common/Factories/deckImage';
 import Table from '../../common/Factories/tableScene';
 import GAME from '../../common/constants/game';
@@ -8,9 +8,9 @@ import GameResult from '../constants/gameResult';
 import WarPlayer from '../models/WarPlayer';
 
 export default class PlayScene extends Table {
-  private warButton: Chip | undefined;
+  private warButton: Button | undefined;
 
-  private surrenderButton: Chip | undefined;
+  private surrenderButton: Button | undefined;
 
   constructor(config: any) {
     super('PlayScene', config);
@@ -61,11 +61,12 @@ export default class PlayScene extends Table {
   }
 
   private createWarButton(): void {
-    this.warButton = new Chip(
+    this.warButton = new Button(
       this,
       this.config.width * 0.33,
       this.config.height * 0.5,
       GAME.TABLE.YELLOW_CHIP_KEY,
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'War'
     );
 
@@ -97,11 +98,12 @@ export default class PlayScene extends Table {
   }
 
   private createSurrenderButton(): void {
-    this.surrenderButton = new Chip(
+    this.surrenderButton = new Button(
       this,
       this.config.width * 0.66,
       this.config.height * 0.5,
       GAME.TABLE.YELLOW_CHIP_KEY,
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Surrender'
     );
 
@@ -224,6 +226,18 @@ export default class PlayScene extends Table {
           String(this.betScene.money)
         );
       }
+    }
+  }
+
+  playGameResultSound(result: string): void {
+    if (
+      result === GameResult.WIN ||
+      result === GameResult.WAR_WIN ||
+      result === GameResult.WAR_TIE
+    ) {
+      this.winGameSound?.play();
+    } else {
+      this.lossGameSound?.play();
     }
   }
 }
