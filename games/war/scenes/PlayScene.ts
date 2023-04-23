@@ -13,7 +13,11 @@ export default class PlayScene extends Table {
   private surrenderButton: Button | undefined;
 
   constructor(config: any) {
-    super('PlayScene', config);
+    super(
+      'PlayScene',
+      GAME.TABLE.BLACKJACK_TABLE_KEY,
+      config
+    );
   }
 
   create(): void {
@@ -24,7 +28,10 @@ export default class PlayScene extends Table {
       new WarPlayer('house', 0, 0, 'bet', 'House', 0)
     ];
 
-    this.resetAndShuffleDeck();
+    this.resetAndShuffleDeck(
+      this.config.width + GAME.CARD.WIDTH,
+      -GAME.CARD.HEIGHT
+    );
 
     this.createPlayerNameTexts();
     this.createPlayerHandZones(
@@ -65,17 +72,17 @@ export default class PlayScene extends Table {
       this,
       this.config.width * 0.33,
       this.config.height * 0.5,
-      GAME.TABLE.YELLOW_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'War'
     );
 
     this.warButton.setClickHandler(() => {
       if (this.warButton) {
-        this.warButton.destroy();
+        this.warButton.playFadeOut();
       }
       if (this.surrenderButton) {
-        this.surrenderButton.destroy();
+        this.surrenderButton.playFadeOut();
       }
 
       this.setBetDouble();
@@ -102,17 +109,17 @@ export default class PlayScene extends Table {
       this,
       this.config.width * 0.66,
       this.config.height * 0.5,
-      GAME.TABLE.YELLOW_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Surrender'
     );
 
     this.surrenderButton.setClickHandler(() => {
       if (this.warButton) {
-        this.warButton.destroy();
+        this.warButton.playFadeOut();
       }
       if (this.surrenderButton) {
-        this.surrenderButton.destroy();
+        this.surrenderButton.playFadeOut();
       }
 
       this.time.delayedCall(500, () => {
@@ -213,6 +220,7 @@ export default class PlayScene extends Table {
         this.betScene.money -= this.betScene.bet;
       }
       this.setMoneyText(this.betScene.money);
+      this.setBetText(this.betScene.bet);
 
       const highScore = localStorage.getItem(
         GAME.STORAGE.WAR_HIGH_SCORE_STORAGE
