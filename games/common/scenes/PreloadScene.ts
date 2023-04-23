@@ -123,6 +123,10 @@ export default class PreloadScene extends Phaser.Scene {
       )
     );
     this.load.image(
+      GAME.TABLE.BET_TABLE_KEY,
+      path.join(GAME.COMMON_IMG_ASSETS_PATH, 'betTable.jpg')
+    );
+    this.load.image(
       GAME.TABLE.BLACKJACK_TABLE_KEY,
       path.join(
         GAME.COMMON_IMG_ASSETS_PATH,
@@ -130,8 +134,11 @@ export default class PreloadScene extends Phaser.Scene {
       )
     );
     this.load.image(
-      GAME.TABLE.BET_TABLE_KEY,
-      path.join(GAME.COMMON_IMG_ASSETS_PATH, 'betTable.jpg')
+      GAME.TABLE.SPEED_TABLE_KEY,
+      path.join(
+        GAME.COMMON_IMG_ASSETS_PATH,
+        'speedTable.jpg'
+      )
     );
     this.load.image(
       GAME.TABLE.BUTTON,
