@@ -1,3 +1,4 @@
+import Layout from '@/components/Layout';
 import { Game as GameType } from 'phaser';
 import { useEffect, useState } from 'react';
 
@@ -21,8 +22,8 @@ const Game = () => {
       );
 
       const CONFIG = {
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: 1920,
+        height: 920,
         game: 'blackjack'
       };
 
@@ -38,14 +39,13 @@ const Game = () => {
         type: Phaser.AUTO,
         parent: 'game-content',
         ...CONFIG,
-        backgroundColor: '#26723B',
+        backgroundColor: '#2A303C',
         physics: {
           arcade: {
             debug: true
           }
         },
-        scene: initScenes(),
-        game: 'blackjack'
+        scene: initScenes()
       };
 
       const phaserGame = new Phaser.Game(config);
@@ -55,9 +55,11 @@ const Game = () => {
   }, []);
 
   return (
-    <div id="game-content" key="game-content">
-      {/* this is where the game canvas will be rendered */}
-    </div>
+    <Layout>
+      <div id="game-content" key="game-content">
+        {/* this is where the game canvas will be rendered */}
+      </div>
+    </Layout>
   );
 };
 
