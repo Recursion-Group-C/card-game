@@ -27,9 +27,9 @@ export default class PlayScene extends Table {
 
   private timeEvent: TimeEvent | undefined;
 
-  private houseTimeEvent: TimeEvent | undefined;
+  private housePlayTimeEvent: TimeEvent | undefined;
 
-  private houseTimeEvent2: TimeEvent | undefined;
+  private houseDealTimeEvent: TimeEvent | undefined;
 
   #countDownSound: Phaser.Sound.BaseSound | undefined;
 
@@ -83,7 +83,7 @@ export default class PlayScene extends Table {
 
     // AIの始動
     this.time.delayedCall(7000, () => {
-      this.houseTimeEvent = this.time.addEvent({
+      this.housePlayTimeEvent = this.time.addEvent({
         delay: 2000,
         callback: this.playHouseTurn,
         callbackScope: this,
@@ -93,7 +93,7 @@ export default class PlayScene extends Table {
 
     // Houseの始動（ゲーム停滞時のカード配布）
     this.time.delayedCall(7000, () => {
-      this.houseTimeEvent2 = this.time.addEvent({
+      this.houseDealTimeEvent = this.time.addEvent({
         delay: 5000,
         callback: this.playHouse,
         callbackScope: this,
@@ -114,7 +114,8 @@ export default class PlayScene extends Table {
       result
     ) {
       this.time.delayedCall(2000, () => {
-        this.houseTimeEvent?.remove();
+        this.housePlayTimeEvent?.remove();
+        this.houseDealTimeEvent?.remove();
         this.endHand(result as GameResult);
       });
     }
