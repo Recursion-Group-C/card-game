@@ -3,6 +3,7 @@ import STYLE from '../constants/style';
 import Text = Phaser.GameObjects.Text;
 
 const MOVE_TIME = 200;
+const FADE_TIME = 200;
 
 export default class Button extends Phaser.GameObjects
   .Image {
@@ -28,13 +29,7 @@ export default class Button extends Phaser.GameObjects
     scene.add.existing(this);
 
     this.#key = key;
-    this.#initScale =
-      Number(scene.scene.manager.game.config.height) /
-        1100 >=
-      1
-        ? Number(scene.scene.manager.game.config.height) /
-          1100
-        : 1;
+    this.#initScale = 1;
     this.#text = this.scene.add.text(
       0,
       0,
@@ -98,6 +93,11 @@ export default class Button extends Phaser.GameObjects
     Phaser.Display.Align.In.Center(this.#text, this);
   }
 
+  setY(y: number): any {
+    super.setY(y);
+    Phaser.Display.Align.In.Center(this.#text, this);
+  }
+
   playMoveTween(toX: number, toY: number): void {
     this.scene.tweens.add({
       targets: this,
@@ -106,5 +106,28 @@ export default class Button extends Phaser.GameObjects
       duration: MOVE_TIME,
       ease: 'Linear'
     });
+  }
+
+  playFadeOut(): void {
+    this.scene.tweens.add({
+      targets: [this, this.#text],
+      alpha: 0,
+      duration: FADE_TIME,
+      ease: 'Linear'
+    });
+  }
+
+  playFadeIn(): void {
+    this.scene.tweens.add({
+      targets: [this, this.#text],
+      alpha: 1,
+      duration: FADE_TIME,
+      ease: 'Linear'
+    });
+  }
+
+  setAlpha(alpha: number): any {
+    super.setAlpha(alpha);
+    this.#text.setAlpha(alpha);
   }
 }
