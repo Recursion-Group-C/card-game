@@ -13,14 +13,21 @@ export default class BaseScene extends Phaser.Scene {
 
   protected betText: Text | undefined;
 
-  constructor(key: string, config: any) {
-    super(key);
+  protected bgKey: string;
+
+  constructor(
+    sceneKey: string,
+    bgKey: string,
+    config: any
+  ) {
+    super(sceneKey);
     this.config = config;
+    this.bgKey = bgKey;
   }
 
   create() {
-    // TODO: どのシーンでも使用できる盤面の画像をaddする
     this.createGameZone();
+    this.add.image(0, 0, this.bgKey).setOrigin(0);
   }
 
   protected createGameZone(): void {
@@ -50,8 +57,8 @@ export default class BaseScene extends Phaser.Scene {
     Phaser.Display.Align.In.TopRight(
       this.moneyText as Text,
       this.gameZone as Zone,
-      -20,
-      -20
+      -STYLE.GUTTER_SIZE,
+      -STYLE.GUTTER_SIZE
     );
   }
 
