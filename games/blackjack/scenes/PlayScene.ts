@@ -30,7 +30,11 @@ export default class PlayScene extends Table {
   private timeEvent: TimeEvent | undefined;
 
   constructor(config: any) {
-    super('PlayScene', config);
+    super(
+      'PlayScene',
+      GAME.TABLE.BLACKJACK_TABLE_KEY,
+      config
+    );
   }
 
   create(): void {
@@ -62,7 +66,10 @@ export default class PlayScene extends Table {
     );
     this.createPlayerScoreTexts();
 
-    this.resetAndShuffleDeck();
+    this.resetAndShuffleDeck(
+      this.config.width + GAME.CARD.WIDTH,
+      0 - GAME.CARD.HEIGHT
+    );
     this.dealInitialCards();
 
     this.time.delayedCall(1500, () => {
@@ -222,11 +229,11 @@ export default class PlayScene extends Table {
     );
   }
 
-  private destroyButtons(): void {
-    this.hitButton?.destroy();
-    this.standButton?.destroy();
-    this.doubleButton?.destroy();
-    this.surrenderButton?.destroy();
+  private fadeOutButtons(): void {
+    this.hitButton?.playFadeOut();
+    this.standButton?.playFadeOut();
+    this.doubleButton?.playFadeOut();
+    this.surrenderButton?.playFadeOut();
   }
 
   private createHitButton(): void {
@@ -235,7 +242,7 @@ export default class PlayScene extends Table {
       this,
       0,
       buttonHeight,
-      GAME.TABLE.YELLOW_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Hit'
     );
@@ -248,7 +255,7 @@ export default class PlayScene extends Table {
       this,
       0,
       buttonHeight,
-      GAME.TABLE.ORANGE_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Stand'
     );
@@ -264,7 +271,7 @@ export default class PlayScene extends Table {
       this,
       0,
       buttonHeight,
-      GAME.TABLE.WHITE_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Double'
     );
@@ -280,7 +287,7 @@ export default class PlayScene extends Table {
       this,
       0,
       buttonHeight,
-      GAME.TABLE.BLUE_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Surrender'
     );
@@ -303,7 +310,8 @@ export default class PlayScene extends Table {
     const playerHandZone = this.playerHandZones[0];
     player.gameStatus = 'hit';
 
-    this.doubleButton?.destroy();
+    this.doubleButton?.playFadeOut();
+    this.surrenderButton?.playFadeOut();
 
     this.handOutCard(
       this.deck as Deck,
@@ -317,7 +325,7 @@ export default class PlayScene extends Table {
     this.setPlayerScoreTexts(true);
 
     if (player.getHandScore() > 21) {
-      this.destroyButtons();
+      this.fadeOutButtons();
       this.playHouseFlipOver();
       this.setPlayerScoreTexts(false);
       player.gameStatus = 'bust';
@@ -330,7 +338,7 @@ export default class PlayScene extends Table {
 
     this.playHouseFlipOver();
     this.setPlayerScoreTexts(false);
-    this.destroyButtons();
+    this.fadeOutButtons();
 
     if (PlayScene.isBlackjack(player)) {
       player.gameStatus = 'blackjack';
@@ -370,7 +378,7 @@ export default class PlayScene extends Table {
     const player = this.players[0];
     const house = this.players[1];
 
-    this.destroyButtons();
+    this.fadeOutButtons();
     player.gameStatus = 'surrender';
     house.gameStatus = 'stand';
 
@@ -493,6 +501,7 @@ export default class PlayScene extends Table {
         this.betScene.money -= this.betScene.bet;
       }
       this.setMoneyText(this.betScene.money);
+      this.setBetText(this.betScene.bet);
 
       const highScore = localStorage.getItem(
         GAME.STORAGE.BLACKJACK_HIGH_SCORE_STORAGE

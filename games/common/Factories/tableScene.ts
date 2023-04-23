@@ -62,16 +62,16 @@ export default abstract class Table extends BaseScene {
     return this.#lossGameSound;
   }
 
-  protected resetAndShuffleDeck(): void {
-    this.deck = new Deck(this, 0, 0);
-    this.deck.cardList.forEach((card) => {
-      Phaser.Display.Align.In.Center(
-        card as Card,
-        this.gameZone as Zone,
-        0,
-        0
-      );
-    });
+  /**
+   * デッキをリセットしてシャッフルする。
+   * @param x デッキのx座標（オプション）
+   * @param y デッキのy座標（オプション）
+   */
+  protected resetAndShuffleDeck(
+    x?: number,
+    y?: number
+  ): void {
+    this.deck = new Deck(this, x ?? 0, y ?? 0);
     this.deck.shuffle();
   }
 
@@ -82,7 +82,7 @@ export default abstract class Table extends BaseScene {
         0,
         300,
         player.name,
-        STYLE.TEXT
+        STYLE.NAME_TEXT
       );
 
       if (player.playerType === 'player') {
