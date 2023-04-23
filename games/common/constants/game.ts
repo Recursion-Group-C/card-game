@@ -16,6 +16,7 @@ const GAME = {
     YELLOW_CHIP_KEY: 'yellowChip',
     BET_TABLE_KEY: 'betTable',
     BLACKJACK_TABLE_KEY: 'blackjackTable',
+    SPEED_TABLE_KEY: 'speedTable',
     BUTTON: 'button',
     BACK: 'back',
     COUNT_DOWN_SOUND_KEY: 'countDown',

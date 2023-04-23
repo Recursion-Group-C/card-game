@@ -34,7 +34,7 @@ export default class PlayScene extends Table {
   #countDownSound: Phaser.Sound.BaseSound | undefined;
 
   constructor(config: any) {
-    super('PlayScene', config);
+    super('PlayScene', GAME.TABLE.SPEED_TABLE_KEY, config);
   }
 
   create(): void {
@@ -47,9 +47,10 @@ export default class PlayScene extends Table {
 
     this.createPlayerNameTexts();
     this.createPlayerHandZones(
-      GAME.CARD.WIDTH * 5,
+      GAME.CARD.WIDTH * 5 + STYLE.GUTTER_SIZE * 4,
       GAME.CARD.HEIGHT
     );
+
     this.createDeckSizeTexts();
     this.createDropZones();
     this.createDropZoneEvent();
@@ -112,9 +113,10 @@ export default class PlayScene extends Table {
       this.gamePhase === GamePhase.END_OF_GAME &&
       result
     ) {
-      this.time.delayedCall(2000, () =>
-        this.endHand(result as GameResult)
-      );
+      this.time.delayedCall(2000, () => {
+        this.houseTimeEvent?.remove();
+        this.endHand(result as GameResult);
+      });
     }
   }
 
@@ -137,15 +139,13 @@ export default class PlayScene extends Table {
         Phaser.Display.Align.In.Center(
           dropZone,
           this.gameZone as GameObject,
-          GAME.CARD.WIDTH,
-          -20
+          GAME.CARD.WIDTH
         );
       } else if (player.playerType === 'house') {
         Phaser.Display.Align.In.Center(
           dropZone,
           this.gameZone as GameObject,
-          -GAME.CARD.WIDTH,
-          -20
+          -GAME.CARD.WIDTH
         );
       }
 
@@ -236,13 +236,17 @@ export default class PlayScene extends Table {
     this.playerDecks = [
       new Deck(
         this,
-        this.playerHandZones[0].x + GAME.CARD.WIDTH * 2,
+        this.playerHandZones[0].x +
+          GAME.CARD.WIDTH * 2 +
+          STYLE.GUTTER_SIZE * 2,
         this.playerHandZones[0].y,
         ['Hearts', 'Diamonds']
       ),
       new Deck(
         this,
-        this.playerHandZones[1].x - GAME.CARD.WIDTH * 2,
+        this.playerHandZones[1].x -
+          GAME.CARD.WIDTH * 2 -
+          STYLE.GUTTER_SIZE * 2,
         this.playerHandZones[1].y,
         ['Spades', 'Clubs']
       )
@@ -355,8 +359,8 @@ export default class PlayScene extends Table {
               this.playerDecks[index] as Deck,
               player as SpeedPlayer,
               this.playerHandZones[index].x -
-                GAME.CARD.WIDTH * 2 +
-                i * GAME.CARD.WIDTH,
+                (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE) * 2 +
+                i * (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE),
               this.playerHandZones[index].y,
               true
             );
@@ -365,8 +369,8 @@ export default class PlayScene extends Table {
               this.playerDecks[index] as Deck,
               player as SpeedPlayer,
               this.playerHandZones[index].x +
-                GAME.CARD.WIDTH * 2 -
-                i * GAME.CARD.WIDTH,
+                (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE) * 2 -
+                i * (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE),
               this.playerHandZones[index].y,
               true
             );
@@ -527,6 +531,7 @@ export default class PlayScene extends Table {
         this.betScene.money -= this.betScene.bet;
       }
       this.setMoneyText(this.betScene.money);
+      this.setBetText(this.betScene.bet);
 
       const highScore = localStorage.getItem(
         GAME.STORAGE.SPEED_HIGH_SCORE_STORAGE
