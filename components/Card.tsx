@@ -4,12 +4,14 @@ const Card = ({
   title,
   description,
   url,
-  imgPath
+  imgPath,
+  ruleUrl
 }: {
   title: string;
   description: string;
   url: string;
   imgPath: string;
+  ruleUrl: string;
 }) => (
   <div className="card m-1 !w-72 bg-base-100 shadow-xl">
     <figure>
@@ -25,6 +27,14 @@ const Card = ({
             type="button"
           >
             <p className="text-xl">Play</p>
+          </button>
+        </Link>
+        <Link href={ruleUrl}>
+          <button
+            className="h-12 w-64 rounded-full border-white bg-red-600 px-4 py-2 text-white hover:bg-red-500"
+            type="button"
+          >
+            <p className="text-xl">rule description</p>
           </button>
         </Link>
       </div>

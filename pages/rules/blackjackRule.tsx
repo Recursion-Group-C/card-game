@@ -1,8 +1,61 @@
+import Layout from '@/components/Layout';
 import Head from 'next/head';
+import Rule from '@/components/Rule';
 
 const blackjackRule = () => {
   return (
-    <Head>
+    <Layout>
+      <Head>
+        <title>ルール説明</title>
+      </Head>
+      <div className="my-10 mx-3 rounded-md border-4 border-red-600 p-2">
+        <p className="mb-3 text-center text-3xl underline decoration-red-600 decoration-2">
+          ルール説明
+        </p>
+        <div className="flex">
+          <Rule
+            title="blackjackとは"
+            description="ブラックジャックは、21(twenty
+          one）という名称でも知られており、世界から愛されるカードゲームです。
+          カジノディーラーとの駆け引きがあるため、自分なりに戦略を立てられるのがこのゲームの人気の秘訣。ルールも覚えやすく、なんといってもブラックジャックの醍醐味は奥の深いゲーム性にあると言えるでしょう。"
+            ruleTitle="基本ルール"
+            ruleDescription="カジノディーラーとプレイヤーの対戦型ゲームです。
+          プレイヤーはカジノディーラーよりも「カードの合計が21点」に近ければ勝利となり、配当を得ることができます。ただしプレイヤーの「カードの合計が21点」を超えてしまうと、その時点で負けとなります。
+          【カードの数え方】
+          ”2～9”まではそのままの数字、”10・J・Q・K”は「すべて10点」と数えます。
+          また、”A”（エース）は「1点」もしくは「11点」のどちらに数えても構いません。
+          【特別な役】 最初に配られた2枚のカードが
+          ”Aと10点札”
+          で21点が完成していた場合を『ブラックジャック』といい、その時点で勝ちとなります。"
+            people="基本人数"
+            peopleDescription="Dealer and Player (2人)"
+            glossary="用語説明"
+            glossaryPrompt="Deal => 画面下右側に配置されたボタン。
+              Betチップにて掛け金を確定した後にこのボタンを押すとカードが配られてゲームが始まります。
+              Clear => 画面下左側に配置されたボタン
+              Betチップにて掛けた金額を0にします。
+              Hit => 配られたカード（ハンド）にもう1枚カード追加すること。
+              カードの合計数が21以内であれば何度でもヒットを行い、カードを追加することができます。
+              Stand => 配られたカード（ハンド）にそれ以上のカードの追加は行わないという宣言です。
+              プレイヤーのSTAND宣言の後にディーラーがカードを引く順番へと切り替わり、プレイヤーは手元のカードの数字でディーラーとの勝負に挑みます。
+              Double => 掛け金をゲーム開始時の倍にして3枚目のカードを引く宣言です。
+              ただし、DOUBLEの宣言を行うと3枚目以上のカードを引くことはできなくなり、手札3枚の合計数値でディーラーとの勝負に挑みます。
+              ※プレイヤーのみが行える行為でディーラーは行えません。
+              Bust => 配られたカード（ハンド）の点数が21点をオーバーしてしまったこと。
+              BUSTをしてしまうと、それ以上カードを追加することはできなくなり相手の順番、またはスプリット中であれば他方のハンドの操作に切り替わります。
+              ディーラーとあなた双方がバストした場合はディーラーの勝ちとなります。
+              "
+            backUrl="/"
+            
+          />
+          </div>
+          </div>
+    </Layout>
+  );
+};
+export default blackjackRule;
+
+{/* <Head>
       <div className="">
         <h1>blackjack ルール説明</h1>
         <h2>blackjackとは</h2>
@@ -71,6 +124,4 @@ const blackjackRule = () => {
         </table>
       </div>
     </Head>
-  );
-};
-export default blackjackRule;
+ */}
