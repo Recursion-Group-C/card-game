@@ -56,7 +56,7 @@ const Home = () => (
             description="世界的に大流行のポーカーゲーム。自分の手札は2枚。場に出される最大5枚のカードから役を作り、勝負！"
             url="/games/holdem"
             imgPath="/images/thumbnailSample.png"
-            ruleUrl = "/rules/blackjackRule"
+            ruleUrl = "/rules/texasHoldEmRule"
           />
           <Card
             title="Rummy"

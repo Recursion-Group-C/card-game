@@ -48,7 +48,7 @@ const Rule = ({
       </div>
       <Link href={backUrl}>
         <button
-          className="h-12 w-64 rounded-full border-white bg-red-600 px-4 py-2 text-white hover:bg-red-500"
+          className="mt-5 h-12 w-64 rounded-full border-white bg-red-600 px-4 py-2 text-white hover:bg-red-500"
           type="button"
         >
           <p className="text-xl">back</p>
