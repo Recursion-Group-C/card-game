@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import handleTableCreate from './Table';
 
 const Rule = ({
   title,
@@ -44,7 +45,7 @@ const Rule = ({
         <div className="chat chat-end">
           <div className="chat-bubble chat-bubble-info">{glossary}</div>
         </div>
-        <div className="mt-3 grid h-50 card bg-base-300 rounded-box place-items-center">{glossaryPrompt}</div>
+        <div className="mt-3 grid h-50 card bg-base-300 rounded-box place-items-center">{handleTableCreate(glossaryPrompt)}</div>
       </div>
       <Link href={backUrl}>
         <button
