@@ -212,7 +212,10 @@ export default abstract class Table extends BaseScene {
     );
   }
 
-  protected createResultText(result: string): void {
+  protected createResultText(
+    result: string,
+    winAmount: number
+  ): void {
     const graphics = this.add.graphics({
       fillStyle: { color: 0x000000, alpha: 0.75 }
     });
@@ -226,7 +229,7 @@ export default abstract class Table extends BaseScene {
     const resultText: Text = this.add.text(
       0,
       0,
-      result as string,
+      `${result} ${Table.formatNumber(winAmount)}`,
       STYLE.TEXT
     );
     resultText.setColor('#ffde3d');
@@ -246,6 +249,18 @@ export default abstract class Table extends BaseScene {
     );
   }
 
+  private static formatNumber(amount: number): string {
+    let result: string;
+    if (amount > 0) {
+      result = `+$${amount}`;
+    } else if (amount === 0) {
+      result = '';
+    } else {
+      result = `-$${Math.abs(amount)}`;
+    }
+    return result;
+  }
+
   protected setBetDouble(): void {
     if (this.betScene) {
       this.betScene.bet *= 2;
@@ -262,9 +277,9 @@ export default abstract class Table extends BaseScene {
   ): void;
 
   protected endHand(result: string): void {
-    this.payOut(result);
+    const winAmount = this.payOut(result);
     this.time.delayedCall(500, () => {
-      this.createResultText(result);
+      this.createResultText(result, winAmount);
       this.playGameResultSound(result);
     });
     this.clearPlayerHandsAndBets();
@@ -277,7 +292,7 @@ export default abstract class Table extends BaseScene {
     });
   }
 
-  abstract payOut(result: string): void;
+  abstract payOut(result: string): number;
 
   abstract playGameResultSound(result: string): void;
 
