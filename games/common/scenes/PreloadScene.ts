@@ -148,6 +148,10 @@ export default class PreloadScene extends Phaser.Scene {
       GAME.TABLE.BACK,
       path.join(GAME.COMMON_IMG_ASSETS_PATH, 'back.png')
     );
+    this.load.image(
+      GAME.TABLE.COG,
+      path.join(GAME.COMMON_IMG_ASSETS_PATH, 'cog.png')
+    );
 
     this.load.audio(
       GAME.TABLE.CHIP_CLICK_SOUND_KEY,

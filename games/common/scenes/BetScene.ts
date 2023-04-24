@@ -14,6 +14,8 @@ export default class BetScene extends BaseScene {
 
   public bet = 0;
 
+  public level = 0;
+
   public moneyText: Text | undefined;
 
   public betText: Text | undefined;
@@ -101,7 +103,7 @@ export default class BetScene extends BaseScene {
     const textTitle: Text = this.add.text(
       0,
       20,
-      'Place your bet',
+      'Place Your Bet',
       STYLE.TEXT
     );
     Phaser.Display.Align.In.Center(
@@ -128,7 +130,7 @@ export default class BetScene extends BaseScene {
 
   private setHighScoreText() {
     this.highScoreText?.setText(
-      `High score: $${this.highScore}`
+      `High Score: $${this.highScore}`
     );
     Phaser.Display.Align.In.TopCenter(
       this.highScoreText as Phaser.GameObjects.GameObject,
@@ -201,6 +203,9 @@ export default class BetScene extends BaseScene {
     this.createClearButton();
     this.createDealButton();
     // this.createBackButton(); // TODO: responsive化できたときに、使用する
+    if (this.config.game === 'speed') {
+      this.createCogButton();
+    }
 
     const buttons: Button[] = new Array<Button>();
     buttons.push(this.#clearButton as Button);
@@ -269,6 +274,27 @@ export default class BetScene extends BaseScene {
 
     Phaser.Display.Align.In.TopLeft(
       backButton as Phaser.GameObjects.GameObject,
+      this.gameZone as Phaser.GameObjects.GameObject,
+      -STYLE.GUTTER_SIZE,
+      -STYLE.GUTTER_SIZE
+    );
+  }
+
+  private createCogButton(): void {
+    const configButton = new Button(
+      this,
+      0,
+      0,
+      GAME.TABLE.COG,
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY
+    );
+
+    configButton.setClickHandler(() => {
+      this.scene.start('LevelScene');
+    });
+
+    Phaser.Display.Align.In.TopLeft(
+      configButton as Phaser.GameObjects.GameObject,
       this.gameZone as Phaser.GameObjects.GameObject,
       -STYLE.GUTTER_SIZE,
       -STYLE.GUTTER_SIZE

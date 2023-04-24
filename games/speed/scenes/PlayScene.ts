@@ -1,5 +1,4 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
-
 import Card from '../../common/Factories/cardImage';
 import Deck from '../../common/Factories/deckImage';
 import GAME from '../../common/constants/game';
@@ -84,7 +83,9 @@ export default class PlayScene extends Table {
     // AIの始動
     this.time.delayedCall(7000, () => {
       this.housePlayTimeEvent = this.time.addEvent({
-        delay: 2000,
+        delay: this.betScene
+          ? (3 - this.betScene.level) * 1500
+          : 4500,
         callback: this.playHouseTurn,
         callbackScope: this,
         loop: true
