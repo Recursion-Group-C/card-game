@@ -205,20 +205,21 @@ export default class PlayScene extends Table {
     return result;
   }
 
-  payOut(result: GameResult) {
+  payOut(result: GameResult): number {
+    let winAmount = 0;
     if (this.betScene && this.betScene.money) {
-      if (
-        result === GameResult.WIN ||
-        result === GameResult.WAR_TIE
-      ) {
-        this.betScene.money += this.betScene.bet * 2;
+      if (result === GameResult.WAR_TIE) {
+        winAmount = this.betScene.bet * 2;
       } else if (result === GameResult.WAR_WIN) {
-        this.betScene.money += this.betScene.bet * 1.5; // 最初の賭金は返却、追加分は2倍の配当
+        winAmount = this.betScene.bet * 1.5; // 最初の賭金は返却、追加分は2倍の配当
+      } else if (result === GameResult.WIN) {
+        winAmount = this.betScene.bet;
       } else if (result === GameResult.SURRENDER) {
-        this.betScene.money -= this.betScene.bet * 0.5;
+        winAmount = -this.betScene.bet * 0.5;
       } else {
-        this.betScene.money -= this.betScene.bet;
+        winAmount = -this.betScene.bet;
       }
+      this.betScene.money += winAmount;
       this.setMoneyText(this.betScene.money);
       this.setBetText(this.betScene.bet);
 
@@ -235,6 +236,7 @@ export default class PlayScene extends Table {
         );
       }
     }
+    return winAmount;
   }
 
   playGameResultSound(result: string): void {
