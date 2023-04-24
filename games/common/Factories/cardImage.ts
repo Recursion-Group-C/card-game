@@ -19,6 +19,10 @@ export default class Card extends Phaser.GameObjects.Image {
 
   #putDownSound: Phaser.Sound.BaseSound;
 
+  originalPositionX: number | undefined;
+
+  originalPositionY: number | undefined;
+
   constructor(
     scene: Phaser.Scene,
     x: number,
@@ -137,6 +141,47 @@ export default class Card extends Phaser.GameObjects.Image {
    */
   getAtlasFrame(): string {
     return `card-${this.#suit}-${this.#rank}.png`;
+  }
+
+  /**
+   * クリック可能にする。
+   */
+  enableClick(): void {
+    this.on('pointerdown', this.onClick, this);
+    this.setOriginalPosition();
+  }
+
+  setOriginalPosition(): void {
+    this.originalPositionX = this.x;
+    this.originalPositionY = this.y;
+  }
+
+  /**
+   * クリック無効にする。
+   */
+  disableClick(): void {
+    this.off('pointerdown', this.onClick, this);
+  }
+
+  /**
+   * クリックされた際のイベントハンドラ。
+   * クリックされた場合、カードの位置を上方向に移動する。
+   * すでに移動している場合はもとの位置に戻す。
+   */
+  private onClick(): void {
+    if (this.y === this.originalPositionY) {
+      this.y -= 20;
+    } else {
+      this.y = this.originalPositionY as number;
+    }
+  }
+
+  /**
+   * カードが上に移動しているかを判定する。
+   * @return true: 上に移動している。
+   */
+  isMoveUp(): boolean {
+    return this.y !== this.originalPositionY;
   }
 
   getRankNumber(gameType: string): number {

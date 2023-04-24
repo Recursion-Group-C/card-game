@@ -1,0 +1,8 @@
+enum GameStatus {
+  FIRST_BETTING = 'FIRST_BETTING',
+  SECOND_BETTING = 'SECOND_BETTING',
+  CHANGE_CARD = 'CHANGE_CARD',
+  FOLDED = 'FOLDED'
+}
+
+export default GameStatus;
