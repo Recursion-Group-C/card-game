@@ -524,13 +524,15 @@ export default class PlayScene extends Table {
     return result;
   }
 
-  payOut(result: GameResult): void {
+  payOut(result: GameResult): number {
+    let winAmount = 0;
     if (this.betScene && this.betScene.money) {
       if (result === GameResult.WIN) {
-        this.betScene.money += this.betScene.bet * 2;
+        winAmount = this.betScene.bet;
       } else if (result === GameResult.LOSS) {
-        this.betScene.money -= this.betScene.bet;
+        winAmount = -this.betScene.bet;
       }
+      this.betScene.money += winAmount;
       this.setMoneyText(this.betScene.money);
       this.setBetText(this.betScene.bet);
 
@@ -547,6 +549,7 @@ export default class PlayScene extends Table {
         );
       }
     }
+    return winAmount;
   }
 
   playGameResultSound(result: string): void {
