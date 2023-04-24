@@ -246,6 +246,13 @@ const handleTableCreate = (glossary: string) => {
       </>
     )
   }
+  else if (glossary === "holdem") {
+    return (
+      <>
+        準備中
+      </>
+    )
+  }
 };
 
 export default handleTableCreate;
