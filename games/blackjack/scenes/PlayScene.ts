@@ -486,20 +486,22 @@ export default class PlayScene extends Table {
     }
   }
 
-  payOut(result: GameResult) {
+  payOut(result: GameResult): number {
+    let winAmount = 0;
     if (this.betScene && this.betScene.money) {
       if (result === GameResult.WIN) {
-        this.betScene.money += this.betScene.bet;
+        winAmount = this.betScene.bet;
       } else if (result === GameResult.BLACKJACK) {
-        this.betScene.money += this.betScene.bet * 1.5;
+        winAmount = this.betScene.bet * 1.5;
       } else if (result === GameResult.SURRENDER) {
-        this.betScene.money -= this.betScene.bet * 0.5;
+        winAmount = -this.betScene.bet * 0.5;
       } else if (
         result === GameResult.LOSS ||
         result === GameResult.BUST
       ) {
-        this.betScene.money -= this.betScene.bet;
+        winAmount = -this.betScene.bet;
       }
+      this.betScene.money += winAmount;
       this.setMoneyText(this.betScene.money);
       this.setBetText(this.betScene.bet);
 
@@ -516,6 +518,7 @@ export default class PlayScene extends Table {
         );
       }
     }
+    return winAmount;
   }
 
   playGameResultSound(result: string): void {
