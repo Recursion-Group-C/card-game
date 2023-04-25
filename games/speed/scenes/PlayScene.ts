@@ -1,5 +1,4 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
-
 import Card from '../../common/Factories/cardImage';
 import Deck from '../../common/Factories/deckImage';
 import GAME from '../../common/constants/game';
@@ -27,14 +26,14 @@ export default class PlayScene extends Table {
 
   private timeEvent: TimeEvent | undefined;
 
-  private houseTimeEvent: TimeEvent | undefined;
+  private housePlayTimeEvent: TimeEvent | undefined;
 
-  private houseTimeEvent2: TimeEvent | undefined;
+  private houseDealTimeEvent: TimeEvent | undefined;
 
   #countDownSound: Phaser.Sound.BaseSound | undefined;
 
   constructor(config: any) {
-    super('PlayScene', config);
+    super('PlayScene', GAME.TABLE.SPEED_TABLE_KEY, config);
   }
 
   create(): void {
@@ -47,9 +46,10 @@ export default class PlayScene extends Table {
 
     this.createPlayerNameTexts();
     this.createPlayerHandZones(
-      GAME.CARD.WIDTH * 5,
+      GAME.CARD.WIDTH * 5 + STYLE.GUTTER_SIZE * 4,
       GAME.CARD.HEIGHT
     );
+
     this.createDeckSizeTexts();
     this.createDropZones();
     this.createDropZoneEvent();
@@ -82,8 +82,10 @@ export default class PlayScene extends Table {
 
     // AIの始動
     this.time.delayedCall(7000, () => {
-      this.houseTimeEvent = this.time.addEvent({
-        delay: 2000,
+      this.housePlayTimeEvent = this.time.addEvent({
+        delay: this.betScene
+          ? (3 - this.betScene.level) * 1500
+          : 4500,
         callback: this.playHouseTurn,
         callbackScope: this,
         loop: true
@@ -92,7 +94,7 @@ export default class PlayScene extends Table {
 
     // Houseの始動（ゲーム停滞時のカード配布）
     this.time.delayedCall(7000, () => {
-      this.houseTimeEvent2 = this.time.addEvent({
+      this.houseDealTimeEvent = this.time.addEvent({
         delay: 5000,
         callback: this.playHouse,
         callbackScope: this,
@@ -112,9 +114,11 @@ export default class PlayScene extends Table {
       this.gamePhase === GamePhase.END_OF_GAME &&
       result
     ) {
-      this.time.delayedCall(2000, () =>
-        this.endHand(result as GameResult)
-      );
+      this.time.delayedCall(2000, () => {
+        this.housePlayTimeEvent?.remove();
+        this.houseDealTimeEvent?.remove();
+        this.endHand(result as GameResult);
+      });
     }
   }
 
@@ -137,15 +141,13 @@ export default class PlayScene extends Table {
         Phaser.Display.Align.In.Center(
           dropZone,
           this.gameZone as GameObject,
-          GAME.CARD.WIDTH,
-          -20
+          GAME.CARD.WIDTH
         );
       } else if (player.playerType === 'house') {
         Phaser.Display.Align.In.Center(
           dropZone,
           this.gameZone as GameObject,
-          -GAME.CARD.WIDTH,
-          -20
+          -GAME.CARD.WIDTH
         );
       }
 
@@ -236,13 +238,17 @@ export default class PlayScene extends Table {
     this.playerDecks = [
       new Deck(
         this,
-        this.playerHandZones[0].x + GAME.CARD.WIDTH * 2,
+        this.playerHandZones[0].x +
+          GAME.CARD.WIDTH * 2 +
+          STYLE.GUTTER_SIZE * 2,
         this.playerHandZones[0].y,
         ['Hearts', 'Diamonds']
       ),
       new Deck(
         this,
-        this.playerHandZones[1].x - GAME.CARD.WIDTH * 2,
+        this.playerHandZones[1].x -
+          GAME.CARD.WIDTH * 2 -
+          STYLE.GUTTER_SIZE * 2,
         this.playerHandZones[1].y,
         ['Spades', 'Clubs']
       )
@@ -355,8 +361,8 @@ export default class PlayScene extends Table {
               this.playerDecks[index] as Deck,
               player as SpeedPlayer,
               this.playerHandZones[index].x -
-                GAME.CARD.WIDTH * 2 +
-                i * GAME.CARD.WIDTH,
+                (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE) * 2 +
+                i * (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE),
               this.playerHandZones[index].y,
               true
             );
@@ -365,8 +371,8 @@ export default class PlayScene extends Table {
               this.playerDecks[index] as Deck,
               player as SpeedPlayer,
               this.playerHandZones[index].x +
-                GAME.CARD.WIDTH * 2 -
-                i * GAME.CARD.WIDTH,
+                (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE) * 2 -
+                i * (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE),
               this.playerHandZones[index].y,
               true
             );
@@ -519,14 +525,17 @@ export default class PlayScene extends Table {
     return result;
   }
 
-  payOut(result: GameResult): void {
+  payOut(result: GameResult): number {
+    let winAmount = 0;
     if (this.betScene && this.betScene.money) {
       if (result === GameResult.WIN) {
-        this.betScene.money += this.betScene.bet * 2;
+        winAmount = this.betScene.bet;
       } else if (result === GameResult.LOSS) {
-        this.betScene.money -= this.betScene.bet;
+        winAmount = -this.betScene.bet;
       }
+      this.betScene.money += winAmount;
       this.setMoneyText(this.betScene.money);
+      this.setBetText(this.betScene.bet);
 
       const highScore = localStorage.getItem(
         GAME.STORAGE.SPEED_HIGH_SCORE_STORAGE
@@ -541,6 +550,7 @@ export default class PlayScene extends Table {
         );
       }
     }
+    return winAmount;
   }
 
   playGameResultSound(result: string): void {

@@ -1,3 +1,4 @@
+import Layout from '@/components/Layout';
 import { Game as GameType } from 'phaser';
 import { useEffect, useState } from 'react';
 
@@ -13,6 +14,10 @@ const Game = () => {
         '../../games/speed/scenes/PlayScene'
       );
 
+      const { default: LevelScene } = await import(
+        '../../games/speed/scenes/LevelScene'
+      );
+
       const { default: BetScene } = await import(
         '../../games/common/scenes/BetScene'
       );
@@ -22,14 +27,15 @@ const Game = () => {
       );
 
       const CONFIG = {
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: 1920,
+        height: 920,
         game: 'speed'
       };
 
       const Scenes: Array<any> = [
         PreloadScene,
         BetScene,
+        LevelScene,
         PlayScene
       ];
       const createScene = (Scene: any) => new Scene(CONFIG);
@@ -39,14 +45,13 @@ const Game = () => {
         type: Phaser.AUTO,
         parent: 'game-content',
         ...CONFIG,
-        backgroundColor: '#26723B',
+        backgroundColor: '#2A303C',
         physics: {
           arcade: {
             debug: true
           }
         },
-        scene: initScenes(),
-        game: 'speed'
+        scene: initScenes()
       };
 
       const phaserGame = new Phaser.Game(config);
@@ -56,9 +61,11 @@ const Game = () => {
   }, []);
 
   return (
-    <div id="game-content" key="game-content">
-      {/* this is where the game canvas will be rendered */}
-    </div>
+    <Layout>
+      <div id="game-content" key="game-content">
+        {/* this is where the game canvas will be rendered */}
+      </div>
+    </Layout>
   );
 };
 

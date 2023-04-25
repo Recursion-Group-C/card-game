@@ -14,12 +14,19 @@ const GAME = {
     BLUE_CHIP_KEY: 'blueChip',
     ORANGE_CHIP_KEY: 'orangeChip',
     YELLOW_CHIP_KEY: 'yellowChip',
-    COUNT_DOWN_SOUND_KEY: 'coundDown',
+    BET_TABLE_KEY: 'betTable',
+    BLACKJACK_TABLE_KEY: 'blackjackTable',
+    SPEED_TABLE_KEY: 'speedTable',
+    BUTTON: 'button',
+    BACK: 'back',
+    COG: 'cog',
+    COUNT_DOWN_SOUND_KEY: 'countDown',
     ENTER_GAME_SOUND_KEY: 'enterGame',
     WIN_GAME_SOUND_KEY: 'winGame',
     LOSS_GAME_SOUND_KEY: 'lossGame',
     BUTTON_CLICK_SOUND_KEY: 'buttonClick',
     CHIP_CLICK_SOUND_KEY: 'chipClick',
+    ERROR_SOUND_KEY: 'error'
   },
   PLAYER: {
     CHIPS: 1000

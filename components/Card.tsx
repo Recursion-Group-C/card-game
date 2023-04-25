@@ -13,7 +13,7 @@ const Card = ({
   imgPath: string;
   ruleUrl: string;
 }) => (
-  <div className="card m-1 !w-72 bg-base-100 shadow-xl">
+  <div className="card m-1 bg-base-300 shadow-xl sm:w-72">
     <figure>
       <img src={imgPath} alt="thumbnail" />
     </figure>
@@ -23,7 +23,7 @@ const Card = ({
       <div className="card-actions mt-2">
         <Link href={url}>
           <button
-            className="h-12 w-64 rounded-full border-white bg-red-600 px-4 py-2 text-white hover:bg-red-500"
+            className="h-12 w-80 rounded-full border-white bg-red-600 px-4 py-2 text-white hover:bg-red-500 sm:w-64"
             type="button"
           >
             <p className="text-xl">Play</p>

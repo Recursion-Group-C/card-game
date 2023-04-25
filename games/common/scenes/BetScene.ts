@@ -14,6 +14,8 @@ export default class BetScene extends BaseScene {
 
   public bet = 0;
 
+  public level = 0;
+
   public moneyText: Text | undefined;
 
   public betText: Text | undefined;
@@ -22,13 +24,19 @@ export default class BetScene extends BaseScene {
 
   public highScore: number | undefined;
 
+  #dealButton: Button | undefined;
+
+  #clearButton: Button | undefined;
+
   #enterGameSound: Phaser.Sound.BaseSound | undefined;
 
   constructor(config: any) {
-    super('BetScene', config);
+    super('BetScene', GAME.TABLE.BET_TABLE_KEY, config);
   }
 
   create(): void {
+    super.create();
+
     if (this.money === 0) {
       this.gameOver();
     } else {
@@ -36,7 +44,6 @@ export default class BetScene extends BaseScene {
 
       if (this.bet > this.money) this.bet = this.money;
 
-      this.createGameZone();
       this.createTitle();
       this.createChips();
       this.createButtons();
@@ -96,7 +103,7 @@ export default class BetScene extends BaseScene {
     const textTitle: Text = this.add.text(
       0,
       20,
-      'Place your bet',
+      'Place Your Bet',
       STYLE.TEXT
     );
     Phaser.Display.Align.In.Center(
@@ -123,11 +130,13 @@ export default class BetScene extends BaseScene {
 
   private setHighScoreText() {
     this.highScoreText?.setText(
-      `High score: $${this.highScore}`
+      `High Score: $${this.highScore}`
     );
     Phaser.Display.Align.In.TopCenter(
       this.highScoreText as Phaser.GameObjects.GameObject,
-      this.gameZone as Phaser.GameObjects.GameObject
+      this.gameZone as Phaser.GameObjects.GameObject,
+      0,
+      -STYLE.GUTTER_SIZE
     );
   }
 
@@ -183,51 +192,112 @@ export default class BetScene extends BaseScene {
       this.scene
     );
     chips.forEach((chip) => {
-      chip.setClickHandler(() =>
-        this.addChip(chip.getChipValue())
-      );
+      chip.setClickHandler(() => {
+        this.addChip(chip.getChipValue());
+        this.#dealButton?.playFadeIn();
+      });
     });
   }
 
   private createButtons(): void {
-    const buttonHeight: number =
-      Number(this.config.height) - 100;
+    this.createClearButton();
+    this.createDealButton();
+    // this.createBackButton(); // TODO: responsive化できたときに、使用する
+    if (this.config.game === 'speed') {
+      this.createCogButton();
+    }
 
-    const clearButton = new Button(
+    const buttons: Button[] = new Array<Button>();
+    buttons.push(this.#clearButton as Button);
+    buttons.push(this.#dealButton as Button);
+
+    ImageUtility.spaceOutImagesEvenlyHorizontally(
+      buttons as Button[],
+      this.scene
+    );
+  }
+
+  private createClearButton(): void {
+    const buttonHeight: number =
+      Number(this.config.height) * 0.75;
+    this.#clearButton = new Button(
       this,
       0,
       buttonHeight,
-      GAME.TABLE.YELLOW_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Clear',
       0
     );
-    clearButton.setClickHandler(() => {
+    this.#clearButton.setClickHandler(() => {
       this.bet = 0;
       this.setBetText(this.bet);
+      this.#dealButton?.playFadeOut();
     });
+  }
 
-    const dealButton = new Button(
+  private createDealButton(): void {
+    const buttonHeight: number =
+      Number(this.config.height) * 0.75;
+    this.#dealButton = new Button(
       this,
       0,
       buttonHeight,
-      GAME.TABLE.ORANGE_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Deal',
       0
     );
-    dealButton.setClickHandler(() => {
-      this.scene.start('PlayScene');
-      this.#enterGameSound?.play();
+    if (this.bet === 0) {
+      this.#dealButton.setAlpha(0);
+    }
+    this.#dealButton.setClickHandler(() => {
+      if (this.bet > 0) {
+        this.scene.start('PlayScene');
+        this.#enterGameSound?.play();
+      }
+    });
+  }
+
+  private createBackButton(): void {
+    const backButton = new Button(
+      this,
+      0,
+      0,
+      GAME.TABLE.BACK,
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY
+    );
+
+    backButton.setClickHandler(() => {
+      window.location.href = '/';
     });
 
-    const buttons: Button[] = new Array<Button>();
-    buttons.push(clearButton);
-    buttons.push(dealButton);
+    Phaser.Display.Align.In.TopLeft(
+      backButton as Phaser.GameObjects.GameObject,
+      this.gameZone as Phaser.GameObjects.GameObject,
+      -STYLE.GUTTER_SIZE,
+      -STYLE.GUTTER_SIZE
+    );
+  }
 
-    ImageUtility.spaceOutImagesEvenlyHorizontally(
-      buttons,
-      this.scene
+  private createCogButton(): void {
+    const configButton = new Button(
+      this,
+      0,
+      0,
+      GAME.TABLE.COG,
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY
+    );
+
+    configButton.setClickHandler(() => {
+      this.scene.start('LevelScene');
+    });
+
+    Phaser.Display.Align.In.TopLeft(
+      configButton as Phaser.GameObjects.GameObject,
+      this.gameZone as Phaser.GameObjects.GameObject,
+      -STYLE.GUTTER_SIZE,
+      -STYLE.GUTTER_SIZE
     );
   }
 
