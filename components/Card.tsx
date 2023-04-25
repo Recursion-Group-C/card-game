@@ -34,7 +34,7 @@ const Card = ({
             className="h-12 w-64 rounded-full border-white bg-red-600 px-4 py-2 text-white hover:bg-red-500"
             type="button"
           >
-            <p className="text-xl">rule description</p>
+            <p className="text-xl">Rule</p>
           </button>
         </Link>
       </div>

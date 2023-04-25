@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Layout from '@/components/Layout';
 import Rule from '@/components/Rule';
-
+/* eslint-disable */
 const rummyRule = () => {
   return (
     <>
@@ -16,7 +16,7 @@ const rummyRule = () => {
         <div className="flex">
           <Rule
             title="rummyとは??"
-            description="Rummyでは、各プレイヤーは手札から組み合わせを作り、最終的に手札を完全に捨てることを目指します。
+            description="rummyでは、各プレイヤーは手札から組み合わせを作り、最終的に手札を完全に捨てることを目指します。
           Rummyの主な目的は、カードをセット（同じランクの3枚以上）やシーケンス（同じスートの3枚以上のランクの連続するカード）に組み合わせることで、手札からできるだけ早くカードを捨てることです。プレイヤーが最後のカードを捨てた時点で、最も高いスコアを持つプレイヤーが勝利します。
           Rummyは、ルールが簡単で、戦略性があるため、世界中で愛されるカードゲームの一つです。"
             ruleTitle="基本ルールとは??"

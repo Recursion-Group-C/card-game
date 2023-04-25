@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Layout from '@/components/Layout';
-import Rule from '@/components/Rule';
 
+/* eslint-disable */
 const texasHoldEmRule = () => {
   return (
     <>

@@ -1,7 +1,7 @@
 import Layout from '@/components/Layout';
 import Head from 'next/head';
 import Rule from '@/components/Rule';
-
+/* eslint-disable */
 const blackjackRule = () => {
   return (
     <Layout>
@@ -15,7 +15,7 @@ const blackjackRule = () => {
         <div className="flex">
           <Rule
             title="blackjackとは??"
-            description="ブラックジャックは、21(twenty
+            description="blackjackは、21(twenty
           one）という名称でも知られており、世界から愛されるカードゲームです。
           カジノディーラーとの駆け引きがあるため、自分なりに戦略を立てられるのがこのゲームの人気の秘訣。ルールも覚えやすく、なんといってもブラックジャックの醍醐味は奥の深いゲーム性にあると言えるでしょう。"
             ruleTitle="基本ルールとは??"

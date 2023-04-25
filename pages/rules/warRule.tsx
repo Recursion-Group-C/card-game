@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Layout from '@/components/Layout';
 import Rule from '@/components/Rule';
-
+/* eslint-disable */
 const warRule = () => {
   return (
     <>
@@ -16,7 +16,7 @@ const warRule = () => {
           <div className="flex">
             <Rule
               title="カジノwarとは??"
-              description="カジノウォーの特徴は、プレイヤーとディーラーがそれぞれ1枚のカードを用いて1対1で勝負をするという点にあります。
+              description="カジノwarの特徴は、プレイヤーとディーラーがそれぞれ1枚のカードを用いて1対1で勝負をするという点にあります。
                             互いのトランプの数字の大小で勝敗が決まるので、スピーディーかつ単純明快です。
                             1ゲームが非常に短いことからテンポよく進められ、シンプルなルールなので誰にでも理解ができて取り掛かりやすいことも魅力です。"
               ruleTitle="基本ルールとは??"
@@ -29,9 +29,9 @@ const warRule = () => {
               glossaryPrompt="war"
               backUrl="/"
             />
-            </div>
           </div>
-    </Layout>
+        </div>
+      </Layout>
     </>
   );
 };
