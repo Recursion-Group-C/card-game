@@ -45,7 +45,7 @@ export default class PlayScene extends Table {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(config: any) {
-    super('PlayScene', config);
+    super('PlayScene', GAME.TABLE.SPEED_TABLE_KEY, config);
     this.players = [
       new PokerPlayer(
         'player',

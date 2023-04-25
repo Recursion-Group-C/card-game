@@ -23,7 +23,7 @@ export default class LobbyScene extends BaseScene {
   #enterGameSound: Phaser.Sound.BaseSound | undefined;
 
   constructor(config: any) {
-    super('LobbyScene', config);
+    super('LobbyScene', GAME.TABLE.BET_TABLE_KEY, config);
   }
 
   create(): void {
