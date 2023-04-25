@@ -14,6 +14,10 @@ const Game = () => {
         '../../games/speed/scenes/PlayScene'
       );
 
+      const { default: LevelScene } = await import(
+        '../../games/speed/scenes/LevelScene'
+      );
+
       const { default: BetScene } = await import(
         '../../games/common/scenes/BetScene'
       );
@@ -31,6 +35,7 @@ const Game = () => {
       const Scenes: Array<any> = [
         PreloadScene,
         BetScene,
+        LevelScene,
         PlayScene
       ];
       const createScene = (Scene: any) => new Scene(CONFIG);
