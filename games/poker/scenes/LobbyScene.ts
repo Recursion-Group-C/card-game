@@ -27,6 +27,9 @@ export default class LobbyScene extends BaseScene {
   }
 
   create(): void {
+    this.add
+      .image(0, 0, GAME.TABLE.BET_TABLE_KEY)
+      .setOrigin(0);
     if (this.money === 0) {
       this.gameOver();
     } else {
@@ -133,9 +136,9 @@ export default class LobbyScene extends BaseScene {
       this,
       0,
       buttonHeight,
-      GAME.TABLE.ORANGE_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
-      'Game Start',
+      'Start',
       0
     );
     startButton.setClickHandler(() => {
