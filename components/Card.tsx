@@ -21,20 +21,20 @@ const Card = ({
       <h2 className="card-title">{title}</h2>
       <p>{description}</p>
       <div className="card-actions mt-2">
+        <Link href={ruleUrl}>
+          <button
+            className="h-12 w-80 rounded-full border-white bg-base-300 px-4 py-2 text-white hover:bg-base-200 sm:w-64"
+            type="button"
+          >
+            <p className="text-xl">Rule</p>
+          </button>
+        </Link>
         <Link href={url}>
           <button
             className="h-12 w-80 rounded-full border-white bg-red-600 px-4 py-2 text-white hover:bg-red-500 sm:w-64"
             type="button"
           >
             <p className="text-xl">Play</p>
-          </button>
-        </Link>
-        <Link href={ruleUrl}>
-          <button
-            className="h-12 w-64 rounded-full border-white bg-red-600 px-4 py-2 text-white hover:bg-red-500"
-            type="button"
-          >
-            <p className="text-xl">Rule</p>
           </button>
         </Link>
       </div>
