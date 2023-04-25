@@ -13,7 +13,11 @@ export default class PlayScene extends Table {
   private surrenderButton: Button | undefined;
 
   constructor(config: any) {
-    super('PlayScene', config);
+    super(
+      'PlayScene',
+      GAME.TABLE.BLACKJACK_TABLE_KEY,
+      config
+    );
   }
 
   create(): void {
@@ -24,7 +28,10 @@ export default class PlayScene extends Table {
       new WarPlayer('house', 0, 0, 'bet', 'House', 0)
     ];
 
-    this.resetAndShuffleDeck();
+    this.resetAndShuffleDeck(
+      this.config.width + GAME.CARD.WIDTH,
+      -GAME.CARD.HEIGHT
+    );
 
     this.createPlayerNameTexts();
     this.createPlayerHandZones(
@@ -65,17 +72,17 @@ export default class PlayScene extends Table {
       this,
       this.config.width * 0.33,
       this.config.height * 0.5,
-      GAME.TABLE.YELLOW_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'War'
     );
 
     this.warButton.setClickHandler(() => {
       if (this.warButton) {
-        this.warButton.destroy();
+        this.warButton.playFadeOut();
       }
       if (this.surrenderButton) {
-        this.surrenderButton.destroy();
+        this.surrenderButton.playFadeOut();
       }
 
       this.setBetDouble();
@@ -102,17 +109,17 @@ export default class PlayScene extends Table {
       this,
       this.config.width * 0.66,
       this.config.height * 0.5,
-      GAME.TABLE.YELLOW_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Surrender'
     );
 
     this.surrenderButton.setClickHandler(() => {
       if (this.warButton) {
-        this.warButton.destroy();
+        this.warButton.playFadeOut();
       }
       if (this.surrenderButton) {
-        this.surrenderButton.destroy();
+        this.surrenderButton.playFadeOut();
       }
 
       this.time.delayedCall(500, () => {
@@ -198,21 +205,23 @@ export default class PlayScene extends Table {
     return result;
   }
 
-  payOut(result: GameResult) {
+  payOut(result: GameResult): number {
+    let winAmount = 0;
     if (this.betScene && this.betScene.money) {
-      if (
-        result === GameResult.WIN ||
-        result === GameResult.WAR_TIE
-      ) {
-        this.betScene.money += this.betScene.bet * 2;
+      if (result === GameResult.WAR_TIE) {
+        winAmount = this.betScene.bet * 2;
       } else if (result === GameResult.WAR_WIN) {
-        this.betScene.money += this.betScene.bet * 1.5; // 最初の賭金は返却、追加分は2倍の配当
+        winAmount = this.betScene.bet * 1.5; // 最初の賭金は返却、追加分は2倍の配当
+      } else if (result === GameResult.WIN) {
+        winAmount = this.betScene.bet;
       } else if (result === GameResult.SURRENDER) {
-        this.betScene.money -= this.betScene.bet * 0.5;
+        winAmount = -this.betScene.bet * 0.5;
       } else {
-        this.betScene.money -= this.betScene.bet;
+        winAmount = -this.betScene.bet;
       }
+      this.betScene.money += winAmount;
       this.setMoneyText(this.betScene.money);
+      this.setBetText(this.betScene.bet);
 
       const highScore = localStorage.getItem(
         GAME.STORAGE.WAR_HIGH_SCORE_STORAGE
@@ -227,6 +236,7 @@ export default class PlayScene extends Table {
         );
       }
     }
+    return winAmount;
   }
 
   playGameResultSound(result: string): void {
