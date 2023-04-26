@@ -1,7 +1,7 @@
 name: ✨ Feature request
 description: File a feature request
 title: "[New Feature]: "
-labels: ["sky"]
+labels: ["enhancement"]
 body:
 - type: textarea
   attributes:
