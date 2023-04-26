@@ -24,6 +24,8 @@ export default class BetScene extends BaseScene {
 
   public highScore: number | undefined;
 
+  #chips: Array<Button> = [];
+
   #dealButton: Button | undefined;
 
   #clearButton: Button | undefined;
@@ -181,20 +183,39 @@ export default class BetScene extends BaseScene {
       100
     );
 
-    const chips: Button[] = new Array<Button>();
-    chips.push(whiteChip);
-    chips.push(redChip);
-    chips.push(orangeChip);
-    chips.push(blueChip);
+    this.#chips.push(whiteChip);
+    this.#chips.push(redChip);
+    this.#chips.push(orangeChip);
+    this.#chips.push(blueChip);
 
     ImageUtility.spaceOutImagesEvenlyHorizontally(
-      chips as Button[],
+      this.#chips as Button[],
       this.scene
     );
-    chips.forEach((chip) => {
+
+    this.#chips.forEach((chip: Button) => {
       chip.setClickHandler(() => {
-        this.addChip(chip.getChipValue());
-        this.#dealButton?.playFadeIn();
+        if (this.bet + chip.getChipValue() <= this.money) {
+          this.addChip(chip.getChipValue());
+          this.#dealButton?.playFadeIn();
+          // アニメーション用のチップを作成する
+          const tempChip = new Button(
+            this,
+            chip.x,
+            chip.y,
+            chip.texture.key
+          );
+          tempChip.playMoveAndDestroy(this.config.width, 0);
+          // 現在のベット金額と追加チップの合計が所持金を上回る場合は、チップをフェードアウトする
+          this.#chips.forEach((otherChip: Button) => {
+            if (
+              this.bet + otherChip.getChipValue() >
+              this.money
+            ) {
+              otherChip.playFadeOut();
+            }
+          });
+        }
       });
     });
   }
@@ -233,6 +254,9 @@ export default class BetScene extends BaseScene {
       this.bet = 0;
       this.setBetText(this.bet);
       this.#dealButton?.playFadeOut();
+      this.#chips.forEach((chip) => {
+        chip.playFadeIn();
+      });
     });
   }
 
