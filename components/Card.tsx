@@ -23,7 +23,7 @@ const Card = ({
       <div className="card-actions mt-2">
         <Link href={ruleUrl}>
           <button
-            className="h-12 w-80 rounded-full border-white bg-base-300 px-4 py-2 text-white hover:bg-base-200 sm:w-64"
+            className="h-12 w-80 rounded-full border-white bg-base-100 px-4 py-2 text-white hover:bg-base-200 sm:w-64"
             type="button"
           >
             <p className="text-xl">Rule</p>

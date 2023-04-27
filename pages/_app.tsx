@@ -18,13 +18,15 @@ const App = ({
   );
 
   return (
-    <SessionContextProvider
-      supabaseClient={supabase}
-      initialSession={pageProps.initialSession}
-    >
-      {/* eslint-disable react/jsx-props-no-spreading */}
-      <Component {...pageProps} />
-    </SessionContextProvider>
+    <div data-theme="dark">
+      <SessionContextProvider
+        supabaseClient={supabase}
+        initialSession={pageProps.initialSession}
+      >
+        {/* eslint-disable react/jsx-props-no-spreading */}
+        <Component {...pageProps} />
+      </SessionContextProvider>
+    </div>
   );
 };
 export default App;
