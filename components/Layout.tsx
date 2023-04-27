@@ -8,7 +8,7 @@ type Props = {
 };
 
 const Layout = ({ children }: Props) => (
-  <div data-theme="dark">
+  <div>
     <Head>
       <title>Card Game Stadium</title>
       <meta
