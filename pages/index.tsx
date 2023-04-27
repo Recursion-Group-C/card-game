@@ -51,7 +51,7 @@ const Home = () => (
             imgPath="/images/thumbnailSample.png"
             ruleUrl="/rules/poker"
           />
-          <Card
+          {/* <Card
             title="Texas Hold'em Porker"
             description="世界的に大流行のポーカーゲーム。自分の手札は2枚。場に出される最大5枚のカードから役を作り、勝負！"
             url="/games/holdem"
@@ -64,7 +64,7 @@ const Home = () => (
             url="/games/rummy"
             imgPath="/images/thumbnailSample.png"
             ruleUrl="/rules/rummy"
-          />
+          /> */}
         </div>
       </div>
     </div>
