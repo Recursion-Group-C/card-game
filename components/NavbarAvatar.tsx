@@ -20,17 +20,17 @@ const NavAvatar = ({ session }: { session: Session }) => {
     useState<Profiles['avatar_url']>(null);
 
   useEffect(() => {
-    getProfile(); // eslint-disable-line @typescript-eslint/no-use-before-define
+    getAvatarUrl(); // eslint-disable-line @typescript-eslint/no-use-before-define
   }, [session]);
 
-  async function getProfile() {
+  async function getAvatarUrl() {
     try {
       setLoading(true);
       if (!user) throw new Error('No user');
 
       const { data, error, status } = await supabase
         .from('profiles')
-        .select(`username, website, avatar_url`)
+        .select(`avatar_url`)
         .eq('id', user.id)
         .single();
 
