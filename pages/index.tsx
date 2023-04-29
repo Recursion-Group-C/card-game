@@ -24,28 +24,28 @@ const Home = () => (
         </p>
         <div className="flex flex-wrap justify-around">
           <Card
-            title="Blackjack"
+            title="BLACKJACK"
             description="簡単なギャンブルゲーム。カードの合計点数が21点を超えないないで、ディーラーより高い点数を取れば勝ちです。"
             url="/games/blackjack"
             imgPath="/images/thumbnailSample.png"
             ruleUrl="/rules/blackjack"
           />
           <Card
-            title="War"
+            title="WAR"
             description="数字の大小で勝負するシンプルなゲーム。1枚だけカードを引き、引いたカードの数字が大きい方が勝ちです。"
             url="/games/war"
             imgPath="/images/thumbnailSample.png"
             ruleUrl="/rules/war"
           />
           <Card
-            title="Speed"
+            title="SPEED"
             description="導け、机上の最速理論！場に出されたカードに繋がる数字を相手よりも早く出して手札をなくした方が勝ちです。"
             url="/games/speed"
             imgPath="/images/thumbnailSample.png"
             ruleUrl="/rules/speed"
           />
           <Card
-            title="Porker"
+            title="PORKER"
             description="5枚のカードで役を作ります！カードの交換は1回だけ。国内で知名度のある基本的なポーカーゲームです。"
             url="/games/porker"
             imgPath="/images/thumbnailSample.png"
