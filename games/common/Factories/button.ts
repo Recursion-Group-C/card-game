@@ -108,6 +108,19 @@ export default class Button extends Phaser.GameObjects
     });
   }
 
+  playMoveAndDestroy(toX: number, toY: number): void {
+    this.scene.tweens.add({
+      targets: this,
+      x: toX,
+      y: toY,
+      duration: MOVE_TIME,
+      ease: 'Linear',
+      onComplete: () => {
+        this.destroy();
+      }
+    });
+  }
+
   playFadeOut(): void {
     this.scene.tweens.add({
       targets: [this, this.#text],
