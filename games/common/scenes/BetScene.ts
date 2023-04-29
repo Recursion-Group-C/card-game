@@ -223,8 +223,8 @@ export default class BetScene extends BaseScene {
   private createButtons(): void {
     this.createClearButton();
     this.createDealButton();
-    // this.createBackButton(); // TODO: responsive化できたときに、使用する
-    if (this.config.game === 'speed') {
+    this.createBackButton();
+    if (this.config.canGoConfig) {
       this.createCogButton();
     }
 
@@ -317,7 +317,7 @@ export default class BetScene extends BaseScene {
       this.scene.start('LevelScene');
     });
 
-    Phaser.Display.Align.In.TopLeft(
+    Phaser.Display.Align.In.BottomLeft(
       configButton as Phaser.GameObjects.GameObject,
       this.gameZone as Phaser.GameObjects.GameObject,
       -STYLE.GUTTER_SIZE,

@@ -1,4 +1,3 @@
-import Layout from '@/components/Layout';
 import { Game as GameType } from 'phaser';
 import { useEffect, useState } from 'react';
 
@@ -10,15 +9,15 @@ const WarGame = () => {
       const Phaser = await import('phaser');
 
       const { default: PlayScene } = await import(
-        '../../games/war/scenes/PlayScene'
+        '@/games/war/scenes/PlayScene'
       );
 
       const { default: BetScene } = await import(
-        '../../games/common/scenes/BetScene'
+        '@/games/common/scenes/BetScene'
       );
 
       const { default: PreloadScene } = await import(
-        '../../games/common/scenes/PreloadScene'
+        '@/games/common/scenes/PreloadScene'
       );
 
       const CONFIG = {
@@ -37,6 +36,19 @@ const WarGame = () => {
 
       const config = {
         type: Phaser.AUTO,
+        scale: {
+          mode: Phaser.Scale.FIT,
+          parent: 'game-content',
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+          min: {
+            width: 720,
+            height: 345
+          },
+          max: {
+            width: 1920,
+            height: 920
+          }
+        },
         parent: 'game-content',
         ...CONFIG,
         backgroundColor: '#2A303C',
@@ -55,11 +67,9 @@ const WarGame = () => {
   }, []);
 
   return (
-    <Layout>
-      <div id="game-content" key="game-content">
-        {/* this is where the game canvas will be rendered */}
-      </div>
-    </Layout>
+    <div id="game-content" key="game-content">
+      {/* this is where the game canvas will be rendered */}
+    </div>
   );
 };
 
