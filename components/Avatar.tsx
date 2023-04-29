@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
 import { Database } from '../utils/database.types';
 
 type Profiles =
@@ -10,11 +10,13 @@ const Avatar = ({
   uid,
   url,
   size,
+  canUpLoad,
   onUpload
 }: {
   uid: string;
   url: Profiles['avatar_url'];
   size: number;
+  canUpLoad: boolean;
   onUpload: (url: string) => void;
 }) => {
   const supabase = useSupabaseClient<Database>();
@@ -80,42 +82,56 @@ const Avatar = ({
 
   return (
     <div>
-      {avatarUrl ? (
+      {avatarUrl && canUpLoad && (
         <Image
           src={avatarUrl}
           alt="Avatar"
-          className="avatar image"
+          className="image avatar"
           width={size}
           height={size}
         />
-      ) : (
+      )}
+      {avatarUrl && !canUpLoad && (
+        <div className="avatar">
+          <div className="w-10 rounded-full">
+            <Image
+              src={avatarUrl}
+              alt="Avatar"
+              width={size}
+              height={size}
+            />
+          </div>
+        </div>
+      )}
+      {!avatarUrl && (
         <div
-          className="avatar no-image"
+          className="no-image avatar"
           style={{ height: size, width: size }}
         />
       )}
-      <div style={{ width: size }}>
-        <label
-          className="button primary block"
-          htmlFor="single"
-        >
-          {uploading ? 'Uploading ...' : 'Upload'}
-        </label>
-        <input
-          style={{
-            visibility: 'hidden',
-            position: 'absolute'
-          }}
-          type="file"
-          id="single"
-          accept="image/*"
-          onChange={uploadAvatar}
-          disabled={uploading}
-        />
-      </div>
+      {canUpLoad && (
+        <div style={{ width: size }}>
+          <label
+            className="button primary block"
+            htmlFor="single"
+          >
+            {uploading ? 'Uploading ...' : 'Upload'}
+          </label>
+          <input
+            style={{
+              visibility: 'hidden',
+              position: 'absolute'
+            }}
+            type="file"
+            id="single"
+            accept="image/*"
+            onChange={uploadAvatar}
+            disabled={uploading}
+          />
+        </div>
+      )}
     </div>
   );
 };
 
 export default Avatar;
-

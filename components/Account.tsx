@@ -94,6 +94,7 @@ const Account = ({ session }: { session: Session }) => {
         uid={user ? user.id : ''}
         url={avatar_url}
         size={150}
+        canUpLoad
         onUpload={(url) => {
           setAvatarUrl(url);
           updateProfile({
@@ -158,4 +159,3 @@ const Account = ({ session }: { session: Session }) => {
 };
 
 export default Account;
-
