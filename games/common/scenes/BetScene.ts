@@ -145,6 +145,7 @@ export default class BetScene extends BaseScene {
   private createChips(): void {
     const chipHeight: number =
       Number(this.config.height) / 2;
+    this.#chips = [];
 
     const whiteChip = new Button(
       this,
