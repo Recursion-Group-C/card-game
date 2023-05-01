@@ -1,12 +1,25 @@
+import { Database } from '@/utils/database.types';
+import {
+  useSupabaseClient,
+  useUser
+} from '@supabase/auth-helpers-react';
 import { Game as GameType } from 'phaser';
 import { useEffect, useState } from 'react';
 
 const Game = () => {
+  const supabase = useSupabaseClient<Database>();
+  const user = useUser();
   const [game, setGame] = useState<GameType>(); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   useEffect(() => {
     async function initPhaser() {
       const Phaser = await import('phaser');
+      const CONFIG = {
+        width: 1920,
+        height: 920,
+        game: 'blackjack',
+        userName: 'Player'
+      };
 
       const { default: PlayScene } = await import(
         '@/games/blackjack/scenes/PlayScene'
@@ -20,11 +33,21 @@ const Game = () => {
         '@/games/common/scenes/PreloadScene'
       );
 
-      const CONFIG = {
-        width: 1920,
-        height: 920,
-        game: 'blackjack'
-      };
+      if (user) {
+        const { data, error, status } = await supabase
+          .from('profiles')
+          .select(`username`)
+          .eq('id', user.id)
+          .single();
+        if (data) {
+          CONFIG.userName = data.username ?? 'Player';
+        }
+
+        if (error && status !== 406) {
+          throw error; // eslint-disable-line @typescript-eslint/no-throw-literal
+        }
+      }
+      console.log(CONFIG);
 
       const Scenes: Array<any> = [
         PreloadScene,
@@ -64,7 +87,7 @@ const Game = () => {
       setGame(phaserGame);
     }
     initPhaser();
-  }, []);
+  }, [user]);
 
   return (
     <div id="game-content" key="game-content">

@@ -46,7 +46,7 @@ export default class PlayScene extends Table {
         0,
         0,
         'ready',
-        'Player',
+        this.config.userName,
         0
       ),
       new BlackjackPlayer(

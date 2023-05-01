@@ -40,7 +40,14 @@ export default class PlayScene extends Table {
     super.create();
     this.gamePhase = GamePhase.BETTING;
     this.players = [
-      new SpeedPlayer('player', 0, 0, 'bet', 'Player', 0),
+      new SpeedPlayer(
+        'player',
+        0,
+        0,
+        'bet',
+        this.config.userName,
+        0
+      ),
       new SpeedPlayer('house', 0, 0, 'bet', 'House', 0)
     ];
 
