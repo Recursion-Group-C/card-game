@@ -46,7 +46,7 @@ export default class PlayScene extends Table {
         0,
         0,
         'ready',
-        'Player',
+        this.config.userName,
         0
       ),
       new BlackjackPlayer(
@@ -504,19 +504,6 @@ export default class PlayScene extends Table {
       this.betScene.money += winAmount;
       this.setMoneyText(this.betScene.money);
       this.setBetText(this.betScene.bet);
-
-      const highScore = localStorage.getItem(
-        GAME.STORAGE.BLACKJACK_HIGH_SCORE_STORAGE
-      );
-      if (
-        !highScore ||
-        this.betScene.money > Number(highScore)
-      ) {
-        localStorage.setItem(
-          GAME.STORAGE.BLACKJACK_HIGH_SCORE_STORAGE,
-          String(this.betScene.money)
-        );
-      }
     }
     return winAmount;
   }

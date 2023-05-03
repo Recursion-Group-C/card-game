@@ -1,13 +1,14 @@
+import { useUser } from '@supabase/auth-helpers-react';
 import { Game as GameType } from 'phaser';
 import { useEffect, useState } from 'react';
+import initPhaser from '../api/initPhaser';
 
-const WarGame = () => {
+const Game = () => {
+  const user = useUser();
   const [game, setGame] = useState<GameType>(); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   useEffect(() => {
-    async function initPhaser() {
-      const Phaser = await import('phaser');
-
+    const importScenes = async () => {
       const { default: PlayScene } = await import(
         '@/games/war/scenes/PlayScene'
       );
@@ -20,51 +21,26 @@ const WarGame = () => {
         '@/games/common/scenes/PreloadScene'
       );
 
-      const CONFIG = {
-        width: 1920,
-        height: 920,
-        game: 'war'
-      };
-
       const Scenes: Array<any> = [
         PreloadScene,
         BetScene,
         PlayScene
       ];
-      const createScene = (Scene: any) => new Scene(CONFIG);
-      const initScenes = () => Scenes.map(createScene);
+      return Scenes;
+    };
 
-      const config = {
-        type: Phaser.AUTO,
-        scale: {
-          mode: Phaser.Scale.FIT,
-          parent: 'game-content',
-          autoCenter: Phaser.Scale.CENTER_BOTH,
-          min: {
-            width: 720,
-            height: 345
-          },
-          max: {
-            width: 1920,
-            height: 920
-          }
-        },
-        parent: 'game-content',
-        ...CONFIG,
-        backgroundColor: '#2A303C',
-        physics: {
-          arcade: {
-            debug: true
-          }
-        },
-        scene: initScenes()
-      };
-
-      const phaserGame = new Phaser.Game(config);
-      setGame(phaserGame);
-    }
-    initPhaser();
-  }, []);
+    const initPhaserAsync = async () => {
+      const Scenes = await importScenes();
+      initPhaser(
+        'war',
+        false,
+        user ? user.id : '',
+        setGame,
+        Scenes
+      );
+    };
+    initPhaserAsync();
+  }, [user]);
 
   return (
     <div id="game-content" key="game-content">
@@ -73,4 +49,4 @@ const WarGame = () => {
   );
 };
 
-export default WarGame;
+export default Game;
