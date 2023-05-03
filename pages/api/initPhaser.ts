@@ -1,13 +1,11 @@
-import {
-  User,
-  SupabaseClient
-} from '@supabase/supabase-js';
 import { Game as GameType } from 'phaser';
 import { Dispatch, SetStateAction } from 'react';
+import { fetchProfile } from '@/utils/supabase-client';
 
 export default async function initPhaser(
-  user: User | null,
-  supabase: SupabaseClient,
+  game: string,
+  canGoConfig: boolean,
+  userId: string,
   setGame: Dispatch<SetStateAction<GameType | undefined>>,
   Scenes: Array<any>
 ) {
@@ -15,25 +13,20 @@ export default async function initPhaser(
   const CONFIG = {
     width: 1920,
     height: 920,
-    game: 'blackjack',
-    userName: 'Player'
+    game,
+    canGoConfig,
+    userName: 'Player',
+    money: 1000,
+    userId
   };
 
-  if (user) {
-    const { data, error, status } = await supabase
-      .from('profiles')
-      .select(`username`)
-      .eq('id', user.id)
-      .single();
+  if (userId) {
+    const data = await fetchProfile(userId);
     if (data) {
       CONFIG.userName = data.username ?? 'Player';
-    }
-
-    if (error && status !== 406) {
-      throw error; // eslint-disable-line @typescript-eslint/no-throw-literal
+      CONFIG.money = data.money;
     }
   }
-  console.log(CONFIG);
 
   const createScene = (Scene: any) => new Scene(CONFIG);
   const initScenes = () => Scenes.map(createScene);
