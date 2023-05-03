@@ -1,14 +1,9 @@
-import { Database } from '@/utils/database.types';
-import {
-  useSupabaseClient,
-  useUser
-} from '@supabase/auth-helpers-react';
+import { useUser } from '@supabase/auth-helpers-react';
 import { Game as GameType } from 'phaser';
 import { useEffect, useState } from 'react';
 import initPhaser from '../api/initPhaser';
 
 const Game = () => {
-  const supabase = useSupabaseClient<Database>();
   const user = useUser();
   const [game, setGame] = useState<GameType>(); // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -36,10 +31,16 @@ const Game = () => {
 
     const initPhaserAsync = async () => {
       const Scenes = await importScenes();
-      initPhaser(user, supabase, setGame, Scenes);
+      initPhaser(
+        'blackjack',
+        false,
+        user ? user.id : '',
+        setGame,
+        Scenes
+      );
     };
     initPhaserAsync();
-  }, [user]);
+  }, []);
 
   return (
     <div id="game-content" key="game-content">
