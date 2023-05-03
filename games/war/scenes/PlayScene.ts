@@ -24,7 +24,14 @@ export default class PlayScene extends Table {
     super.create();
     this.gamePhase = GamePhase.BETTING;
     this.players = [
-      new WarPlayer('player', 0, 0, 'bet', 'Player', 0),
+      new WarPlayer(
+        'player',
+        0,
+        0,
+        'bet',
+        this.config.userName,
+        0
+      ),
       new WarPlayer('house', 0, 0, 'bet', 'House', 0)
     ];
 
