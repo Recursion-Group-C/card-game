@@ -85,6 +85,7 @@ export default abstract class Table extends BaseScene {
     x?: number,
     y?: number
   ): void {
+    this.deck = undefined;
     this.deck = new Deck(this, x ?? 0, y ?? 0);
     this.deck.cardList.forEach((card) => {
       Phaser.Display.Align.In.Center(
@@ -331,7 +332,7 @@ export default abstract class Table extends BaseScene {
   abstract payOut(
     gameResult: string,
     playerIndex?: number
-  ): void;
+  ): number;
 
   abstract playGameResultSound(result: string): void;
 
