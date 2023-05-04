@@ -668,12 +668,15 @@ export default class PlayScene extends Table {
 
     console.log(tmpStr);
 
-    this.cpuBettingStatus = this.add.text(
-      this.playerHandZones[1].x,
-      this.playerHandZones[1].y,
-      tmpStr,
-      STYLE.NAME_TEXT
-    );
+    this.cpuBettingStatus = this.add
+      .text(
+        this.playerHandZones[1].x,
+        this.playerHandZones[1].y,
+        tmpStr,
+        STYLE.NAME_TEXT
+      )
+      .setOrigin(0.5)
+      .setDepth(10);
   }
 
   private createChageHandButton(): void {
