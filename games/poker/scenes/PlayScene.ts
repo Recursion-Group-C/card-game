@@ -65,7 +65,7 @@ export default class PlayScene extends Table {
         0,
         0,
         GameStatus.FIRST_BETTING,
-        'IORI',
+        'CPU',
         0
       )
     ];
@@ -215,12 +215,10 @@ export default class PlayScene extends Table {
     );
 
     this.raiseButton.setClickHandler(() => {
-      // console.log(this.players[1].bet);
       this.addRaiseAmount();
       this.playerBet += this.currentBetAmount;
       this.playerMoney -= this.playerBet;
       this.player.addBet(this.currentBetAmount);
-      this.player.gameStatus = PlayerAction.RAISE;
 
       // TODO: チップアニメーション追加
       this.time.delayedCall(500, () => {
@@ -228,8 +226,16 @@ export default class PlayScene extends Table {
         this.setBetText(this.playerBet);
         this.pot?.setAmount(this.currentBetAmount);
         this.destroyActionPanel();
-
-        this.nextPlayerTurnOnFirstBettingRound(1);
+        console.log(this.player.gameStatus);
+        if (
+          this.player.gameStatus ===
+          GameStatus.SECOND_BETTING
+        ) {
+          this.nextPlayerTurnOnSecondBettingRound(1);
+        } else {
+          this.nextPlayerTurnOnFirstBettingRound(1);
+        }
+        this.player.gameStatus = PlayerAction.RAISE;
       });
     });
   }
@@ -332,8 +338,7 @@ export default class PlayScene extends Table {
 
   /**
    * 1巡目のベッティングラウンド
-   * @param playerIndex
-   * @returns
+   * @param playerIndex 次の手番のプレイヤーのindex
    */
   private nextPlayerTurnOnFirstBettingRound(
     playerIndex: number
@@ -383,6 +388,7 @@ export default class PlayScene extends Table {
 
   /**
    * ハンド交換を行うラウンド
+   * @param playerIndex 次の手番のプレイヤーのindex
    */
   private nextPlayerTurnOnChangeHandRound(
     playerIndex: number
@@ -421,7 +427,7 @@ export default class PlayScene extends Table {
 
   /**
    * 2巡目のベッティングラウンド
-   * @param playerIndex
+   * @param playerIndex 次の手番のプレイヤーのindex
    */
   private nextPlayerTurnOnSecondBettingRound(
     playerIndex: number
@@ -532,6 +538,7 @@ export default class PlayScene extends Table {
       console.log(player.gameStatus);
       if (player.gameStatus === GameStatus.SECOND_BETTING) {
         isEnd = false;
+        return isEnd;
       }
 
       if (player.gameStatus === PlayerAction.CHECK) {
