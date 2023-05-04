@@ -80,7 +80,7 @@ export default class PlayScene extends Table {
     super.create();
     this.createPot();
     this.resetAndShuffleDeck(0, -600);
-
+    this.createBackButton();
     this.createPlayerNameTexts();
     this.createPlayerHandZones(
       GAME.CARD.WIDTH,
