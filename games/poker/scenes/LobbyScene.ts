@@ -36,7 +36,7 @@ export default class LobbyScene extends BaseScene {
       this.highScore = this.getHighScore();
 
       this.createGameZone();
-      this.createTitle();
+      // this.createTitle();
       this.createButtons();
       this.createText();
 

@@ -1,15 +1,17 @@
 import GAME from '@/games/common/constants/game';
 import GameDecision from '../../common/Factories/gameDecision';
 import Player from '../../common/Factories/player';
-import GameStatus from '../constants/gameStatus';
-import HandRank from '../constants/handRank';
+import {
+  HAND_RANK,
+  HAND_RANK_MAP
+} from '../constants/handRank';
 
 export default class PokerPlayer extends Player {
   constructor(
     playerType: string,
     bet: number,
     winAmount: number,
-    gameStatus: GameStatus,
+    gameStatus: string,
     name = 'Player',
     chips: number = GAME.PLAYER.CHIPS
   ) {
@@ -33,7 +35,7 @@ export default class PokerPlayer extends Player {
     return this.hand.length;
   }
 
-  getHandRank(): HandRank {
+  getHandRank(): number {
     const ranks: string[] = this.hand
       .map((card) => card.rank)
       .sort();
@@ -55,23 +57,33 @@ export default class PokerPlayer extends Player {
     );
 
     if (isFlush && isStraight) {
-      return HandRank.STRAIGHT_FLUSH;
+      return HAND_RANK_MAP.get(
+        HAND_RANK.STRAIGHT_FLUSH
+      ) as number;
     }
     if (pairs.length === 1) {
-      return HandRank.ONE_PAIR;
+      return HAND_RANK_MAP.get(
+        HAND_RANK.ONE_PAIR
+      ) as number;
     }
     if (pairs.length === 2) {
-      return HandRank.TWO_PAIR;
+      return HAND_RANK_MAP.get(
+        HAND_RANK.TWO_PAIR
+      ) as number;
     }
     if (pairs.length === 3) {
-      return HandRank.THREE_OF_A_KIND;
+      return HAND_RANK_MAP.get(
+        HAND_RANK.THREE_OF_A_KIND
+      ) as number;
     }
     if (isFlush) {
-      return HandRank.FLUSH;
+      return HAND_RANK_MAP.get(HAND_RANK.FLUSH) as number;
     }
     if (isStraight) {
-      return HandRank.STRAIGHT;
+      return HAND_RANK_MAP.get(
+        HAND_RANK.STRAIGHT
+      ) as number;
     }
-    return HandRank.HIGH_CARD;
+    return HAND_RANK_MAP.get(HAND_RANK.HIGH_CARD) as number;
   }
 }

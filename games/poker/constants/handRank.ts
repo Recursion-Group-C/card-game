@@ -1,14 +1,27 @@
-enum HandRank {
-  HIGH_CARD = 1,
-  ONE_PAIR = 2,
-  TWO_PAIR = 3,
-  THREE_OF_A_KIND = 4,
-  STRAIGHT = 5,
-  FLUSH = 6,
-  FULL_HOUSE = 7,
-  FOUR_OF_A_KIND = 8,
-  STRAIGHT_FLUSH = 9,
-  ROYAL_FLUSH = 10
-}
+const HAND_RANK = {
+  HIGH_CARD: 'HIGH_CARD',
+  ONE_PAIR: 'ONE_PAIR',
+  TWO_PAIR: 'TWO_PAIR',
+  THREE_OF_A_KIND: 'THREE_OF_A_KIND',
+  STRAIGHT: 'STRAIGHT',
+  FLUSH: 'FLUSH',
+  FULL_HOUSE: 'FULL_HOUSE',
+  FOUR_OF_A_KIND: 'FOUR_OF_A_KIND',
+  STRAIGHT_FLUSH: 'STRAIGHT_FLUSH',
+  ROYAL_FLUSH: 'ROYAL_FLUSH'
+};
 
-export default HandRank;
+const HAND_RANK_MAP = new Map([
+  ['HIGH_CARD', 1],
+  ['ONE_PAIR', 2],
+  ['TWO_PAIR', 3],
+  ['THREE_OF_A_KIND', 4],
+  ['STRAIGHT', 5],
+  ['FLUSH', 6],
+  ['FULL_HOUSE', 7],
+  ['FOUR_OF_A_KIND', 8],
+  ['STRAIGHT_FLUSH', 9],
+  ['ROYAL_FLUSH', 10]
+]);
+
+export { HAND_RANK, HAND_RANK_MAP };

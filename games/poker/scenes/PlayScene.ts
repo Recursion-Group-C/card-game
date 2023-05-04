@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 import STYLE from '@/games/common/constants/style';
 import Button from '../../common/Factories/button';
 import Card from '../../common/Factories/cardImage';
@@ -8,11 +9,13 @@ import GameResult from '../constants/gameResult';
 import PokerPlayer from '../models/pokerPlayer';
 import GameStatus from '../constants/gameStatus';
 import DealerButton from '../models/dealerButton';
+import { HAND_RANK_MAP } from '../constants/handRank';
 
+import Text = Phaser.GameObjects.Text;
 import Zone = Phaser.GameObjects.Zone;
 import Pot from '../models/pot';
 import PlayerAction from '../constants/playerAction';
-import PlayerBettingStatus from '../models/playerBettingStatus';
+// import PlayerBettingStatus from '../models/playerBettingStatus';
 
 // プレイヤーが支払うアンティの金額
 const ANTE_AMOUNT = 20;
@@ -42,6 +45,8 @@ export default class PlayScene extends Table {
    * ベッティングラウンドでの現在の最低ベット額
    */
   private currentBetAmount: number;
+
+  private cpuBettingStatus: Text | undefined;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(config: any) {
@@ -83,7 +88,7 @@ export default class PlayScene extends Table {
     );
 
     this.dealInitialCards();
-    this.createDealerButton(this.playerHandZones[0]);
+    // this.createDealerButton(this.playerHandZones[0]);
 
     this.time.delayedCall(2000, () => {
       this.PlayAnte();
@@ -168,7 +173,7 @@ export default class PlayScene extends Table {
       this,
       this.config.width / 2,
       this.config.height / 2,
-      GAME.TABLE.WHITE_CHIP_KEY,
+      GAME.TABLE.RED_CHIP_KEY,
       0
     );
   }
@@ -202,19 +207,20 @@ export default class PlayScene extends Table {
   private createRaiseButton(): void {
     this.raiseButton = new Button(
       this,
-      this.config.width * 0.95,
-      this.config.height * 0.9,
-      GAME.TABLE.YELLOW_CHIP_KEY,
+      this.config.width * 0.85,
+      this.config.height * 0.7,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'RAISE'
     );
 
     this.raiseButton.setClickHandler(() => {
+      // console.log(this.players[1].bet);
       this.addRaiseAmount();
       this.playerBet += this.currentBetAmount;
       this.playerMoney -= this.playerBet;
-      this.player.addBet(this.playerBet);
-      this.player.gameStatus = GameStatus.CHANGE_CARD;
+      this.player.addBet(this.currentBetAmount);
+      this.player.gameStatus = PlayerAction.RAISE;
 
       // TODO: チップアニメーション追加
       this.time.delayedCall(500, () => {
@@ -239,9 +245,9 @@ export default class PlayScene extends Table {
   private createCallButton(): void {
     this.callButton = new Button(
       this,
-      this.config.width * 0.87,
-      this.config.height * 0.9,
-      GAME.TABLE.YELLOW_CHIP_KEY,
+      this.config.width * 0.85,
+      this.config.height * 0.8,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'CALL'
     );
@@ -249,7 +255,7 @@ export default class PlayScene extends Table {
     this.callButton.setClickHandler(() => {
       this.playerBet += this.currentBetAmount;
       this.playerMoney -= this.playerBet;
-      this.player.gameStatus = GameStatus.CHANGE_CARD;
+      this.player.gameStatus = PlayerAction.CALL;
 
       // TODO: チップアニメーション追加
       this.time.delayedCall(500, () => {
@@ -266,19 +272,27 @@ export default class PlayScene extends Table {
   private createCheckButton(): void {
     this.checkButton = new Button(
       this,
-      this.config.width * 0.87,
-      this.config.height * 0.9,
-      GAME.TABLE.YELLOW_CHIP_KEY,
+      this.config.width * 0.85,
+      this.config.height * 0.8,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'CHECK'
     );
 
     this.checkButton.setClickHandler(() => {
-      this.player.gameStatus = GameStatus.CHANGE_CARD;
       // TODO: チップアニメーション追加
       this.time.delayedCall(500, () => {
         this.destroyActionPanel();
-        this.nextPlayerTurnOnFirstBettingRound(1);
+        if (
+          this.player.gameStatus ===
+          GameStatus.SECOND_BETTING
+        ) {
+          this.player.gameStatus = PlayerAction.CHECK;
+          this.nextPlayerTurnOnSecondBettingRound(1);
+        } else {
+          this.player.gameStatus = PlayerAction.CHECK;
+          this.nextPlayerTurnOnFirstBettingRound(1);
+        }
       });
     });
   }
@@ -286,15 +300,15 @@ export default class PlayScene extends Table {
   private createFoldButton(): void {
     this.foldButton = new Button(
       this,
-      this.config.width * 0.79,
+      this.config.width * 0.85,
       this.config.height * 0.9,
-      GAME.TABLE.YELLOW_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'FOLD'
     );
 
     this.foldButton.setClickHandler(() => {
-      this.player.gameStatus = GameStatus.FOLDED;
+      this.player.gameStatus = PlayerAction.FOLD;
       this.player.hand.forEach((card) => {
         card.playMoveTween(this.config.width / 2, -600);
       });
@@ -324,18 +338,32 @@ export default class PlayScene extends Table {
   private nextPlayerTurnOnFirstBettingRound(
     playerIndex: number
   ): void {
-    // TODO: ネスト浅くする
-    if (this.isFirstBettingEnd()) {
-      if (!this.hasEnoughPlayers()) {
-        // ノーコンテスト
-        if (this.player.gameStatus === GameStatus.FOLDED) {
-          this.noContest(GameResult.LOSS);
-        }
-        this.noContest(GameResult.WIN);
+    console.log('ファーストベッティング');
+    // ノーコンテスト
+    console.log(this.currentBetAmount);
+    if (!this.hasEnoughPlayers()) {
+      this.clearPlayersBet();
+      this.cpuBettingStatus?.destroy();
+      if (this.player.gameStatus === PlayerAction.FOLD) {
+        this.noContest(GameResult.LOSS);
         return;
       }
+      this.noContest(GameResult.WIN);
+      return;
+    }
 
-      this.nextPlayerTurnOnChangeHandRound(playerIndex);
+    // ハンド交換へ
+    if (this.isFirstBettingEnd()) {
+      this.clearPlayersBet();
+      this.cpuBettingStatus?.destroy();
+
+      // 全員のstatus変更
+      this.players.forEach((player) => {
+        // eslint-disable-next-line no-param-reassign
+        player.gameStatus = GameStatus.CHANGE_CARD;
+      });
+      this.nextPlayerTurnOnChangeHandRound(0);
+
       return;
     }
 
@@ -349,7 +377,7 @@ export default class PlayScene extends Table {
     ) {
       this.createActionPanel();
     } else {
-      this.cpuBettingAction(currentPlayerIndex);
+      this.cpuFirstBettingAction(1);
     }
   }
 
@@ -359,16 +387,19 @@ export default class PlayScene extends Table {
   private nextPlayerTurnOnChangeHandRound(
     playerIndex: number
   ): void {
-    if (this.isChangeHandRoundEnd()) {
-      this.currentBetAmount = 0;
-      this.clearPlayersBet();
-      this.nextPlayerTurnOnSecondBettingRound(playerIndex);
-      return;
-    }
-
     let currentPlayerIndex = playerIndex;
     if (playerIndex > this.players.length - 1)
       currentPlayerIndex = 0;
+
+    console.log('changeHand', playerIndex);
+    // 2巡目へ
+    if (this.isChangeHandRoundEnd()) {
+      this.currentBetAmount = 0;
+      this.clearPlayersBet();
+      console.log('呼び出し');
+      this.nextPlayerTurnOnSecondBettingRound(0);
+      return;
+    }
 
     if (
       this.players[currentPlayerIndex].playerType ===
@@ -378,7 +409,7 @@ export default class PlayScene extends Table {
       this.createChageHandButton();
       this.enableHandSelection();
     } else {
-      this.cpuChangeHand(playerIndex);
+      this.cpuChangeHand(1);
     }
   }
 
@@ -395,14 +426,27 @@ export default class PlayScene extends Table {
   private nextPlayerTurnOnSecondBettingRound(
     playerIndex: number
   ): void {
+    console.log('セカンドベッティング');
     if (this.isSecondBettingEnd()) {
       // TODO: 役名を表示する
-      console.log(this.compareAllHands());
+
+      const winPlayers = this.compareAllHands();
+      let result = GameResult.LOSS;
+      if (winPlayers.length >= 2) {
+        result = GameResult.TIE;
+      }
+      if (winPlayers.includes(this.player)) {
+        result = GameResult.WIN;
+      }
+      this.showdown(result);
+      return;
     }
 
     let currentPlayerIndex = playerIndex;
     if (playerIndex > this.players.length - 1)
       currentPlayerIndex = 0;
+
+    console.log(currentPlayerIndex);
 
     if (
       this.players[currentPlayerIndex].playerType ===
@@ -410,7 +454,7 @@ export default class PlayScene extends Table {
     ) {
       this.createActionPanel();
     } else {
-      this.cpuBettingAction(currentPlayerIndex);
+      this.cpuSecondBettingAction(1);
     }
   }
 
@@ -425,7 +469,7 @@ export default class PlayScene extends Table {
   private hasEnoughPlayers(): boolean {
     return (
       this.players.filter(
-        (player) => player.gameStatus !== GameStatus.FOLDED
+        (player) => player.gameStatus !== PlayerAction.FOLD
       ).length >= 2
     );
   }
@@ -433,16 +477,38 @@ export default class PlayScene extends Table {
   /**
    * 全員のベッティングが終了しているかどうかを判定する
    *
-   * @privateRemarks
-   * 全員がcurrentBetAmountと同じベット額がどうかの判定。
-   * @returns 全員のベッティングが終了している場合は true、そうでない場合は false
+   * @returns 全員のベッティングが終了している場合は true
    */
   private isFirstBettingEnd(): boolean {
-    return this.players.every(
-      (player) =>
-        player.gameStatus !== GameStatus.FIRST_BETTING &&
-        player.bet === this.currentBetAmount
-    );
+    let isEnd = true;
+    // eslint-disable-next-line consistent-return
+    this.players.forEach((player) => {
+      if (player.gameStatus === GameStatus.FIRST_BETTING) {
+        isEnd = false;
+      }
+
+      if (player.gameStatus === PlayerAction.CHECK) {
+        if (player.bet === 0) {
+          isEnd = false;
+        }
+      }
+
+      if (player.gameStatus === PlayerAction.CALL) {
+        isEnd = player.bet === this.currentBetAmount;
+      }
+
+      if (player.gameStatus === PlayerAction.RAISE) {
+        if (
+          player.bet !== 0 &&
+          player.bet === this.currentBetAmount
+        ) {
+          isEnd = true;
+        } else {
+          isEnd = false;
+        }
+      }
+    });
+    return isEnd;
   }
 
   /**
@@ -454,20 +520,47 @@ export default class PlayScene extends Table {
       if (player.gameStatus === GameStatus.CHANGE_CARD) {
         isEnd = false;
       }
+      console.log(isEnd, player.gameStatus, player.name);
     });
     return isEnd;
   }
 
   private isSecondBettingEnd(): boolean {
-    return this.players.every(
-      (player) =>
-        player.gameStatus !== GameStatus.SECOND_BETTING &&
-        player.bet === this.currentBetAmount
-    );
+    let isEnd = true;
+    // eslint-disable-next-line consistent-return
+    this.players.forEach((player) => {
+      console.log(player.gameStatus);
+      if (player.gameStatus === GameStatus.SECOND_BETTING) {
+        isEnd = false;
+      }
+
+      if (player.gameStatus === PlayerAction.CHECK) {
+        if (player.bet === 0) {
+          isEnd = false;
+        }
+      }
+
+      if (player.gameStatus === PlayerAction.CALL) {
+        isEnd = player.bet === this.currentBetAmount;
+      }
+
+      if (player.gameStatus === PlayerAction.RAISE) {
+        if (
+          player.bet !== 0 &&
+          player.bet === this.currentBetAmount
+        ) {
+          isEnd = true;
+        } else {
+          isEnd = false;
+        }
+      }
+    });
+
+    return isEnd;
   }
 
   // TODO: 難易度調整
-  private cpuBettingAction(playerIndex: number): void {
+  private cpuFirstBettingAction(index: number): void {
     const decisionValues = Object.values(PlayerAction);
     const decisionIndex = Math.floor(
       Math.random() * decisionValues.length
@@ -480,53 +573,58 @@ export default class PlayScene extends Table {
       decisionValue = PlayerAction.CALL;
     }
 
-    if (decisionValue === PlayerAction.FOLD) {
-      this.players[playerIndex].gameStatus =
-        GameStatus.FOLDED;
-      this.createCpuBettingStatus(PlayerAction.FOLD);
-      this.players[playerIndex].hand.forEach((card) => {
-        card.playMoveTween(this.config.width / 2, -600);
-      });
-    }
-    if (decisionValue === PlayerAction.RAISE) {
-      this.addRaiseAmount();
-      this.players[playerIndex].addBet(
-        this.currentBetAmount
-      );
-      this.pot?.setAmount(this.currentBetAmount);
-      this.createCpuBettingStatus(PlayerAction.RAISE);
-    }
+    decisionValue = PlayerAction.CALL;
+
+    // if (decisionValue === PlayerAction.FOLD) {
+    //   this.players[playerIndex].gameStatus =
+    //     PlayerAction.FOLD;
+    //   this.createCpuBettingStatus(PlayerAction.FOLD);
+    //   this.players[playerIndex].hand.forEach((card) => {
+    //     card.playMoveTween(this.config.width / 2, -600);
+    //   });
+    // }
+    // if (decisionValue === PlayerAction.RAISE) {
+    //   this.addRaiseAmount();
+    //   this.players[playerIndex].addBet(
+    //     this.currentBetAmount
+    //   );
+    //   this.pot?.setAmount(this.currentBetAmount);
+    //   this.createCpuBettingStatus(PlayerAction.RAISE);
+    // }
     if (decisionValue === PlayerAction.CALL) {
-      this.players[playerIndex].addBet(
-        this.currentBetAmount
-      );
-      this.pot?.setAmount(this.currentBetAmount);
+      const betAmount =
+        this.currentBetAmount - this.players[index].bet;
+      this.players[index].addBet(betAmount);
+      this.pot?.setAmount(betAmount);
       this.createCpuBettingStatus(PlayerAction.CALL);
+      this.players[index].gameStatus = PlayerAction.CALL;
     }
 
-    // playerのstatus変更
-    if (
-      this.players[playerIndex].gameStatus ===
-      GameStatus.FIRST_BETTING
-    ) {
-      this.players[playerIndex].gameStatus =
-        GameStatus.CHANGE_CARD;
-    } else {
-      // dfsa
-      this.players[playerIndex].gameStatus =
-        GameStatus.SECOND_BETTING;
+    this.time.delayedCall(1000, () => {
+      this.nextPlayerTurnOnFirstBettingRound(0);
+    });
+  }
+
+  private cpuSecondBettingAction(index: number): void {
+    const decisionValue = PlayerAction.CALL;
+    this.cpuBettingStatus?.destroy();
+
+    if (decisionValue === PlayerAction.CALL) {
+      const betAmount =
+        this.currentBetAmount - this.players[index].bet;
+      this.players[index].addBet(betAmount);
+      this.pot?.setAmount(betAmount);
+      this.createCpuBettingStatus(PlayerAction.CALL);
+      this.players[index].gameStatus = PlayerAction.CALL;
     }
 
-    // 現在のベット額を表示
-    const nextPlayerIndex = playerIndex + 1;
-    this.nextPlayerTurnOnFirstBettingRound(nextPlayerIndex);
+    this.nextPlayerTurnOnSecondBettingRound(0);
   }
 
   private cpuChangeHand(playerIndex: number): void {
     const selectedCards: Card[] = [];
-
-    this.players[playerIndex].gameStatus =
-      GameStatus.SECOND_BETTING;
+    console.log(playerIndex);
+    this.players[1].gameStatus = GameStatus.SECOND_BETTING;
     // カードをランダムに選ぶ処理
     this.players[playerIndex].hand.forEach((card) => {
       const randamNum = Math.random();
@@ -545,40 +643,37 @@ export default class PlayScene extends Table {
       selectedCards.forEach((card) => {
         this.handOutCard(
           this.deck as Deck,
-          this.player as PokerPlayer,
+          this.players[playerIndex] as PokerPlayer,
           card.originalPositionX as number,
           card.originalPositionY as number,
           true
         );
       });
 
-      const nextPlayerIndex = playerIndex + 1;
-      this.nextPlayerTurnOnChangeHandRound(nextPlayerIndex);
+      // const nextPlayerIndex = playerIndex + 1;
+
+      this.nextPlayerTurnOnChangeHandRound(0);
     });
   }
 
   private createCpuBettingStatus(status: string): void {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const cpuBettingStatus = new PlayerBettingStatus(
-      this,
-      this.playerHandZones[1].x + 300,
-      this.playerHandZones[1].y - 150,
-      GAME.TABLE.RED_CHIP_KEY,
-      status
-    );
+    let tmpStr = '';
+    if (status === PlayerAction.RAISE)
+      tmpStr = `RAISE: ${this.currentBetAmount}`;
+    else if (status === PlayerAction.CALL)
+      tmpStr = `CALL: ${this.currentBetAmount}`;
+    else if (status === PlayerAction.CHECK)
+      tmpStr = `CHECK: ${this.currentBetAmount}`;
+    else tmpStr = `FOLD`;
 
-    if (status === PlayerAction.RAISE) {
-      cpuBettingStatus.setAmount(
-        PlayerAction.RAISE,
-        this.currentBetAmount
-      );
-    }
-    if (status === PlayerAction.CALL) {
-      cpuBettingStatus.setAmount(
-        PlayerAction.CALL,
-        this.currentBetAmount
-      );
-    }
+    console.log(tmpStr);
+
+    this.cpuBettingStatus = this.add.text(
+      this.playerHandZones[1].x,
+      this.playerHandZones[1].y,
+      tmpStr,
+      STYLE.NAME_TEXT
+    );
   }
 
   private createChageHandButton(): void {
@@ -586,7 +681,7 @@ export default class PlayScene extends Table {
       this,
       this.config.width * 0.1,
       this.config.height * 0.9,
-      GAME.TABLE.ORANGE_CHIP_KEY,
+      GAME.TABLE.BUTTON,
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'CHANGE'
     );
@@ -621,13 +716,13 @@ export default class PlayScene extends Table {
         });
       });
 
-      this.time.delayedCall(1000, () => {
+      this.time.delayedCall(1500, () => {
         this.player.hand.forEach((card) => {
           if (card.isFaceDown) {
             card.playFlipOverTween();
           }
-          this.nextPlayerTurnOnChangeHandRound(1);
         });
+        this.nextPlayerTurnOnChangeHandRound(1);
       });
     });
   }
@@ -657,7 +752,7 @@ export default class PlayScene extends Table {
    */
   private compareAllHands(): PokerPlayer[] {
     const players = (this.players as PokerPlayer[]).filter(
-      (player) => player.gameStatus !== GameStatus.FOLDED
+      (player) => player.gameStatus !== PlayerAction.FOLD
     );
     const sortedPlayers = players.sort((a, b) => {
       const aRank = a.getHandRank();
@@ -689,6 +784,10 @@ export default class PlayScene extends Table {
     return winners;
   }
 
+  /**
+   * ノーコンテンスト時の処理
+   * @param result プレイヤーの勝敗結果
+   */
   private noContest(result: GameResult): void {
     this.destroyActionPanel();
     this.payOut(result);
@@ -696,8 +795,8 @@ export default class PlayScene extends Table {
       .text(
         this.config.width / 2,
         this.config.height / 2,
-        'No Contest!',
-        STYLE.TEXT
+        result,
+        STYLE.NAME_TEXT
       )
       .setOrigin(0.5)
       .setDepth(10);
@@ -708,7 +807,7 @@ export default class PlayScene extends Table {
     this.time.delayedCall(3000, () => {
       noContestText.destroy();
       this.dealInitialCards();
-      this.createDealerButton(this.playerHandZones[0]);
+      // this.createDealerButton(this.playerHandZones[0]);
       console.log(this.playerBet);
       this.PlayAnte();
     });
@@ -720,25 +819,96 @@ export default class PlayScene extends Table {
     // this.dealCards();
   }
 
-  // private showWinnigPlayer(players: PokerPlayer[]): void {
-  //   const winners = this.compareAllHands();
-  //   winners.forEach(() => {
+  /**
+   * ショーダウン時の処理
+   *
+   * @param result プレイヤーの勝敗結果
+   * @remark
+   * 各プレイヤーの役名と、勝敗結果を表示する。
+   * その後、次のラウンドへ移行
+   * @privateRemark
+   * TODO: cpuのカードを表向きにする
+   */
+  private showdown(result: GameResult): void {
+    this.destroyActionPanel();
+    this.payOut(result);
+    const handRanks: Text[] = [];
 
-  //   })
-  // }
+    this.playerHandZones.forEach((handZone, index) => {
+      const player = this.players[index] as PokerPlayer;
+      const handRankText = this.getKeyByValue(
+        HAND_RANK_MAP,
+        player.getHandRank()
+      );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, class-methods-use-this
-  payOut(result: GameResult) {
-    // TODO
+      const handRank = this.add
+        .text(
+          handZone.x,
+          handZone.y,
+          handRankText,
+          STYLE.NAME_TEXT
+        )
+        .setOrigin(0.5)
+        .setDepth(10);
+
+      handRanks.push(handRank);
+    });
+
+    const resultText = this.add
+      .text(
+        this.config.width / 2,
+        this.config.height / 2,
+        result,
+        STYLE.NAME_TEXT
+      )
+      .setOrigin(0.5)
+      .setDepth(10);
+
+    this.resetRound();
+
+    this.time.delayedCall(3000, () => {
+      handRanks.forEach((handRank) => {
+        handRank.destroy();
+      });
+      resultText.destroy();
+      this.dealInitialCards();
+      // this.createDealerButton(this.playerHandZones[0]);
+      console.log(this.playerBet);
+      this.PlayAnte();
+    });
+
+    this.time.delayedCall(4000, () => {
+      this.createActionPanel();
+    });
+  }
+
+  // eslint-disable-next-line consistent-return
+  getKeyByValue(
+    map: Map<string, number>,
+    value: number
+  ): string {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [key, val] of map.entries()) {
+      if (val === value) {
+        return key;
+      }
+    }
+    return '';
+  }
+
+  payOut(result: GameResult): number {
+    let winAmount = 0;
     if (result === GameResult.WIN) {
-      this.playerMoney += this.pot?.getAmount() as number;
+      winAmount = this.pot?.getAmount() as number;
+      this.playerMoney += winAmount;
     }
     if (result === GameResult.TIE) {
-      this.playerMoney +=
-        (this.pot?.getAmount() as number) / 2;
+      winAmount = (this.pot?.getAmount() as number) / 2;
+      this.playerMoney += winAmount;
     }
     if (result === GameResult.LOSS) {
-      this.playerMoney -= this.playerBet;
+      winAmount -= this.playerBet;
+      // this.playerMoney -= this.playerBet;
     }
     this.setMoneyText(this.playerMoney);
 
@@ -754,6 +924,7 @@ export default class PlayScene extends Table {
         String(this.playerMoney)
       );
     }
+    return winAmount;
   }
 
   private resetRound(): void {
@@ -763,6 +934,7 @@ export default class PlayScene extends Table {
     this.playerBet = 0;
     this.setBetText(0);
     this.clearPlayersBet();
+    this.cpuBettingStatus?.destroy();
 
     this.players.forEach((player) => {
       // eslint-disable-next-line no-param-reassign

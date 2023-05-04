@@ -22,7 +22,7 @@ export default class Pot extends Phaser.GameObjects.Image {
     texture: string,
     potAmount: number,
     key = `POT: ${0}`,
-    textStyle = STYLE.TEXT
+    textStyle = STYLE.NAME_TEXT
   ) {
     super(scene, x, y, texture, potAmount);
     scene.add.existing(this);
@@ -44,8 +44,8 @@ export default class Pot extends Phaser.GameObjects.Image {
     );
 
     this.#key = `POT: ${potAmount}`;
-    this.#text.setFontSize(24);
-    Phaser.Display.Align.In.Center(this.#text, this);
+    this.#text.setFontSize(30);
+    Phaser.Display.Align.In.BottomCenter(this.#text, this);
     this.setScale(this.#initScale * 0.6);
     this.setDataEnabled();
   }

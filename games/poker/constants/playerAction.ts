@@ -1,8 +1,8 @@
 const PlayerAction = {
-  RAISE: 'raise',
-  CALL: 'call',
-  FOLD: 'fold',
-  CHECK: 'check'
+  RAISE: 'RAISE',
+  CALL: 'CALL',
+  FOLD: 'FOLD',
+  CHECK: 'CHECK'
 } as const;
 
 export default PlayerAction;
