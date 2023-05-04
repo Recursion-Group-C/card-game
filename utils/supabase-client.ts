@@ -38,4 +38,29 @@ const updateMoney = async (
   }
 };
 
-export { fetchProfile, updateMoney };
+const addResult = async (
+  userId: string,
+  game: string,
+  result: string,
+  winAmount: number
+) => {
+  try {
+    const { error } = await supabase
+      .from('results')
+      .insert({
+        user_id: userId,
+        game,
+        result,
+        win_amount: winAmount
+      });
+
+    if (error) {
+      console.log('error in addResult', error);
+    }
+  } catch (error) {
+    alert('Error adding new result!');
+    console.log(error);
+  }
+};
+
+export { fetchProfile, updateMoney, addResult };

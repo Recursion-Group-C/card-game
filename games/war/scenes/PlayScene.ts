@@ -1,3 +1,4 @@
+import { Result } from '@/games/common/types/game';
 import Button from '../../common/Factories/button';
 import Card from '../../common/Factories/cardImage';
 import Deck from '../../common/Factories/deckImage';
@@ -212,7 +213,7 @@ export default class PlayScene extends Table {
     return result;
   }
 
-  payOut(result: GameResult): number {
+  payOut(result: GameResult): Result {
     let winAmount = 0;
     if (this.betScene && this.betScene.money) {
       if (result === GameResult.WAR_TIE) {
@@ -230,7 +231,10 @@ export default class PlayScene extends Table {
       this.setMoneyText(this.betScene.money);
       this.setBetText(this.betScene.bet);
     }
-    return winAmount;
+    return {
+      gameResult: result,
+      winAmount
+    };
   }
 
   playGameResultSound(result: string): void {

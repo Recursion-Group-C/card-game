@@ -1,4 +1,8 @@
-import { updateMoney } from '@/utils/supabase-client';
+import { Result } from '@/games/common/types/game';
+import {
+  addResult,
+  updateMoney
+} from '@/utils/supabase-client';
 import GAME from '../constants/game';
 import STYLE from '../constants/style';
 
@@ -278,15 +282,22 @@ export default abstract class Table extends BaseScene {
   ): void;
 
   protected endHand(result: string): void {
-    const winAmount = this.payOut(result);
+    const resultObj = this.payOut(result);
     this.time.delayedCall(500, () => {
-      this.createResultText(result, winAmount);
+      this.createResultText(result, resultObj.winAmount);
       this.playGameResultSound(result);
     });
     // ログインしている場合は、DBのmoneyを更新する。
     // ログインしていない場合は、storageのHighScoreを更新する。
     if (this.config.userId) {
       updateMoney(this.config.userId, this.betScene!.money);
+      const { gameResult, winAmount } = resultObj;
+      addResult(
+        this.config.userId,
+        this.config.game,
+        gameResult,
+        winAmount
+      );
     } else {
       Table.setStorageHighScore(
         this.config.game,
@@ -313,7 +324,7 @@ export default abstract class Table extends BaseScene {
     }
   }
 
-  abstract payOut(result: string): number;
+  abstract payOut(result: string): Result;
 
   abstract playGameResultSound(result: string): void;
 
