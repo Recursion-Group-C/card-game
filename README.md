@@ -8,54 +8,68 @@
 </p>
 
 # :globe_with_meridians: App URL
+
 https://card-game-drab-ten.vercel.app/
 
 # :syringe: Install
+
 ```bash
 git clone https://github.com/Recursion-Group-C/card-game.git
 npm install
 npm run dev
 ```
+
 :point_right: http://localhost:3000
 
 # :speech_balloon: Usage
+
 1. ホーム画面からゲームを選択します
-1. Bet画面で賭金を決めます
+1. Bet 画面で賭金を決めます
 1. 各ゲームでハウスに勝ち、お金を増やしましょう
 
 # :package: Features
+
 ## 🎮 Blackjack
+
 - プレイヤー vs ハウス
 
 ## 🎮 Casino War
+
 - プレイヤー vs ハウス
 
 ## 🎮 Speed
-- プレイヤー vs ハウス
-- Easy, Medium, Hardから難易度を選択できます
 
-## 🎮 Porker
 - プレイヤー vs ハウス
-- CPUを追加する予定です
+- Easy, Medium, Hard から難易度を選択できます
 
-## 🎮 Texas Hold'em Porker
+## 🎮 Poker
+
+- プレイヤー vs ハウス
+- CPU を追加する予定です
+
+## 🎮 Texas Hold'em Poker
+
 - 開発中
 
 ## 🎮 Rummy
+
 - 開発中
 
 ## 🔏 ログイン機能
+
 - 開発中
 
 ## 💄 レスポンシブ対応
+
 - 開発中
 
 # 📖 Documents
+
 👉 https://github.com/Recursion-Group-C/card-game/wiki
 
 # :ticket: License
 
-- [MIT](https://raw.githubusercontent.com/aocattleya/Ramen-Timer/master/LICENSE)  
+- [MIT](https://raw.githubusercontent.com/aocattleya/Ramen-Timer/master/LICENSE)
 
 # :construction_worker: Contributors
 

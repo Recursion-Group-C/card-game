@@ -73,10 +73,10 @@ export default class LobbyScene extends BaseScene {
             GAME.STORAGE.RUMMY_HIGH_SCORE_STORAGE
           )
         );
-      case 'porker':
+      case 'poker':
         return Number(
           localStorage.getItem(
-            GAME.STORAGE.PORKER_HIGH_SCORE_STORAGE
+            GAME.STORAGE.POKER_HIGH_SCORE_STORAGE
           )
         );
       case 'holdem':
