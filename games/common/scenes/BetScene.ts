@@ -1,4 +1,7 @@
-/* eslint no-underscore-dangle: 0 */
+import {
+  fetchProfile,
+  updateMoney
+} from '@/utils/supabase-client';
 import BaseScene from './BaseScene';
 
 import Button from '../Factories/button';
@@ -14,6 +17,8 @@ export default class BetScene extends BaseScene {
 
   public bet = 0;
 
+  public level = 0;
+
   public moneyText: Text | undefined;
 
   public betText: Text | undefined;
@@ -21,6 +26,8 @@ export default class BetScene extends BaseScene {
   public highScoreText: Text | undefined;
 
   public highScore: number | undefined;
+
+  #chips: Array<Button> = [];
 
   #dealButton: Button | undefined;
 
@@ -35,73 +42,44 @@ export default class BetScene extends BaseScene {
   create(): void {
     super.create();
 
-    if (this.money === 0) {
-      this.gameOver();
-    } else {
-      this.highScore = this.getHighScore();
+    this.loadData().then(() => {
+      if (this.money === 0) {
+        this.gameOver();
+      } else {
+        if (this.bet > this.money) this.bet = this.money;
 
-      if (this.bet > this.money) this.bet = this.money;
+        this.createTitle();
+        this.createChips();
+        this.createButtons();
+        this.createText();
 
-      this.createTitle();
-      this.createChips();
-      this.createButtons();
-      this.createText();
+        this.#enterGameSound = this.scene.scene.sound.add(
+          GAME.TABLE.ENTER_GAME_SOUND_KEY,
+          { volume: 0.3 }
+        );
+      }
+    });
+  }
 
-      this.#enterGameSound = this.scene.scene.sound.add(
-        GAME.TABLE.ENTER_GAME_SOUND_KEY,
-        { volume: 0.3 }
-      );
+  private async loadData() {
+    if (this.config.userId) {
+      console.log('BetScene loadData');
+      const data = await fetchProfile(this.config.userId);
+      if (data) {
+        this.money = data.money;
+      }
     }
   }
 
   private getHighScore(): number {
-    switch (this.config.game) {
-      case 'speed':
-        return Number(
-          localStorage.getItem(
-            GAME.STORAGE.SPEED_HIGH_SCORE_STORAGE
-          )
-        );
-      case 'blackjack':
-        return Number(
-          localStorage.getItem(
-            GAME.STORAGE.BLACKJACK_HIGH_SCORE_STORAGE
-          )
-        );
-      case 'war':
-        return Number(
-          localStorage.getItem(
-            GAME.STORAGE.WAR_HIGH_SCORE_STORAGE
-          )
-        );
-      case 'rummy':
-        return Number(
-          localStorage.getItem(
-            GAME.STORAGE.RUMMY_HIGH_SCORE_STORAGE
-          )
-        );
-      case 'porker':
-        return Number(
-          localStorage.getItem(
-            GAME.STORAGE.PORKER_HIGH_SCORE_STORAGE
-          )
-        );
-      case 'holdem':
-        return Number(
-          localStorage.getItem(
-            GAME.STORAGE.HOLDEM_HIGH_SCORE_STORAGE
-          )
-        );
-      default:
-        return 0;
-    }
+    return Number(localStorage.getItem(this.config.game));
   }
 
   private createTitle(): void {
     const textTitle: Text = this.add.text(
       0,
       20,
-      'Place your bet',
+      'Place Your Bet',
       STYLE.TEXT
     );
     Phaser.Display.Align.In.Center(
@@ -114,21 +92,27 @@ export default class BetScene extends BaseScene {
 
   private createText(): void {
     this.moneyText = this.add.text(0, 0, '', STYLE.TEXT);
-    this.betText = this.add.text(0, 0, '', STYLE.TEXT);
-    this.highScoreText = this.add.text(
-      0,
-      0,
-      '',
-      STYLE.TEXT
-    );
     this.setMoneyText(this.money);
+
+    this.betText = this.add.text(0, 0, '', STYLE.TEXT);
     this.setBetText(this.bet);
-    this.setHighScoreText();
+
+    // ユーザーがログインしていない場合に、HighScoreを表示する
+    if (!this.config.userId) {
+      this.highScoreText = this.add.text(
+        0,
+        0,
+        '',
+        STYLE.TEXT
+      );
+      this.setHighScoreText();
+    }
   }
 
   private setHighScoreText() {
+    this.highScore = this.getHighScore();
     this.highScoreText?.setText(
-      `High score: $${this.highScore}`
+      `High Score: $${this.highScore}`
     );
     Phaser.Display.Align.In.TopCenter(
       this.highScoreText as Phaser.GameObjects.GameObject,
@@ -141,6 +125,7 @@ export default class BetScene extends BaseScene {
   private createChips(): void {
     const chipHeight: number =
       Number(this.config.height) / 2;
+    this.#chips = [];
 
     const whiteChip = new Button(
       this,
@@ -179,20 +164,39 @@ export default class BetScene extends BaseScene {
       100
     );
 
-    const chips: Button[] = new Array<Button>();
-    chips.push(whiteChip);
-    chips.push(redChip);
-    chips.push(orangeChip);
-    chips.push(blueChip);
+    this.#chips.push(whiteChip);
+    this.#chips.push(redChip);
+    this.#chips.push(orangeChip);
+    this.#chips.push(blueChip);
 
     ImageUtility.spaceOutImagesEvenlyHorizontally(
-      chips as Button[],
+      this.#chips as Button[],
       this.scene
     );
-    chips.forEach((chip) => {
+
+    this.#chips.forEach((chip: Button) => {
       chip.setClickHandler(() => {
-        this.addChip(chip.getChipValue());
-        this.#dealButton?.playFadeIn();
+        if (this.bet + chip.getChipValue() <= this.money) {
+          this.addChip(chip.getChipValue());
+          this.#dealButton?.playFadeIn();
+          // アニメーション用のチップを作成する
+          const tempChip = new Button(
+            this,
+            chip.x,
+            chip.y,
+            chip.texture.key
+          );
+          tempChip.playMoveAndDestroy(this.config.width, 0);
+          // 現在のベット金額と追加チップの合計が所持金を上回る場合は、チップをフェードアウトする
+          this.#chips.forEach((otherChip: Button) => {
+            if (
+              this.bet + otherChip.getChipValue() >
+              this.money
+            ) {
+              otherChip.playFadeOut();
+            }
+          });
+        }
       });
     });
   }
@@ -200,7 +204,10 @@ export default class BetScene extends BaseScene {
   private createButtons(): void {
     this.createClearButton();
     this.createDealButton();
-    // this.createBackButton(); // TODO: responsive化できたときに、使用する
+    this.createBackButton();
+    if (this.config.canGoConfig) {
+      this.createCogButton();
+    }
 
     const buttons: Button[] = new Array<Button>();
     buttons.push(this.#clearButton as Button);
@@ -228,6 +235,9 @@ export default class BetScene extends BaseScene {
       this.bet = 0;
       this.setBetText(this.bet);
       this.#dealButton?.playFadeOut();
+      this.#chips.forEach((chip) => {
+        chip.playFadeIn();
+      });
     });
   }
 
@@ -275,6 +285,27 @@ export default class BetScene extends BaseScene {
     );
   }
 
+  private createCogButton(): void {
+    const configButton = new Button(
+      this,
+      0,
+      0,
+      GAME.TABLE.COG,
+      GAME.TABLE.BUTTON_CLICK_SOUND_KEY
+    );
+
+    configButton.setClickHandler(() => {
+      this.scene.start('LevelScene');
+    });
+
+    Phaser.Display.Align.In.BottomLeft(
+      configButton as Phaser.GameObjects.GameObject,
+      this.gameZone as Phaser.GameObjects.GameObject,
+      -STYLE.GUTTER_SIZE,
+      -STYLE.GUTTER_SIZE
+    );
+  }
+
   private addChip(value: number) {
     this.bet += value;
     if (this.bet > this.money) this.bet = this.money;
@@ -306,7 +337,9 @@ export default class BetScene extends BaseScene {
     this.input.once(
       'pointerdown',
       () => {
-        this.money = 1000;
+        if (this.config.userId) {
+          updateMoney(this.config.userId, 1000);
+        }
         this.bet = 0;
         this.scene.restart();
       },

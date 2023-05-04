@@ -19,6 +19,7 @@ const GAME = {
     SPEED_TABLE_KEY: 'speedTable',
     BUTTON: 'button',
     BACK: 'back',
+    COG: 'cog',
     COUNT_DOWN_SOUND_KEY: 'countDown',
     ENTER_GAME_SOUND_KEY: 'enterGame',
     WIN_GAME_SOUND_KEY: 'winGame',

@@ -1,66 +1,56 @@
-import Layout from '@/components/Layout';
+import { useUser } from '@supabase/auth-helpers-react';
 import { Game as GameType } from 'phaser';
 import { useEffect, useState } from 'react';
+import initPhaser from '../api/initPhaser';
 
-// TODO: Sceneのインポート以外を共通化する
 const Game = () => {
+  const user = useUser();
   const [game, setGame] = useState<GameType>(); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   useEffect(() => {
-    async function initPhaser() {
-      const Phaser = await import('phaser');
-
+    const importScenes = async () => {
       const { default: PlayScene } = await import(
-        '../../games/speed/scenes/PlayScene'
+        '@/games/speed/scenes/PlayScene'
+      );
+
+      const { default: LevelScene } = await import(
+        '@/games/speed/scenes/LevelScene'
       );
 
       const { default: BetScene } = await import(
-        '../../games/common/scenes/BetScene'
+        '@/games/common/scenes/BetScene'
       );
 
       const { default: PreloadScene } = await import(
-        '../../games/common/scenes/PreloadScene'
+        '@/games/common/scenes/PreloadScene'
       );
-
-      const CONFIG = {
-        width: 1920,
-        height: 920,
-        game: 'speed'
-      };
 
       const Scenes: Array<any> = [
         PreloadScene,
         BetScene,
+        LevelScene,
         PlayScene
       ];
-      const createScene = (Scene: any) => new Scene(CONFIG);
-      const initScenes = () => Scenes.map(createScene);
+      return Scenes;
+    };
 
-      const config = {
-        type: Phaser.AUTO,
-        parent: 'game-content',
-        ...CONFIG,
-        backgroundColor: '#2A303C',
-        physics: {
-          arcade: {
-            debug: true
-          }
-        },
-        scene: initScenes()
-      };
-
-      const phaserGame = new Phaser.Game(config);
-      setGame(phaserGame);
-    }
-    initPhaser();
-  }, []);
+    const initPhaserAsync = async () => {
+      const Scenes = await importScenes();
+      initPhaser(
+        'speed',
+        true,
+        user ? user.id : '',
+        setGame,
+        Scenes
+      );
+    };
+    initPhaserAsync();
+  }, [user]);
 
   return (
-    <Layout>
-      <div id="game-content" key="game-content">
-        {/* this is where the game canvas will be rendered */}
-      </div>
-    </Layout>
+    <div id="game-content" key="game-content">
+      {/* this is where the game canvas will be rendered */}
+    </div>
   );
 };
 

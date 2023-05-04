@@ -1,4 +1,5 @@
 import LobbyScene from '@/games/poker/scenes/LobbyScene';
+import { updateMoney } from '@/utils/supabase-client';
 import GAME from '../constants/game';
 import STYLE from '../constants/style';
 
@@ -319,6 +320,16 @@ export default abstract class Table extends BaseScene {
       this.createResultText(result, winAmount);
       this.playGameResultSound(result);
     });
+    // ログインしている場合は、DBのmoneyを更新する。
+    // ログインしていない場合は、storageのHighScoreを更新する。
+    if (this.config.userId) {
+      updateMoney(this.config.userId, this.betScene!.money);
+    } else {
+      Table.setStorageHighScore(
+        this.config.game,
+        this.betScene!.money
+      );
+    }
     this.clearPlayerHandsAndBets();
   }
 
@@ -327,6 +338,16 @@ export default abstract class Table extends BaseScene {
       player.clearHand();
       player.clearBet();
     });
+  }
+
+  protected static setStorageHighScore(
+    highScoreKey: string,
+    money: number
+  ): void {
+    const highScore = localStorage.getItem(highScoreKey);
+    if (!highScore || money > Number(highScore)) {
+      localStorage.setItem(highScoreKey, String(money));
+    }
   }
 
   abstract payOut(

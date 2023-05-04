@@ -18,6 +18,8 @@ const Account = ({ session }: { session: Session }) => {
     useState<Profiles['username']>(null);
   const [website, setWebsite] =
     useState<Profiles['website']>(null);
+  const [money, setMoney] =
+    useState<Profiles['money']>(null);
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const [avatar_url, setAvatarUrl] =
     useState<Profiles['avatar_url']>(null);
@@ -33,7 +35,7 @@ const Account = ({ session }: { session: Session }) => {
 
       const { data, error, status } = await supabase
         .from('profiles')
-        .select(`username, website, avatar_url`)
+        .select(`username, website, avatar_url, money`)
         .eq('id', user.id)
         .single();
 
@@ -44,6 +46,7 @@ const Account = ({ session }: { session: Session }) => {
       if (data) {
         setUsername(data.username);
         setWebsite(data.website);
+        setMoney(data.money);
         setAvatarUrl(data.avatar_url);
       }
     } catch (error) {
@@ -94,6 +97,7 @@ const Account = ({ session }: { session: Session }) => {
         uid={user ? user.id : ''}
         url={avatar_url}
         size={150}
+        canUpLoad
         onUpload={(url) => {
           setAvatarUrl(url);
           updateProfile({
@@ -119,6 +123,15 @@ const Account = ({ session }: { session: Session }) => {
           type="text"
           value={username || ''}
           onChange={(e) => setUsername(e.target.value)}
+        />
+      </div>
+      <div className="mb-2">
+        <label htmlFor="username">Money</label>
+        <input
+          id="moeny"
+          type="text"
+          value={money || ''}
+          disabled
         />
       </div>
       <div className="mb-2">
@@ -158,4 +171,3 @@ const Account = ({ session }: { session: Session }) => {
 };
 
 export default Account;
-
