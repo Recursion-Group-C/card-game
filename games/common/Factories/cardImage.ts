@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Phaser from 'phaser';
 import GAME from '../constants/game';
 
@@ -16,6 +18,10 @@ export default class Card extends Phaser.GameObjects.Image {
   #flipOverSound: Phaser.Sound.BaseSound;
 
   #putDownSound: Phaser.Sound.BaseSound;
+
+  originalPositionX: number | undefined;
+
+  originalPositionY: number | undefined;
 
   constructor(
     scene: Phaser.Scene,
@@ -43,6 +49,8 @@ export default class Card extends Phaser.GameObjects.Image {
     if (!isFaceDown) {
       this.setFaceUp();
     }
+
+    this.setInteractive();
   }
 
   get suit(): string {
@@ -57,13 +65,21 @@ export default class Card extends Phaser.GameObjects.Image {
     return this.#isFaceDown;
   }
 
+  /**
+   * カードを表向きにし、表面の画像を設定
+   * @returns なし。
+   */
   setFaceUp(): void {
     this.#isFaceDown = false;
     this.setTexture(CARD_FRONT_KEY);
     this.setFrame(this.getAtlasFrame());
   }
 
-  // カードを裏返す関数（裏面->表面）
+  /**
+   * カードを裏返すアニメーションを再生。
+   * アニメーション完了後、カードの表面に更新する。
+   * @returns なし
+   */
   playFlipOverTween(): void {
     this.scene.tweens.add({
       targets: this,
@@ -85,6 +101,11 @@ export default class Card extends Phaser.GameObjects.Image {
     });
   }
 
+  /**
+   * カードを新しい位置に移動するアニメーション
+   * @param toX 移動先のx座標
+   * @param toY 移動先のy座標
+   */
   playMoveTween(toX: number, toY: number): void {
     this.#putDownSound.play();
     this.scene.tweens.add({
@@ -96,12 +117,17 @@ export default class Card extends Phaser.GameObjects.Image {
     });
   }
 
+  /**
+   * ドラッグ可能な状態に設定する
+   */
   setDraggable(): void {
     this.setInteractive();
     this.scene.input.setDraggable(this);
   }
 
-  // カードを元の位置に戻す関数
+  /**
+   * カードを元の位置に戻す関数
+   */
   returnToOrigin(): void {
     this.setPosition(
       this.input.dragStartX,
@@ -109,8 +135,53 @@ export default class Card extends Phaser.GameObjects.Image {
     );
   }
 
+  /**
+   * カードの表面の画像フレーム取得
+   * @returns カードの表面の画像ファイル名
+   */
   getAtlasFrame(): string {
     return `card-${this.#suit}-${this.#rank}.png`;
+  }
+
+  /**
+   * クリック可能にする。
+   */
+  enableClick(): void {
+    this.on('pointerdown', this.onClick, this);
+    this.setOriginalPosition();
+  }
+
+  setOriginalPosition(): void {
+    this.originalPositionX = this.x;
+    this.originalPositionY = this.y;
+  }
+
+  /**
+   * クリック無効にする。
+   */
+  disableClick(): void {
+    this.off('pointerdown', this.onClick, this);
+  }
+
+  /**
+   * クリックされた際のイベントハンドラ。
+   * クリックされた場合、カードの位置を上方向に移動する。
+   * すでに移動している場合はもとの位置に戻す。
+   */
+  private onClick(): void {
+    if (this.y === this.originalPositionY) {
+      this.y -= 20;
+    } else {
+      this.y = this.originalPositionY as number;
+    }
+  }
+
+  /**
+   * カードが上に移動しているかを判定する。
+   * @return true: 上に移動している。
+   */
+  isMoveUp(): boolean {
+    return this.y !== this.originalPositionY;
   }
 
   getRankNumber(gameType: string): number {

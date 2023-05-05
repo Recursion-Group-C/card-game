@@ -45,14 +45,14 @@ const Home = () => (
             ruleUrl="/rules/speed"
           />
           <Card
-            title="PORKER"
+            title="POKER"
             description="5枚のカードで役を作ります！カードの交換は1回だけ。国内で知名度のある基本的なポーカーゲームです。"
-            url="/games/porker"
+            url="/games/poker"
             imgPath="/images/thumbnailSample.png"
             ruleUrl="/rules/poker"
           />
           {/* <Card
-            title="Texas Hold'em Porker"
+            title="Texas Hold'em Poker"
             description="世界的に大流行のポーカーゲーム。自分の手札は2枚。場に出される最大5枚のカードから役を作り、勝負！"
             url="/games/holdem"
             imgPath="/images/thumbnailSample.png"

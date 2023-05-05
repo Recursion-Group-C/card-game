@@ -3,7 +3,7 @@ const GAME = {
     BLACKJACK_HIGH_SCORE_STORAGE: 'blackjack_high_score',
     SPEED_HIGH_SCORE_STORAGE: 'speed_high_score',
     WAR_HIGH_SCORE_STORAGE: 'war_high_score',
-    PORKER_HIGH_SCORE_STORAGE: 'porker_high_score',
+    POKER_HIGH_SCORE_STORAGE: 'poker_high_score',
     HOLDEM_HIGH_SCORE_STORAGE: 'holdem_high_score',
     RUMMY_HIGH_SCORE_STORAGE: 'rummy_high_score'
   },
