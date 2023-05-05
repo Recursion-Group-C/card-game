@@ -6,15 +6,15 @@ import Deck from '../../common/Factories/deckImage';
 import Table from '../../common/Factories/tableScene';
 import GAME from '../../common/constants/game';
 import GameResult from '../constants/gameResult';
-import PokerPlayer from '../models/pokerPlayer';
 import GameStatus from '../constants/gameStatus';
-import DealerButton from '../models/dealerButton';
 import { HAND_RANK_MAP } from '../constants/handRank';
+import PlayerAction from '../constants/playerAction';
+import DealerButton from '../models/dealerButton';
+import PokerPlayer from '../models/pokerPlayer';
+import Pot from '../models/pot';
 
 import Text = Phaser.GameObjects.Text;
 import Zone = Phaser.GameObjects.Zone;
-import Pot from '../models/pot';
-import PlayerAction from '../constants/playerAction';
 // import PlayerBettingStatus from '../models/playerBettingStatus';
 
 // プレイヤーが支払うアンティの金額
@@ -57,7 +57,7 @@ export default class PlayScene extends Table {
         0,
         0,
         GameStatus.FIRST_BETTING,
-        'Player',
+        this.config.userName,
         0
       ),
       new PokerPlayer(
