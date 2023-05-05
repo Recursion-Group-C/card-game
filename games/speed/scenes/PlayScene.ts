@@ -90,8 +90,8 @@ export default class PlayScene extends Table {
     // AIの始動
     this.time.delayedCall(7000, () => {
       this.housePlayTimeEvent = this.time.addEvent({
-        delay: this.betScene
-          ? (3 - this.betScene.level) * 1500
+        delay: this.lobbyScene
+          ? (3 - this.lobbyScene.level) * 1500
           : 4500,
         callback: this.playHouseTurn,
         callbackScope: this,
@@ -223,8 +223,8 @@ export default class PlayScene extends Table {
       // HouseのPlayを再開する
       this.time.delayedCall(2000, () => {
         this.housePlayTimeEvent = this.time.addEvent({
-          delay: this.betScene
-            ? (3 - this.betScene.level) * 1500
+          delay: this.lobbyScene
+            ? (3 - this.lobbyScene.level) * 1500
             : 4500,
           callback: this.playHouseTurn,
           callbackScope: this,
@@ -547,15 +547,15 @@ export default class PlayScene extends Table {
 
   payOut(result: GameResult): number {
     let winAmount = 0;
-    if (this.betScene && this.betScene.money) {
+    if (this.lobbyScene && this.lobbyScene.money) {
       if (result === GameResult.WIN) {
-        winAmount = this.betScene.bet;
+        winAmount = this.lobbyScene.bet;
       } else if (result === GameResult.LOSS) {
-        winAmount = -this.betScene.bet;
+        winAmount = -this.lobbyScene.bet;
       }
-      this.betScene.money += winAmount;
-      this.setMoneyText(this.betScene.money);
-      this.setBetText(this.betScene.bet);
+      this.lobbyScene.money += winAmount;
+      this.setMoneyText(this.lobbyScene.money);
+      this.setBetText(this.lobbyScene.bet);
     }
     return winAmount;
   }

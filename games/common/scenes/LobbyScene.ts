@@ -12,7 +12,7 @@ import ImageUtility from '../utility/ImageUtility';
 
 import Text = Phaser.GameObjects.Text;
 
-export default class BetScene extends BaseScene {
+export default class LobbyScene extends BaseScene {
   public money = 1000;
 
   public bet = 0;
