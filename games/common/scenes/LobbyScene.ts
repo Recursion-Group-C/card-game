@@ -36,7 +36,7 @@ export default class LobbyScene extends BaseScene {
   #enterGameSound: Phaser.Sound.BaseSound | undefined;
 
   constructor(config: any) {
-    super('BetScene', GAME.TABLE.BET_TABLE_KEY, config);
+    super('LobbyScene', GAME.TABLE.BET_TABLE_KEY, config);
   }
 
   create(): void {
@@ -63,7 +63,6 @@ export default class LobbyScene extends BaseScene {
 
   private async loadData() {
     if (this.config.userId) {
-      console.log('BetScene loadData');
       const data = await fetchProfile(this.config.userId);
       if (data) {
         this.money = data.money;
