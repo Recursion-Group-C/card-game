@@ -82,14 +82,6 @@ export default abstract class Table extends BaseScene {
   ): void {
     this.deck = undefined;
     this.deck = new Deck(this, x ?? 0, y ?? 0);
-    this.deck.cardList.forEach((card) => {
-      Phaser.Display.Align.In.Center(
-        card as Card,
-        this.gameZone as Zone,
-        x ?? 0,
-        y ?? 0
-      );
-    });
     this.deck.shuffle();
   }
 
