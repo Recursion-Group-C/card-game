@@ -1,5 +1,5 @@
 import GAME from '@/games/common/constants/game';
-import BetScene from '@/games/common/scenes/BetScene';
+import LobbyScene from '@/games/common/scenes/LobbyScene';
 
 import STYLE from '../../common/constants/style';
 import BaseScene from '../../common/scenes/BaseScene';
@@ -12,7 +12,7 @@ const LEVEL = ['EASY', 'MEDIUM', 'HARD'];
 export default class LevelScene extends BaseScene {
   #menu: Array<MenuItem> = [];
 
-  #betScene: BetScene | undefined;
+  #lobbyScene: LobbyScene | undefined;
 
   constructor(config: any) {
     super('LevelScene', GAME.TABLE.BET_TABLE_KEY, {
@@ -23,14 +23,16 @@ export default class LevelScene extends BaseScene {
 
   create(): void {
     super.create();
-    this.#betScene = this.scene.get('BetScene') as BetScene;
+    this.#lobbyScene = this.scene.get(
+      'LobbyScene'
+    ) as LobbyScene;
 
     this.createTitle();
 
     this.#menu = [];
     for (let i = 0; i < LEVEL.length; i += 1) {
       this.#menu.push({
-        scene: 'BetScene',
+        scene: 'LobbyScene',
         text: LEVEL[i],
         level: i,
         button: undefined
@@ -63,8 +65,8 @@ export default class LevelScene extends BaseScene {
     const button = menuItem.button;
 
     button?.setClickHandler(() => {
-      if (menuItem.scene && this.#betScene) {
-        this.#betScene.level = menuItem.level;
+      if (menuItem.scene && this.#lobbyScene) {
+        this.#lobbyScene.level = menuItem.level;
         this.scene.start(menuItem.scene);
       }
     });

@@ -51,7 +51,7 @@ export default class BaseScene extends Phaser.Scene {
       );
 
       backButton.setClickHandler(() => {
-        this.scene.start('BetScene');
+        this.scene.start('LobbyScene');
       });
     }
   }

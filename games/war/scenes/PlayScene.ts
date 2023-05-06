@@ -136,8 +136,10 @@ export default class PlayScene extends Table {
   }
 
   private canWar(): boolean {
-    if (this.betScene) {
-      return this.betScene.money >= this.betScene.bet * 2;
+    if (this.lobbyScene) {
+      return (
+        this.lobbyScene.money >= this.lobbyScene.bet * 2
+      );
     }
     return false;
   }
@@ -214,21 +216,21 @@ export default class PlayScene extends Table {
 
   payOut(result: GameResult): number {
     let winAmount = 0;
-    if (this.betScene && this.betScene.money) {
+    if (this.lobbyScene && this.lobbyScene.money) {
       if (result === GameResult.WAR_TIE) {
-        winAmount = this.betScene.bet * 2;
+        winAmount = this.lobbyScene.bet * 2;
       } else if (result === GameResult.WAR_WIN) {
-        winAmount = this.betScene.bet * 1.5; // 最初の賭金は返却、追加分は2倍の配当
+        winAmount = this.lobbyScene.bet * 1.5; // 最初の賭金は返却、追加分は2倍の配当
       } else if (result === GameResult.WIN) {
-        winAmount = this.betScene.bet;
+        winAmount = this.lobbyScene.bet;
       } else if (result === GameResult.SURRENDER) {
-        winAmount = -this.betScene.bet * 0.5;
+        winAmount = -this.lobbyScene.bet * 0.5;
       } else {
-        winAmount = -this.betScene.bet;
+        winAmount = -this.lobbyScene.bet;
       }
-      this.betScene.money += winAmount;
-      this.setMoneyText(this.betScene.money);
-      this.setBetText(this.betScene.bet);
+      this.lobbyScene.money += winAmount;
+      this.setMoneyText(this.lobbyScene.money);
+      this.setBetText(this.lobbyScene.bet);
     }
     return winAmount;
   }

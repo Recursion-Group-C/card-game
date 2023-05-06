@@ -488,22 +488,22 @@ export default class PlayScene extends Table {
 
   payOut(result: GameResult): number {
     let winAmount = 0;
-    if (this.betScene && this.betScene.money) {
+    if (this.lobbyScene && this.lobbyScene.money) {
       if (result === GameResult.WIN) {
-        winAmount = this.betScene.bet;
+        winAmount = this.lobbyScene.bet;
       } else if (result === GameResult.BLACKJACK) {
-        winAmount = this.betScene.bet * 1.5;
+        winAmount = this.lobbyScene.bet * 1.5;
       } else if (result === GameResult.SURRENDER) {
-        winAmount = -this.betScene.bet * 0.5;
+        winAmount = -this.lobbyScene.bet * 0.5;
       } else if (
         result === GameResult.LOSS ||
         result === GameResult.BUST
       ) {
-        winAmount = -this.betScene.bet;
+        winAmount = -this.lobbyScene.bet;
       }
-      this.betScene.money += winAmount;
-      this.setMoneyText(this.betScene.money);
-      this.setBetText(this.betScene.bet);
+      this.lobbyScene.money += winAmount;
+      this.setMoneyText(this.lobbyScene.money);
+      this.setBetText(this.lobbyScene.bet);
     }
     return winAmount;
   }
