@@ -81,7 +81,7 @@ export default class PlayScene extends Table {
     this.createPot();
     this.resetAndShuffleDeck(
       this.config.width / 2,
-      this.config.height / 2 - 600
+      this.config.height / 2 - GAME.DECK.POKER_HEIGHT
     );
     this.createBackButton();
     this.createPlayerNameTexts();
@@ -959,7 +959,7 @@ export default class PlayScene extends Table {
 
     this.resetAndShuffleDeck(
       this.config.width / 2,
-      this.config.height / 2 - 600
+      this.config.height / 2 - GAME.DECK.POKER_HEIGHT
     );
   }
 
