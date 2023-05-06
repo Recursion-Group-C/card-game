@@ -6,7 +6,7 @@ import {
 } from 'next/document';
 
 const Document = () => (
-  <Html lang="en">
+  <Html lang="en" data-theme="dark">
     <Head />
     <body>
       <Main />

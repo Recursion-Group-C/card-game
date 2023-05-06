@@ -18,7 +18,7 @@ const App = ({
   );
 
   return (
-    <div data-theme="dark">
+    <div>
       <SessionContextProvider
         supabaseClient={supabase}
         initialSession={pageProps.initialSession}

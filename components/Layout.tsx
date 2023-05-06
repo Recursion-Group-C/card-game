@@ -130,13 +130,15 @@ const Layout = ({ children }: Props) => {
 
       <main>{children}</main>
 
+      <footer className="!footer !footer-center bg-base-100" />
+
       {/* <footer className="!footer !footer-center bg-base-300 p-3 text-base-content">
-      <div>
-        <p>
-          Copyright © 2023 - All right reserved by Recursion
-        </p>
-      </div>
-    </footer> */}
+        <div>
+          <p>
+            Copyright © 2023 - All right reserved by Recursion
+          </p>
+        </div>
+      </footer> */}
     </div>
   );
 };
