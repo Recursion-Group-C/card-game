@@ -1,4 +1,5 @@
 import { Result } from '@/games/common/types/game';
+import LobbyScene from '@/games/poker/scenes/LobbyScene';
 import {
   addResult,
   updateMoney
@@ -10,6 +11,7 @@ import Card from './cardImage';
 import Deck from './deckImage';
 
 import BaseScene from '../scenes/BaseScene';
+
 import BetScene from '../scenes/BetScene';
 import Player from './player';
 import Zone = Phaser.GameObjects.Zone;
@@ -27,6 +29,8 @@ export default abstract class Table extends BaseScene {
 
   protected betScene: BetScene | undefined;
 
+  protected lobbyScene: LobbyScene | undefined;
+
   protected deck: Deck | undefined;
 
   protected gamePhase: string | undefined;
@@ -41,13 +45,23 @@ export default abstract class Table extends BaseScene {
 
   create(): void {
     super.create();
-    this.betScene = this.scene.get('BetScene') as BetScene;
+    if (this.config.game === 'poker') {
+      this.lobbyScene = this.scene.get(
+        'LobbyScene'
+      ) as LobbyScene;
+      this.createMoneyText(this.lobbyScene.money, 0);
+    } else {
+      this.betScene = this.scene.get(
+        'BetScene'
+      ) as BetScene;
+      this.createMoneyText(
+        this.betScene.money,
+        this.betScene.bet
+      );
+    }
+
     this.turnCounter = 0;
     this.initialTime = 2;
-    this.createMoneyText(
-      this.betScene.money,
-      this.betScene.bet
-    );
 
     this.#winGameSound = this.scene.scene.sound.add(
       GAME.TABLE.WIN_GAME_SOUND_KEY,
@@ -76,7 +90,16 @@ export default abstract class Table extends BaseScene {
     x?: number,
     y?: number
   ): void {
+    this.deck = undefined;
     this.deck = new Deck(this, x ?? 0, y ?? 0);
+    this.deck.cardList.forEach((card) => {
+      Phaser.Display.Align.In.Center(
+        card as Card,
+        this.gameZone as Zone,
+        x ?? 0,
+        y ?? 0
+      );
+    });
     this.deck.shuffle();
   }
 
@@ -98,6 +121,13 @@ export default abstract class Table extends BaseScene {
           -20
         );
       } else if (player.playerType === 'house') {
+        Phaser.Display.Align.In.TopCenter(
+          playerNameText as Text,
+          this.gameZone as Zone,
+          0,
+          -20
+        );
+      } else if (player.playerType === 'cpu') {
         Phaser.Display.Align.In.TopCenter(
           playerNameText as Text,
           this.gameZone as Zone,
@@ -131,6 +161,13 @@ export default abstract class Table extends BaseScene {
           STYLE.GUTTER_SIZE
         );
       } else if (player.playerType === 'house') {
+        Phaser.Display.Align.To.BottomCenter(
+          playerHandZone as Zone,
+          this.playerNameTexts[index] as GameObject,
+          0,
+          STYLE.GUTTER_SIZE
+        );
+      } else if (player.playerType === 'cpu') {
         Phaser.Display.Align.To.BottomCenter(
           playerHandZone as Zone,
           this.playerNameTexts[index] as GameObject,
@@ -324,7 +361,10 @@ export default abstract class Table extends BaseScene {
     }
   }
 
-  abstract payOut(result: string): Result;
+  abstract payOut(
+    result: string,
+    playerIndex?: number
+  ): Result;
 
   abstract playGameResultSound(result: string): void;
 

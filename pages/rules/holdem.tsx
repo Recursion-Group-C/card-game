@@ -50,7 +50,7 @@ const GameRule = () => (
         ルール説明
       </p>
       <Rule
-        gameTitle="Texas Hold'em Porker"
+        gameTitle="Texas Hold'em Poker"
         gameDescription="準備中"
         ruleDescription="準備中"
         peopleDescription="準備中"

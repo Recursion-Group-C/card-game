@@ -217,7 +217,20 @@ export default class PlayScene extends Table {
 
   private playHouse(): void {
     if (this.isGameStagnant()) {
+      // HouseのPlayを一時停止する
+      this.housePlayTimeEvent?.remove();
       this.dealLeadCards();
+      // HouseのPlayを再開する
+      this.time.delayedCall(2000, () => {
+        this.housePlayTimeEvent = this.time.addEvent({
+          delay: this.betScene
+            ? (3 - this.betScene.level) * 1500
+            : 4500,
+          callback: this.playHouseTurn,
+          callbackScope: this,
+          loop: true
+        });
+      });
     }
   }
 

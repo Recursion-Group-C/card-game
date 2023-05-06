@@ -265,27 +265,6 @@ export default class BetScene extends BaseScene {
     });
   }
 
-  private createBackButton(): void {
-    const backButton = new Button(
-      this,
-      0,
-      0,
-      GAME.TABLE.BACK,
-      GAME.TABLE.BUTTON_CLICK_SOUND_KEY
-    );
-
-    backButton.setClickHandler(() => {
-      window.location.href = '/';
-    });
-
-    Phaser.Display.Align.In.TopLeft(
-      backButton as Phaser.GameObjects.GameObject,
-      this.gameZone as Phaser.GameObjects.GameObject,
-      -STYLE.GUTTER_SIZE,
-      -STYLE.GUTTER_SIZE
-    );
-  }
-
   private createCogButton(): void {
     const configButton = new Button(
       this,
