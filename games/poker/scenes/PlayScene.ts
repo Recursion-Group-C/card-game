@@ -688,6 +688,11 @@ export default class PlayScene extends Table {
         );
       });
 
+      console.log(
+        this.players[1].hand,
+        `index: ${playerIndex}`
+      );
+
       this.nextPlayerTurnOnChangeHandRound(0);
     });
   }
@@ -894,6 +899,10 @@ export default class PlayScene extends Table {
       handRanks.push(handRank);
     });
 
+    this.showdownCpuHand();
+    this.cpuBettingStatus?.destroy();
+
+    // 勝敗結果表示
     const resultText = this.add
       .text(
         this.config.width / 2,
@@ -904,21 +913,28 @@ export default class PlayScene extends Table {
       .setOrigin(0.5)
       .setDepth(10);
 
-    this.resetRound();
-
-    this.time.delayedCall(3000, () => {
+    this.time.delayedCall(4000, () => {
       handRanks.forEach((handRank) => {
         handRank.destroy();
       });
       resultText.destroy();
+      this.resetRound();
       this.dealInitialCards();
       // this.createDealerButton(this.playerHandZones[0]);
-      console.log(this.playerBet);
       this.PlayAnte();
     });
 
-    this.time.delayedCall(4000, () => {
+    this.time.delayedCall(5000, () => {
       this.createActionPanel();
+    });
+  }
+
+  private showdownCpuHand(): void {
+    console.log(this.player.hand);
+    this.players[1].hand.forEach((card) => {
+      if (card.isFaceDown) {
+        card.playFlipOverTween();
+      }
     });
   }
 
