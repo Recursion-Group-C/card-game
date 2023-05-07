@@ -68,7 +68,7 @@ export default class PlayScene extends Table {
 
     this.resetAndShuffleDeck(
       this.config.width + GAME.CARD.WIDTH,
-      GAME.CARD.HEIGHT
+      -GAME.CARD.HEIGHT
     );
     this.dealInitialCards();
 
