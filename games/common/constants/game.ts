@@ -56,6 +56,9 @@ const GAME = {
     FLIP_OVER_SOUND_KEY: 'flipOverCard',
     PUT_DOWN_SOUND_KEY: 'putDownCard'
   },
+  DECK: {
+    POKER_HEIGHT: 600
+  },
   COMMON_IMG_ASSETS_PATH: '/game_assets/common/images',
   COMMON_SOUND_ASSETS_PATH: '/game_assets/common/sounds'
 } as const;

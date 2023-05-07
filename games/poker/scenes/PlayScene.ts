@@ -79,7 +79,10 @@ export default class PlayScene extends Table {
   create(): void {
     super.create();
     this.createPot();
-    this.resetAndShuffleDeck(0, -600);
+    this.resetAndShuffleDeck(
+      this.config.width / 2,
+      this.config.height / 2 - GAME.DECK.POKER_HEIGHT
+    );
     this.createBackButton();
     this.createPlayerNameTexts();
     this.createPlayerHandZones(
@@ -954,7 +957,10 @@ export default class PlayScene extends Table {
       player.clearHand();
     });
 
-    this.resetAndShuffleDeck(0, -600);
+    this.resetAndShuffleDeck(
+      this.config.width / 2,
+      this.config.height / 2 - GAME.DECK.POKER_HEIGHT
+    );
   }
 
   playGameResultSound(result: string): void {
