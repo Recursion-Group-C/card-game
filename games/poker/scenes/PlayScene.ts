@@ -222,14 +222,13 @@ export default class PlayScene extends Table {
       this.playerBet += this.currentBetAmount;
       this.playerMoney -= this.playerBet;
       this.player.addBet(this.currentBetAmount);
+      this.animateChipToTableCenter(0);
 
-      // TODO: チップアニメーション追加
       this.time.delayedCall(500, () => {
         this.setMoneyText(this.playerMoney);
         this.setBetText(this.playerBet);
         this.pot?.setAmount(this.currentBetAmount);
         this.destroyActionPanel();
-        console.log(this.player.gameStatus);
         if (
           this.player.gameStatus ===
           GameStatus.SECOND_BETTING
@@ -325,9 +324,8 @@ export default class PlayScene extends Table {
     });
   }
 
-  // TODO: チップアニメーション追加
   private PlayAnte(): void {
-    this.players.forEach((player) => {
+    this.players.forEach((player, index) => {
       if (player.playerType === 'player') {
         this.playerMoney -= ANTE_AMOUNT;
         this.playerBet += ANTE_AMOUNT;
@@ -335,8 +333,31 @@ export default class PlayScene extends Table {
         this.setBetText(this.playerBet);
       }
 
-      this.pot?.setAmount(ANTE_AMOUNT);
+      this.time.delayedCall(1500, () => {
+        this.animateChipToTableCenter(index);
+        this.pot?.setAmount(ANTE_AMOUNT);
+      });
     });
+  }
+
+  /**
+   * プレイヤーの手札からチップをポットに移動させるアニメーション。
+   *
+   * @param {number} index - 対象プレイヤーのplayerHandZonesのindex
+   * @returns {void}
+   */
+  private animateChipToTableCenter(index: number) {
+    const tempChip = new Button(
+      this,
+      this.playerHandZones[index].x,
+      this.playerHandZones[index].y,
+      GAME.TABLE.RED_CHIP_KEY
+    );
+    tempChip.resizeButton(0.6);
+    tempChip.playMoveAndDestroy(
+      this.config.width / 2,
+      this.config.height / 2
+    );
   }
 
   /**
@@ -529,7 +550,6 @@ export default class PlayScene extends Table {
       if (player.gameStatus === GameStatus.CHANGE_CARD) {
         isEnd = false;
       }
-      console.log(isEnd, player.gameStatus, player.name);
     });
     return isEnd;
   }
@@ -538,7 +558,6 @@ export default class PlayScene extends Table {
     let isEnd = true;
     // eslint-disable-next-line consistent-return
     this.players.forEach((player) => {
-      console.log(player.gameStatus);
       if (player.gameStatus === GameStatus.SECOND_BETTING) {
         isEnd = false;
         return isEnd;
@@ -605,12 +624,16 @@ export default class PlayScene extends Table {
       const betAmount =
         this.currentBetAmount - this.players[index].bet;
       this.players[index].addBet(betAmount);
-      this.pot?.setAmount(betAmount);
-      this.createCpuBettingStatus(PlayerAction.CALL);
       this.players[index].gameStatus = PlayerAction.CALL;
+
+      this.time.delayedCall(1000, () => {
+        this.createCpuBettingStatus(PlayerAction.CALL);
+        this.animateChipToTableCenter(index);
+        this.pot?.setAmount(betAmount);
+      });
     }
 
-    this.time.delayedCall(1000, () => {
+    this.time.delayedCall(2500, () => {
       this.nextPlayerTurnOnFirstBettingRound(0);
     });
   }
@@ -623,17 +646,22 @@ export default class PlayScene extends Table {
       const betAmount =
         this.currentBetAmount - this.players[index].bet;
       this.players[index].addBet(betAmount);
-      this.pot?.setAmount(betAmount);
-      this.createCpuBettingStatus(PlayerAction.CALL);
       this.players[index].gameStatus = PlayerAction.CALL;
+
+      this.time.delayedCall(1000, () => {
+        this.createCpuBettingStatus(PlayerAction.CALL);
+        this.animateChipToTableCenter(index);
+        this.pot?.setAmount(betAmount);
+      });
     }
 
-    this.nextPlayerTurnOnSecondBettingRound(0);
+    this.time.delayedCall(2500, () => {
+      this.nextPlayerTurnOnSecondBettingRound(0);
+    });
   }
 
   private cpuChangeHand(playerIndex: number): void {
     const selectedCards: Card[] = [];
-    console.log(playerIndex);
     this.players[1].gameStatus = GameStatus.SECOND_BETTING;
     // カードをランダムに選ぶ処理
     this.players[playerIndex].hand.forEach((card) => {
@@ -660,8 +688,6 @@ export default class PlayScene extends Table {
         );
       });
 
-      // const nextPlayerIndex = playerIndex + 1;
-
       this.nextPlayerTurnOnChangeHandRound(0);
     });
   }
@@ -675,8 +701,6 @@ export default class PlayScene extends Table {
     else if (status === PlayerAction.CHECK)
       tmpStr = `CHECK: ${this.currentBetAmount}`;
     else tmpStr = `FOLD`;
-
-    console.log(tmpStr);
 
     this.cpuBettingStatus = this.add
       .text(
@@ -708,7 +732,10 @@ export default class PlayScene extends Table {
       const selectedCards: Card[] = [];
       this.player.hand.forEach((card) => {
         if (card.isMoveUp()) {
-          card.playMoveTween(this.config.width / 2, -600);
+          card.playMoveTween(
+            this.config.width / 2,
+            -GAME.DECK.POKER_HEIGHT
+          );
           selectedCards.push(card);
         }
       });
