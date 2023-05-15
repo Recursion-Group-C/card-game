@@ -19,7 +19,7 @@ const Game = () => {
       );
 
       const { default: PreloadScene } = await import(
-        '../../games/poker/scenes/PreloadScene'
+        '../../games/common/scenes/PreloadScene'
       );
 
       const Scene: Array<any> = [

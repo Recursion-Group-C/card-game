@@ -220,7 +220,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.cameras.main.once(
       Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
       () => {
-        this.scene.start('BetScene');
+        this.scene.start('LobbyScene');
       }
     );
   }

@@ -1,18 +1,14 @@
+import LobbyScene from '@/games/common/scenes/LobbyScene';
 import { Result } from '@/games/common/types/game';
-import LobbyScene from '@/games/poker/scenes/LobbyScene';
 import {
   addResult,
   updateMoney
 } from '@/utils/supabase-client';
 import GAME from '../constants/game';
 import STYLE from '../constants/style';
-
+import BaseScene from '../scenes/BaseScene';
 import Card from './cardImage';
 import Deck from './deckImage';
-
-import BaseScene from '../scenes/BaseScene';
-
-import BetScene from '../scenes/BetScene';
 import Player from './player';
 import Zone = Phaser.GameObjects.Zone;
 import Text = Phaser.GameObjects.Text;
@@ -26,8 +22,6 @@ export default abstract class Table extends BaseScene {
   protected playerNameTexts: Array<Text> = [];
 
   protected players: Array<Player> = [];
-
-  protected betScene: BetScene | undefined;
 
   protected lobbyScene: LobbyScene | undefined;
 
@@ -45,18 +39,15 @@ export default abstract class Table extends BaseScene {
 
   create(): void {
     super.create();
+    this.lobbyScene = this.scene.get(
+      'LobbyScene'
+    ) as LobbyScene;
     if (this.config.game === 'poker') {
-      this.lobbyScene = this.scene.get(
-        'LobbyScene'
-      ) as LobbyScene;
       this.createMoneyText(this.lobbyScene.money, 0);
     } else {
-      this.betScene = this.scene.get(
-        'BetScene'
-      ) as BetScene;
       this.createMoneyText(
-        this.betScene.money,
-        this.betScene.bet
+        this.lobbyScene.money,
+        this.lobbyScene.bet
       );
     }
 
@@ -92,14 +83,6 @@ export default abstract class Table extends BaseScene {
   ): void {
     this.deck = undefined;
     this.deck = new Deck(this, x ?? 0, y ?? 0);
-    this.deck.cardList.forEach((card) => {
-      Phaser.Display.Align.In.Center(
-        card as Card,
-        this.gameZone as Zone,
-        x ?? 0,
-        y ?? 0
-      );
-    });
     this.deck.shuffle();
   }
 
@@ -284,7 +267,7 @@ export default abstract class Table extends BaseScene {
     this.input.once(
       'pointerdown',
       () => {
-        this.scene.start('BetScene');
+        this.scene.start('LobbyScene');
         this.scene.stop('PlayScene');
       },
       this
@@ -304,9 +287,9 @@ export default abstract class Table extends BaseScene {
   }
 
   protected setBetDouble(): void {
-    if (this.betScene) {
-      this.betScene.bet *= 2;
-      this.setBetText(this.betScene.bet);
+    if (this.lobbyScene) {
+      this.lobbyScene.bet *= 2;
+      this.setBetText(this.lobbyScene.bet);
     }
   }
 
@@ -327,7 +310,10 @@ export default abstract class Table extends BaseScene {
     // ログインしている場合は、DBのmoneyを更新する。
     // ログインしていない場合は、storageのHighScoreを更新する。
     if (this.config.userId) {
-      updateMoney(this.config.userId, this.betScene!.money);
+      updateMoney(
+        this.config.userId,
+        this.lobbyScene!.money
+      );
       const { gameResult, winAmount } = resultObj;
       addResult(
         this.config.userId,
@@ -338,7 +324,7 @@ export default abstract class Table extends BaseScene {
     } else {
       Table.setStorageHighScore(
         this.config.game,
-        this.betScene!.money
+        this.lobbyScene!.money
       );
     }
     this.clearPlayerHandsAndBets();

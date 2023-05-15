@@ -11,7 +11,7 @@ const Home = () => (
 
     <div>
       <Image
-        src="/images/homePage.png"
+        src="/images/mainVisual.png"
         width={3840}
         height={694}
         layout="responsive"

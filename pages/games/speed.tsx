@@ -17,8 +17,8 @@ const Game = () => {
         '@/games/speed/scenes/LevelScene'
       );
 
-      const { default: BetScene } = await import(
-        '@/games/common/scenes/BetScene'
+      const { default: LobbyScene } = await import(
+        '@/games/common/scenes/LobbyScene'
       );
 
       const { default: PreloadScene } = await import(
@@ -27,7 +27,7 @@ const Game = () => {
 
       const Scenes: Array<any> = [
         PreloadScene,
-        BetScene,
+        LobbyScene,
         LevelScene,
         PlayScene
       ];

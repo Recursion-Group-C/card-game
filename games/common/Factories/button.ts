@@ -143,4 +143,11 @@ export default class Button extends Phaser.GameObjects
     super.setAlpha(alpha);
     this.#text.setAlpha(alpha);
   }
+
+  resizeButton(scale: number): void {
+    if (scale < 0) {
+      throw new Error('Scale value cannot be negative.');
+    }
+    this.setScale(this.#initScale * scale);
+  }
 }
