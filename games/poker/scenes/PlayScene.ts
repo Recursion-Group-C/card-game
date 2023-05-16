@@ -15,7 +15,6 @@ import Pot from '../models/pot';
 
 import Text = Phaser.GameObjects.Text;
 import Zone = Phaser.GameObjects.Zone;
-// import PlayerBettingStatus from '../models/playerBettingStatus';
 
 // プレイヤーが支払うアンティの金額
 const ANTE_AMOUNT = 20;
@@ -101,7 +100,6 @@ export default class PlayScene extends Table {
 
   /**
    * ゲームの初期カードを配布する関数。
-   * プレイヤー0、1の順番でカードを配り、カードの配布が完了したら比較処理を行う。
    */
   private dealInitialCards(): void {
     this.time.delayedCall(500, () => {
