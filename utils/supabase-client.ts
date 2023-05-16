@@ -42,7 +42,8 @@ const addResult = async (
   userId: string,
   game: string,
   result: string,
-  winAmount: number
+  winAmount: number,
+  money: number
 ) => {
   try {
     const { error } = await supabase
@@ -51,7 +52,8 @@ const addResult = async (
         user_id: userId,
         game,
         result,
-        win_amount: winAmount
+        win_amount: winAmount,
+        money
       });
 
     if (error) {

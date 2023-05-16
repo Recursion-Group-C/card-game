@@ -322,6 +322,7 @@ export default class LobbyScene extends BaseScene {
             this.config.userId,
             '',
             'GAME OVER',
+            1000,
             1000
           );
         }
