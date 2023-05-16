@@ -1,13 +1,15 @@
-import { updateMoney } from '@/utils/supabase-client';
+import LobbyScene from '@/games/common/scenes/LobbyScene';
+import { Result } from '@/games/common/types/game';
+import { makeMoneyString } from '@/utils/general';
+import {
+  addResult,
+  updateMoney
+} from '@/utils/supabase-client';
 import GAME from '../constants/game';
 import STYLE from '../constants/style';
-
+import BaseScene from '../scenes/BaseScene';
 import Card from './cardImage';
 import Deck from './deckImage';
-
-import BaseScene from '../scenes/BaseScene';
-
-import LobbyScene from '../scenes/LobbyScene';
 import Player from './player';
 import Zone = Phaser.GameObjects.Zone;
 import Text = Phaser.GameObjects.Text;
@@ -253,7 +255,7 @@ export default abstract class Table extends BaseScene {
     const resultText: Text = this.add.text(
       0,
       0,
-      `${result} ${Table.formatNumber(winAmount)}`,
+      `${result} ${makeMoneyString(winAmount)}`,
       STYLE.TEXT
     );
     resultText.setColor('#ffde3d');
@@ -273,18 +275,6 @@ export default abstract class Table extends BaseScene {
     );
   }
 
-  private static formatNumber(amount: number): string {
-    let result: string;
-    if (amount > 0) {
-      result = `+$${amount}`;
-    } else if (amount === 0) {
-      result = '';
-    } else {
-      result = `-$${Math.abs(amount)}`;
-    }
-    return result;
-  }
-
   protected setBetDouble(): void {
     if (this.lobbyScene) {
       this.lobbyScene.bet *= 2;
@@ -301,9 +291,9 @@ export default abstract class Table extends BaseScene {
   ): void;
 
   protected endHand(result: string): void {
-    const winAmount = this.payOut(result);
+    const resultObj = this.payOut(result);
     this.time.delayedCall(500, () => {
-      this.createResultText(result, winAmount);
+      this.createResultText(result, resultObj.winAmount);
       this.playGameResultSound(result);
     });
     // ログインしている場合は、DBのmoneyを更新する。
@@ -311,6 +301,14 @@ export default abstract class Table extends BaseScene {
     if (this.config.userId) {
       updateMoney(
         this.config.userId,
+        this.lobbyScene!.money
+      );
+      const { gameResult, winAmount } = resultObj;
+      addResult(
+        this.config.userId,
+        this.config.game,
+        gameResult,
+        winAmount,
         this.lobbyScene!.money
       );
     } else {
@@ -340,9 +338,9 @@ export default abstract class Table extends BaseScene {
   }
 
   abstract payOut(
-    gameResult: string,
+    result: string,
     playerIndex?: number
-  ): number;
+  ): Result;
 
   abstract playGameResultSound(result: string): void;
 

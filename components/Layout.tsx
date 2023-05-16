@@ -57,8 +57,18 @@ const Layout = ({ children }: Props) => {
                 <Link href="/">HOME</Link>
               </li>
               <li>
-                <Link href="/">PROFILE</Link>
+                <Link href="/login">PROFILE</Link>
               </li>
+              {session && (
+                <>
+                  <li>
+                    <Link href="/result">RESULT</Link>
+                  </li>
+                  <li>
+                    <Link href="/ranking">RANKING</Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
           <Link
@@ -83,6 +93,16 @@ const Layout = ({ children }: Props) => {
             <li>
               <Link href="/login">PROFILE</Link>
             </li>
+            {session && (
+              <>
+                <li>
+                  <Link href="/result">RESULT</Link>
+                </li>
+                <li>
+                  <Link href="/ranking">RANKING</Link>
+                </li>
+              </>
+            )}
           </ul>
         </div>
 

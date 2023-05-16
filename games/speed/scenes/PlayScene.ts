@@ -1,4 +1,4 @@
-/* eslint no-param-reassign: ["error", { "props": false }] */
+import { Result } from '@/games/common/types/game';
 import Card from '../../common/Factories/cardImage';
 import Deck from '../../common/Factories/deckImage';
 import GAME from '../../common/constants/game';
@@ -545,7 +545,7 @@ export default class PlayScene extends Table {
     return result;
   }
 
-  payOut(result: GameResult): number {
+  payOut(result: GameResult): Result {
     let winAmount = 0;
     if (this.lobbyScene && this.lobbyScene.money) {
       if (result === GameResult.WIN) {
@@ -557,7 +557,10 @@ export default class PlayScene extends Table {
       this.setMoneyText(this.lobbyScene.money);
       this.setBetText(this.lobbyScene.bet);
     }
-    return winAmount;
+    return {
+      gameResult: result,
+      winAmount
+    };
   }
 
   playGameResultSound(result: string): void {

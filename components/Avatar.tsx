@@ -81,7 +81,7 @@ const Avatar = ({
   };
 
   return (
-    <div>
+    <div className="inline">
       {avatarUrl && canUpLoad && (
         <Image
           src={avatarUrl}

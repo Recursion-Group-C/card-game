@@ -1,6 +1,7 @@
 import {
   fetchProfile,
-  updateMoney
+  updateMoney,
+  addResult
 } from '@/utils/supabase-client';
 import BaseScene from './BaseScene';
 
@@ -317,6 +318,13 @@ export default class LobbyScene extends BaseScene {
       () => {
         if (this.config.userId) {
           updateMoney(this.config.userId, 1000);
+          addResult(
+            this.config.userId,
+            '',
+            'GAME OVER',
+            1000,
+            1000
+          );
         }
         this.bet = 0;
         this.scene.restart();

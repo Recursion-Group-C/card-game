@@ -1,17 +1,14 @@
+import { Result } from '@/games/common/types/game';
 import Button from '../../common/Factories/button';
 import Card from '../../common/Factories/cardImage';
 import Deck from '../../common/Factories/deckImage';
 import Table from '../../common/Factories/tableScene';
-
 import GAME from '../../common/constants/game';
 import STYLE from '../../common/constants/style';
+import ImageUtility from '../../common/utility/ImageUtility';
 import GamePhase from '../constants/gamePhase';
 import GameResult from '../constants/gameResult';
-
 import BlackjackPlayer from '../models/BlackjackPlayer';
-
-import ImageUtility from '../../common/utility/ImageUtility';
-
 import Text = Phaser.GameObjects.Text;
 import Zone = Phaser.GameObjects.Zone;
 import TimeEvent = Phaser.Time.TimerEvent;
@@ -486,7 +483,7 @@ export default class PlayScene extends Table {
     }
   }
 
-  payOut(result: GameResult): number {
+  payOut(result: GameResult): Result {
     let winAmount = 0;
     if (this.lobbyScene && this.lobbyScene.money) {
       if (result === GameResult.WIN) {
@@ -505,7 +502,10 @@ export default class PlayScene extends Table {
       this.setMoneyText(this.lobbyScene.money);
       this.setBetText(this.lobbyScene.bet);
     }
-    return winAmount;
+    return {
+      gameResult: result,
+      winAmount
+    };
   }
 
   playGameResultSound(result: string): void {

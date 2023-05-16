@@ -38,6 +38,26 @@ export interface Database {
           money?: number | null;
         };
       };
+      results: {
+        Row: {
+          id: number;
+          created_at: string | null;
+          user_id: string | null;
+          game: string | null;
+          result: string | null;
+          winAmount: number | null;
+          money: number | null;
+        };
+        Insert: {
+          id: number;
+          created_at: string | null;
+          user_id: string | null;
+          game: string | null;
+          result: string | null;
+          winAmount: number | null;
+          money: number | null;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
