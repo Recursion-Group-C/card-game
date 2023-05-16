@@ -1,5 +1,6 @@
 import LobbyScene from '@/games/common/scenes/LobbyScene';
 import { Result } from '@/games/common/types/game';
+import { makeMoneyString } from '@/utils/general';
 import {
   addResult,
   updateMoney
@@ -254,7 +255,7 @@ export default abstract class Table extends BaseScene {
     const resultText: Text = this.add.text(
       0,
       0,
-      `${result} ${Table.formatNumber(winAmount)}`,
+      `${result} ${makeMoneyString(winAmount)}`,
       STYLE.TEXT
     );
     resultText.setColor('#ffde3d');
@@ -272,18 +273,6 @@ export default abstract class Table extends BaseScene {
       },
       this
     );
-  }
-
-  private static formatNumber(amount: number): string {
-    let result: string;
-    if (amount > 0) {
-      result = `+$${amount}`;
-    } else if (amount === 0) {
-      result = '';
-    } else {
-      result = `-$${Math.abs(amount)}`;
-    }
-    return result;
   }
 
   protected setBetDouble(): void {
@@ -319,7 +308,8 @@ export default abstract class Table extends BaseScene {
         this.config.userId,
         this.config.game,
         gameResult,
-        winAmount
+        winAmount,
+        this.lobbyScene!.money
       );
     } else {
       Table.setStorageHighScore(
