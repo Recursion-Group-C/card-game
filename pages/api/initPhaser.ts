@@ -1,6 +1,6 @@
+import { fetchProfile } from '@/utils/supabase-client';
 import { Game as GameType } from 'phaser';
 import { Dispatch, SetStateAction } from 'react';
-import { fetchProfile } from '@/utils/supabase-client';
 
 export default async function initPhaser(
   game: string,
