@@ -1,4 +1,5 @@
 /* eslint-disable class-methods-use-this */
+import { Result } from '@/games/common/types/game';
 import STYLE from '@/games/common/constants/style';
 import Button from '../../common/Factories/button';
 import Card from '../../common/Factories/cardImage';
@@ -950,35 +951,23 @@ export default class PlayScene extends Table {
     return '';
   }
 
-  payOut(result: GameResult): number {
+  payOut(result: GameResult): Result {
     let winAmount = 0;
     if (result === GameResult.WIN) {
       winAmount = this.pot?.getAmount() as number;
-      this.playerMoney += winAmount;
-    }
-    if (result === GameResult.TIE) {
+    } else if (result === GameResult.TIE) {
       winAmount = (this.pot?.getAmount() as number) / 2;
-      this.playerMoney += winAmount;
-    }
-    if (result === GameResult.LOSS) {
-      winAmount -= this.playerBet;
+    } else if (result === GameResult.LOSS) {
+      winAmount = -this.playerBet;
       // this.playerMoney -= this.playerBet;
     }
+    this.playerMoney += winAmount;
     this.setMoneyText(this.playerMoney);
 
-    const highScore = localStorage.getItem(
-      GAME.STORAGE.WAR_HIGH_SCORE_STORAGE
-    );
-    if (
-      !highScore ||
-      this.playerMoney > Number(highScore)
-    ) {
-      localStorage.setItem(
-        GAME.STORAGE.WAR_HIGH_SCORE_STORAGE,
-        String(this.playerMoney)
-      );
-    }
-    return winAmount;
+    return {
+      gameResult: result,
+      winAmount
+    };
   }
 
   private resetRound(): void {
