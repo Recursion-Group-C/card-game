@@ -55,7 +55,11 @@ const TopCards = (session: { session: Session }) => {
         </div>
         <div className="pl-4">
           <p className="text-2xl font-bold">
-            ${ranking.money.toLocaleString()}
+            {ranking.money ? (
+              <>${ranking.money.toLocaleString()}</>
+            ) : (
+              <>${ranking.money}</>
+            )}
           </p>
           <p>Total Money</p>
         </div>

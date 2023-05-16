@@ -1,9 +1,7 @@
 const makeMoneyString = (amount: number): string => {
   let result: string;
-  if (amount > 0) {
+  if (amount >= 0) {
     result = `+$${amount.toLocaleString()}`;
-  } else if (amount === 0) {
-    result = '';
   } else {
     result = `-$${Math.abs(amount).toLocaleString()}`;
   }

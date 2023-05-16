@@ -150,7 +150,11 @@ const LeaderBoard = ({ session }: { session: Session }) => {
               </td>
               <td>
                 <span className="text-lg">
-                  ${userdata.money.toLocaleString()}
+                  {userdata.money ? (
+                    <>${userdata.money.toLocaleString()}</>
+                  ) : (
+                    <>${userdata.money}</>
+                  )}
                 </span>
               </td>
             </tr>
