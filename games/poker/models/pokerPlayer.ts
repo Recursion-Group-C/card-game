@@ -36,9 +36,28 @@ export default class PokerPlayer extends Player {
   }
 
   getHandRank(): number {
-    const ranks: string[] = this.hand
-      .map((card) => card.rank)
-      .sort();
+    const ranks: number[] = this.hand
+      .map((card) =>
+        GAME.CARD.RANK_CHOICES.indexOf(
+          card.rank as
+            | 'A'
+            | '2'
+            | '3'
+            | '4'
+            | '5'
+            | '6'
+            | '7'
+            | '8'
+            | '9'
+            | '10'
+            | 'J'
+            | 'Q'
+            | 'K'
+        )
+      )
+      .sort((a, b) => a - b);
+
+    console.log(ranks[4], ranks[0]);
 
     // フラッシュ
     const isFlush = this.hand.every(
@@ -46,19 +65,58 @@ export default class PokerPlayer extends Player {
     );
 
     // ストレート
-    const isStraight =
-      new Set(ranks).size === 5 &&
-      Number(ranks[4]) - Number(ranks[0]) === 4 &&
-      new Set([ranks[0], ranks[4]]).size === 2;
+    let isStraight: boolean;
+
+    if (ranks[4] === 12 && ranks[0] === 0) {
+      // Aを0として扱う場合のストレート
+      isStraight =
+        ranks[3] === 11 &&
+        ranks[2] === 10 &&
+        ranks[1] === 9;
+    } else {
+      // Aを13として扱う場合のストレート
+      console.log('Aを13として扱う場合のストレート');
+      isStraight =
+        ranks[4] - ranks[0] === 4 &&
+        new Set(ranks).size === 5;
+    }
+
+    console.log(
+      new Set(ranks).size,
+      Number(ranks[4]) - Number(ranks[0])
+    );
+
+    const isRoyalStraightFlush =
+      isFlush &&
+      isStraight &&
+      ranks[0] === 0 &&
+      ranks[4] === 12;
 
     // ペア
     const pairs = ranks.filter(
       (rank, i) => rank === ranks[i + 1]
     );
 
+    // フルハウス
+    const isFullHouse =
+      pairs.length === 3 && new Set(pairs).size === 2;
+
+    console.log(isFlush, isStraight);
+    console.log(pairs.length, new Set(pairs).size);
+
+    if (isRoyalStraightFlush) {
+      return HAND_RANK_MAP.get(
+        HAND_RANK.ROYAL_STRAIGHT_FLUSH
+      ) as number;
+    }
     if (isFlush && isStraight) {
       return HAND_RANK_MAP.get(
         HAND_RANK.STRAIGHT_FLUSH
+      ) as number;
+    }
+    if (isFullHouse) {
+      return HAND_RANK_MAP.get(
+        HAND_RANK.FULL_HOUSE
       ) as number;
     }
     if (pairs.length === 1) {
@@ -66,14 +124,19 @@ export default class PokerPlayer extends Player {
         HAND_RANK.ONE_PAIR
       ) as number;
     }
-    if (pairs.length === 2) {
+    if (pairs.length === 2 && new Set(pairs).size === 2) {
       return HAND_RANK_MAP.get(
         HAND_RANK.TWO_PAIR
       ) as number;
     }
-    if (pairs.length === 3) {
+    if (pairs.length === 2 && new Set(pairs).size === 1) {
       return HAND_RANK_MAP.get(
         HAND_RANK.THREE_OF_A_KIND
+      ) as number;
+    }
+    if (pairs.length === 3 && new Set(pairs).size === 1) {
+      return HAND_RANK_MAP.get(
+        HAND_RANK.FOUR_OF_A_KIND
       ) as number;
     }
     if (isFlush) {
