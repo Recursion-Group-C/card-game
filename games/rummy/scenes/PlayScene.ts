@@ -672,10 +672,12 @@ export default class PlayScene extends Table {
       const discardedCard =
         this.players[1].hand[randomIndex];
       if (discardedCard) {
+        this.children.bringToTop(discardedCard);
         discardedCard.playMoveTween(
           this.deckFrontCardX,
           this.deckFrontCardY
         );
+        discardedCard.playFlipOverTween();
         this.deckFront.push(discardedCard);
         player.removeCardFromHand(discardedCard);
       }
@@ -822,6 +824,7 @@ export default class PlayScene extends Table {
               this.meldZoneEach[this.meldZoneEachCounter]
                 .y + 100
             );
+            card.playFlipOverTween();
           });
           this.arrayCardsPutOnMeldZone.push(moveCards);
         }
@@ -850,6 +853,7 @@ export default class PlayScene extends Table {
               this.meldZoneEach[this.meldZoneEachCounter]
                 .y + 100
             );
+            card.playFlipOverTween();
           });
           this.arrayCardsPutOnMeldZone.push(moveCards);
         }
@@ -1108,8 +1112,6 @@ export default class PlayScene extends Table {
                 350,
               this.playerHandZones[1].y - 50
             );
-            // 挙動確認のため
-            popCard.playFlipOverTween();
           });
           console.log(this.players[1].hand);
         }
