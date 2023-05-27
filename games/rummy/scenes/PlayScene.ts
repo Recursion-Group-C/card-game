@@ -364,7 +364,6 @@ export default class PlayScene extends Table {
               350,
             this.playerHandZones[index].y - 50
           );
-          currCard.playFlipOverTween();
         }
       }
     }
