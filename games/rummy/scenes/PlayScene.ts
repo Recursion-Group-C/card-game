@@ -10,7 +10,6 @@ import RummyPlayer from '../models/rummyPlayer';
 import Table from '../../common/Factories/tableScene';
 import Text = Phaser.GameObjects.Text;
 import Zone = Phaser.GameObjects.Zone;
-import GameObject = Phaser.GameObjects.GameObject;
 import TimeEvent = Phaser.Time.TimerEvent;
 
 export default class PlayScene extends Table {
@@ -414,10 +413,7 @@ export default class PlayScene extends Table {
       this.resetDeckFromDeckFront();
     }
     let counter = 0;
-    this.addPutOnHand(
-      this.players[0],
-      this.deckFront[this.deckFront.length - 1]
-    );
+    this.addPutOnHand(this.players[0]);
 
     // meldZoneにカードを置けるかチェック
     const [sameRankCards, consecutiveRankCards] =
@@ -573,7 +569,7 @@ export default class PlayScene extends Table {
       this.resetDeckFromDeckFront();
     }
     let counter = 0;
-    this.addPutOnHand(this.players[1], undefined);
+    this.addPutOnHand(this.players[1]);
     // meldZoneにカードを置けるかチェック
     const [sameRankCards, consecutiveRankCards] =
       this.findMeldAbleCard(this.players[1].hand);
@@ -697,16 +693,6 @@ export default class PlayScene extends Table {
     });
   }
 
-  private canDropCard(card: Card, dropZone: Zone): boolean {
-    const cardBounds = card.getBounds();
-    const dropZoneBounds = dropZone.getBounds();
-
-    return Phaser.Geom.Intersects.RectangleToRectangle(
-      cardBounds,
-      dropZoneBounds
-    );
-  }
-
   private checkIfCardOverDeck(card: Card) {
     const deckBounds = this.deckFront[0].getBounds();
     const cardBounds = card.getBounds();
@@ -718,6 +704,7 @@ export default class PlayScene extends Table {
   }
 
   // メルドゾーンにおくカードを選定
+  // eslint-disable-next-line class-methods-use-this
   private findMeldAbleCard(hands: Card[]) {
     const meldAbleCards: Card[][][] = [[], []];
 
@@ -964,58 +951,6 @@ export default class PlayScene extends Table {
     }
   }
 
-  private cardMoveToMeldZone(
-    player: RummyPlayer,
-    cards: Card[],
-    meldZoneIndex: number
-  ): void {
-    const meldZone = this.meldZoneEach[meldZoneIndex];
-
-    // カードをmeldZoneに移動させる処理
-    cards.forEach((card) => {
-      // カードの移動アニメーションや位置の調整などの実装が必要です
-      card.playMoveTween(meldZone.x + 70, meldZone.y + 100);
-    });
-
-    // カードをmeldZoneに追加
-    if (this.isSameRank(cards)) {
-      // 同じランクのカードの場合
-      this.meldZoneSameRank[meldZoneIndex].push(...cards);
-    } else if (this.isConsecutiveRank(cards)) {
-      // 連続するランクのカードの場合
-      this.meldZoneConsecutiveRanks[meldZoneIndex].push(
-        ...cards
-      );
-    }
-
-    // 手札から移動したカードを削除
-    player.removeCardFromHand(cards);
-  }
-
-  private isMeldAbleCard(cards: Card[]): boolean {
-    // カードが選択されていない場合はmeldZoneに置けないと判定する
-    if (cards.length === 0) {
-      return false;
-    }
-
-    // カードのランクを取得
-    const ranks = cards.map((card) => card.rank);
-
-    // カードが同じランクか連続するランクであるかを判定するロジックを実装
-    // ここでは単純に同じランクのカードか連続するランクのカードが選択されている場合にtrueを返す例としています
-    // 実際の判定ロジックはゲームのルールや仕様に合わせて適切に実装してください
-    const isSameRank = ranks.every(
-      (rank) => rank === ranks[0]
-    );
-    const isConsecutiveRank = cards.every(
-      (card, index) =>
-        card.getRankNumber('rummy') ===
-        cards[0].getRankNumber('rummy') + index
-    );
-
-    return isSameRank || isConsecutiveRank;
-  }
-
   private enableCardDraggable(): void {
     this.players.forEach((player) => {
       if (player.playerType === 'player') {
@@ -1093,51 +1028,41 @@ export default class PlayScene extends Table {
     );
   }
 
-  private addPutOnHand(
-    player: RummyPlayer,
-    cardFromDeck: Card | undefined
-  ) {
+  private addPutOnHand(player: RummyPlayer) {
     if (player.playerType === 'house') {
       this.deckBack.forEach((deck) => {
-        const popCard = deck.drawOne();
-        if (popCard) {
-          this.players[1].addCardToHand(popCard);
-          console.log(this.players[1].hand);
-          this.time.delayedCall(1000, () => {
-            popCard.playMoveTween(
-              this.playerHandZones[1].x -
-                (GAME.CARD.WIDTH + 10) * 2 +
-                this.players[1].hand.length -
-                1 * (GAME.CARD.WIDTH + 10) -
-                350,
-              this.playerHandZones[1].y - 50
-            );
-          });
-          console.log(this.players[1].hand);
-        }
+        this.handOutCard(
+          deck,
+          player,
+          this.playerHandZones[1].x -
+            (GAME.CARD.WIDTH + 10) * 2 +
+            this.players[1].hand.length -
+            1 * (GAME.CARD.WIDTH + 10) -
+            350,
+          this.playerHandZones[1].y - 50,
+          true
+        );
       });
     } else {
       this.deckBack.forEach((deck) => {
-        const popCard = deck.drawOne();
-        // handに追加
-        if (popCard) {
-          this.players[0].addCardToHand(popCard);
-          popCard.playMoveTween(
-            this.playerHandZones[0].x -
-              (GAME.CARD.WIDTH + 10) * 2 +
-              this.players[0].hand.length -
-              1 * (GAME.CARD.WIDTH + 10) -
-              350,
-            this.playerHandZones[0].y - 50
-          );
-          popCard.playFlipOverTween();
-        }
+        this.handOutCard(
+          deck,
+          player,
+          this.playerHandZones[0].x -
+            (GAME.CARD.WIDTH + 10) * 2 +
+            this.players[0].hand.length -
+            1 * (GAME.CARD.WIDTH + 10) -
+            350,
+          this.playerHandZones[0].y - 50,
+          false
+        );
       });
 
       this.resetHandsMove(this.players[0]);
     }
   }
 
+  // eslint-disable-next-line class-methods-use-this
   private async delay(ms: number): Promise<void> {
     return new Promise<void>((resolve) => {
       setTimeout(() => {
@@ -1204,6 +1129,32 @@ export default class PlayScene extends Table {
       this.winGameSound?.play();
     } else {
       this.lossGameSound?.play();
+    }
+  }
+
+  handOutCard(
+    deck: Deck,
+    player: RummyPlayer,
+    toX: number,
+    toY: number,
+    isFaceDown: boolean
+  ): void {
+    const card: Card | undefined = deck.drawOne();
+
+    if (card) {
+      if (!isFaceDown) {
+        card.setFaceUp();
+      }
+      if (player.playerType === 'player') {
+        card.setDraggable();
+      }
+
+      player.addCardToHand(card);
+
+      this.children.bringToTop(card);
+      card.playMoveTween(toX, toY);
+    } else {
+      console.log('card nothing');
     }
   }
 }
