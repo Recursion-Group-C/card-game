@@ -69,7 +69,7 @@ export default class PlayScene extends Table {
   private deckFrontCardY = 550;
 
   constructor(config: any) {
-    super('PlayScene', GAME.TABLE.RUMMY_TABLE_KEY, config);
+    super('PlayScene', GAME.TABLE.SPEED_TABLE_KEY, config);
   }
 
   create(): void {

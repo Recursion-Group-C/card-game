@@ -134,13 +134,6 @@ export default class PreloadScene extends Phaser.Scene {
       )
     );
     this.load.image(
-      GAME.TABLE.RUMMY_TABLE_KEY,
-      path.join(
-        GAME.COMMON_IMG_ASSETS_PATH,
-        'blackjackTable.jpg'
-      )
-    );
-    this.load.image(
       GAME.TABLE.SPEED_TABLE_KEY,
       path.join(
         GAME.COMMON_IMG_ASSETS_PATH,

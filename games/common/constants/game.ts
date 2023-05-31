@@ -17,7 +17,6 @@ const GAME = {
     BET_TABLE_KEY: 'betTable',
     BLACKJACK_TABLE_KEY: 'blackjackTable',
     SPEED_TABLE_KEY: 'speedTable',
-    RUMMY_TABLE_KEY: 'rummyTable',
     BUTTON: 'button',
     BACK: 'back',
     COG: 'cog',
