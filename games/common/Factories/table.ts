@@ -8,8 +8,8 @@ import {
 import GAME from '../constants/game';
 import STYLE from '../constants/style';
 import BaseScene from '../scenes/BaseScene';
-import Card from './cardImage';
-import Deck from './deckImage';
+import Card from './card';
+import Deck from './deck';
 import Player from './player';
 import Zone = Phaser.GameObjects.Zone;
 import Text = Phaser.GameObjects.Text;

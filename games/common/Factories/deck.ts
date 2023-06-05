@@ -1,6 +1,6 @@
 /* eslint no-underscore-dangle: 0 */
 import Phaser from 'phaser';
-import Card from './cardImage';
+import Card from './card';
 
 const SUIT_CHOICES = [
   'Spades',
