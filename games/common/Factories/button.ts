@@ -51,6 +51,10 @@ export default class Button extends Phaser.GameObjects
     this.setHoverHandler();
   }
 
+  get key(): string {
+    return this.#key;
+  }
+
   private setHoverHandler(): void {
     this.on(
       'pointerover',
