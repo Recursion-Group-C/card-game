@@ -10,7 +10,7 @@ import Text = Phaser.GameObjects.Text;
 const LEVEL = ['EASY', 'MEDIUM', 'HARD'];
 
 export default class LevelScene extends BaseScene {
-  #menu: Array<MenuItem> = [];
+  #menu: MenuItem[] = [];
 
   #lobbyScene: LobbyScene | undefined;
 

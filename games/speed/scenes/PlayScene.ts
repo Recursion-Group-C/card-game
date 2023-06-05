@@ -52,6 +52,7 @@ export default class PlayScene extends Table {
       new SpeedPlayer('house', 0, 0, 'bet', 'House', 0)
     ];
 
+    this.registerCountDownSound();
     this.createPlayerNameTexts();
     this.createPlayerHandZones(
       GAME.CARD.WIDTH * 5 + STYLE.GUTTER_SIZE * 4,
@@ -64,8 +65,6 @@ export default class PlayScene extends Table {
 
     this.resetAndShuffleDeck();
     this.dealInitialCards();
-
-    this.registerCountDownSound();
 
     this.startCountDown();
     this.startHousePlay(7000);
@@ -121,8 +120,8 @@ export default class PlayScene extends Table {
     this.time.delayedCall(delay, () => {
       this.#housePlayTimeEvent = this.time.addEvent({
         delay: this.lobbyScene
-          ? (3 - this.lobbyScene.level) * 1500
-          : 4500,
+          ? (3 - this.lobbyScene.level) * 1200
+          : 3600,
         callback: this.playHouseTurn,
         callbackScope: this,
         loop: true
@@ -221,7 +220,8 @@ export default class PlayScene extends Table {
   }
 
   private playHouseTurn(): void {
-    if (!this.isPlayerStagnant(this.players[1])) {
+    const house = this.players[1];
+    if (!this.isPlayerStagnant(house)) {
       this.putDownCardFromHand();
     }
   }
@@ -305,6 +305,9 @@ export default class PlayScene extends Table {
     return diff === 1 || diff === 12;
   }
 
+  /**
+   * プレイヤーもしくはハウスが台札に出せるカードを持っているかどうかを示す真偽値
+   */
   private isGameStagnant(): boolean {
     let isGameStagnant = true;
     this.players.forEach((player) => {
@@ -448,7 +451,7 @@ export default class PlayScene extends Table {
 
   /**
    * 台札にカードを補充する関数。
-   * 山札が空の場合は、手札から補充する。
+   * 山札からカードを補充し、山札が空の場合は、手札から補充する。
    */
   private dealLeadCards(): void {
     this.players.forEach((player, index) => {

@@ -7,7 +7,7 @@ import GameDecision from './gameDecision';
 export default abstract class Player {
   readonly #name: string; // if a player has logged in, use the player name fetched from the DB, otherwise use "
 
-  readonly #playerType: 'player' | 'house' | 'ai';
+  readonly #playerType: 'player' | 'house' | 'cpu';
 
   #chips: number; // if a player has logged in, use the player's deposit fetched from the DB, otherwise use constant
 
@@ -20,7 +20,7 @@ export default abstract class Player {
   #hand: Array<Card> = [];
 
   constructor(
-    playerType: 'player' | 'house' | 'ai',
+    playerType: 'player' | 'house' | 'cpu',
     bet: number,
     winAmount: number,
     gameStatus: string,
@@ -39,7 +39,7 @@ export default abstract class Player {
     return this.#name;
   }
 
-  get playerType(): 'player' | 'house' | 'ai' {
+  get playerType(): 'player' | 'house' | 'cpu' {
     return this.#playerType;
   }
 
