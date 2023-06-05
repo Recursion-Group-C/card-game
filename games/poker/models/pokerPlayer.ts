@@ -8,7 +8,7 @@ import {
 
 export default class PokerPlayer extends Player {
   constructor(
-    playerType: string,
+    playerType: 'player' | 'cpu',
     bet: number,
     winAmount: number,
     gameStatus: string,
