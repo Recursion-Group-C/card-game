@@ -1,7 +1,7 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 
 import GAME from '../constants/game';
-import Card from './cardImage';
+import Card from './card';
 import GameDecision from './gameDecision';
 
 export default abstract class Player {

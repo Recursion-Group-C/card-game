@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 /* eslint-disable no-console */
 import GAME from '@/games/common/constants/game';
-import Card from '@/games/common/Factories/cardImage';
+import Card from '@/games/common/Factories/card';
 import {
   HAND_RANK_MAP,
   HAND_RANK

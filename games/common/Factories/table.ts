@@ -1,84 +1,348 @@
+import LobbyScene from '@/games/common/scenes/LobbyScene';
+import { Result } from '@/games/common/types/game';
+import { makeMoneyString } from '@/utils/general';
+import {
+  addResult,
+  updateMoney
+} from '@/utils/supabase-client';
 import GAME from '../constants/game';
+import STYLE from '../constants/style';
+import BaseScene from '../scenes/BaseScene';
+import Card from './card';
 import Deck from './deck';
 import Player from './player';
+import Zone = Phaser.GameObjects.Zone;
+import Text = Phaser.GameObjects.Text;
+import GameObject = Phaser.GameObjects.GameObject;
 
-export default abstract class Table {
-  readonly #betDenominations: Array<number> = [];
+export default abstract class Table extends BaseScene {
+  protected playerHandZones: Array<Zone> = [];
 
-  protected turnCounter: number;
+  protected timerText: Text | undefined;
 
-  #gamePhase: string;
+  protected playerNameTexts: Array<Text> = [];
 
-  #resultsLog: Array<string> = [];
+  protected players: Array<Player> = [];
 
-  protected deck: Deck;
+  protected lobbyScene: LobbyScene | undefined;
 
-  abstract players: Array<Player>;
+  protected deck: Deck | undefined;
 
-  constructor(
-    gamePhase: string,
-    betDenominations: Array<number> = [
-      ...GAME.TABLE.BET_DENOMINATIONS
-    ]
-  ) {
-    this.#betDenominations = betDenominations;
+  protected gamePhase: string | undefined;
+
+  protected turnCounter = 0;
+
+  protected initialTime = 2;
+
+  #winGameSound: Phaser.Sound.BaseSound | undefined;
+
+  #lossGameSound: Phaser.Sound.BaseSound | undefined;
+
+  create(): void {
+    super.create();
+    this.lobbyScene = this.scene.get(
+      'LobbyScene'
+    ) as LobbyScene;
+    if (this.config.game === 'poker') {
+      this.createMoneyText(this.lobbyScene.money, 0);
+    } else {
+      this.createMoneyText(
+        this.lobbyScene.money,
+        this.lobbyScene.bet
+      );
+    }
+
     this.turnCounter = 0;
-    this.#gamePhase = gamePhase;
-    this.deck = new Deck();
-    this.deck.shuffle();
-  }
+    this.initialTime = 2;
 
-  get betDenominations(): Array<number> {
-    return this.#betDenominations;
-  }
-
-  get gamePhase(): string {
-    return this.#gamePhase;
-  }
-
-  set gamePhase(gamePhase: string) {
-    this.#gamePhase = gamePhase;
-  }
-
-  get resultsLog(): Array<string> {
-    return this.#resultsLog;
-  }
-
-  // Array cannot simply use setter, so I create addLogToResultsLog function instead of setter
-  addLogToResultsLog(log: string) {
-    this.#resultsLog.push(log);
-  }
-
-  isFirstPlayer(): boolean {
-    return (
-      this.turnCounter % (this.players.length + 1) ===
-      this.players.length
+    this.#winGameSound = this.scene.scene.sound.add(
+      GAME.TABLE.WIN_GAME_SOUND_KEY,
+      { volume: 0.3 }
+    );
+    this.#lossGameSound = this.scene.scene.sound.add(
+      GAME.TABLE.LOSS_GAME_SOUND_KEY,
+      { volume: 0.3 }
     );
   }
 
-  isLastPlayer(): boolean {
-    return (
-      this.turnCounter % (this.players.length + 1) ===
-      this.players.length
-    );
+  get winGameSound(): Phaser.Sound.BaseSound | undefined {
+    return this.#winGameSound;
   }
 
-  resetAndShuffleDeck(): void {
-    this.deck = new Deck();
+  get lossGameSound(): Phaser.Sound.BaseSound | undefined {
+    return this.#lossGameSound;
+  }
+
+  /**
+   * デッキをリセットしてシャッフルする。
+   * @param x デッキのx座標（オプション）
+   * @param y デッキのy座標（オプション）
+   */
+  protected resetAndShuffleDeck(
+    x?: number,
+    y?: number
+  ): void {
+    this.deck = undefined;
+    this.deck = new Deck(this, x ?? 0, y ?? 0);
     this.deck.shuffle();
   }
 
-  // Deal the Cards at the beginning of the game
-  abstract assignPlayerHands(): void;
+  protected createPlayerNameTexts(): void {
+    this.playerNameTexts = []; // 前回のゲームで作成したものが残っている可能性があるので、初期化する
+    this.players.forEach((player) => {
+      const playerNameText = this.add.text(
+        0,
+        300,
+        player.name,
+        STYLE.NAME_TEXT
+      );
 
-  // Reset Players' hands and bets at the end of each round
-  abstract clearPlayerHandsAndBets(): void;
+      if (player.playerType === 'player') {
+        Phaser.Display.Align.In.BottomCenter(
+          playerNameText as Text,
+          this.gameZone as Zone,
+          0,
+          -20
+        );
+      } else if (player.playerType === 'house') {
+        Phaser.Display.Align.In.TopCenter(
+          playerNameText as Text,
+          this.gameZone as Zone,
+          0,
+          -20
+        );
+      } else if (player.playerType === 'cpu') {
+        Phaser.Display.Align.In.TopCenter(
+          playerNameText as Text,
+          this.gameZone as Zone,
+          0,
+          -20
+        );
+      }
+      // aiが存在する場合は、個別に位置の設定が必要。
+      this.playerNameTexts.push(playerNameText);
+    });
+  }
 
-  abstract getTurnPlayer(): Player;
+  protected createPlayerHandZones(
+    width: number,
+    height: number
+  ): void {
+    this.playerHandZones = []; // 前回のゲームで作成したものが残っている可能性があるので、初期化する
+    this.players.forEach((player, index) => {
+      const playerHandZone = this.add.zone(
+        0,
+        0,
+        width,
+        height
+      );
 
-  abstract evaluateAndGetRoundResults(): void;
+      if (player.playerType === 'player') {
+        Phaser.Display.Align.To.TopCenter(
+          playerHandZone as Zone,
+          this.playerNameTexts[index] as Text,
+          0,
+          STYLE.GUTTER_SIZE
+        );
+      } else if (player.playerType === 'house') {
+        Phaser.Display.Align.To.BottomCenter(
+          playerHandZone as Zone,
+          this.playerNameTexts[index] as GameObject,
+          0,
+          STYLE.GUTTER_SIZE
+        );
+      } else if (player.playerType === 'cpu') {
+        Phaser.Display.Align.To.BottomCenter(
+          playerHandZone as Zone,
+          this.playerNameTexts[index] as GameObject,
+          0,
+          STYLE.GUTTER_SIZE
+        );
+      }
+      // aiが存在する場合は、個別に位置の設定が必要。
+      this.playerHandZones.push(playerHandZone);
+    });
+  }
 
-  abstract evaluateMove(player: Player): void;
+  protected countDown(callback: () => void) {
+    this.initialTime -= 1;
+    if (this.initialTime > 0) {
+      this.setTimerText(`${String(this.initialTime)}`);
+    } else if (this.initialTime === 0) {
+      this.setTimerText('GO!!');
+      // 最初にSetした文字数（ここでは３）を基準に中心位置が決まってしまうため、再度this.timerTextの位置を設定している
+      Phaser.Display.Align.In.Center(
+        this.timerText as Text,
+        this.gameZone as GameObject,
+        0,
+        -20
+      );
+    } else {
+      this.setTimerText('');
+      callback();
+    }
+  }
 
-  abstract haveTurn(): void;
+  protected createTimerText(): void {
+    this.timerText = this.add.text(0, 0, '', STYLE.TIMER);
+    this.setTimerText(`${String(this.initialTime)}`);
+    Phaser.Display.Align.In.Center(
+      this.timerText as Text,
+      this.gameZone as GameObject,
+      0,
+      -20
+    );
+  }
+
+  protected setTimerText(time: string): void {
+    if (this.timerText) this.timerText.setText(`${time}`);
+  }
+
+  protected createCardDragStartEvent(): void {
+    this.input.on(
+      'dragstart',
+      (pointer: Phaser.Input.Pointer, card: Card) => {
+        this.children.bringToTop(card);
+      },
+      this
+    );
+  }
+
+  protected createCardDragEvent(): void {
+    this.input.on(
+      'drag',
+      (
+        pointer: Phaser.Input.Pointer,
+        card: Card,
+        dragX: number,
+        dragY: number
+      ) => {
+        card.setPosition(dragX, dragY);
+      },
+      this
+    );
+  }
+
+  protected createCardDragEndEvent(): void {
+    this.input.on(
+      'dragend',
+      (
+        pointer: Phaser.Input.Pointer,
+        card: Card,
+        dropped: boolean
+      ) => {
+        if (!dropped) {
+          card.returnToOrigin();
+        }
+      }
+    );
+  }
+
+  protected createResultText(
+    result: string,
+    winAmount: number
+  ): void {
+    const graphics = this.add.graphics({
+      fillStyle: { color: 0x000000, alpha: 0.75 }
+    });
+    const square = new Phaser.Geom.Rectangle(
+      0,
+      0,
+      Number(this.config.width),
+      Number(this.config.height)
+    );
+    graphics.fillRectShape(square);
+    const resultText: Text = this.add.text(
+      0,
+      0,
+      `${result} ${makeMoneyString(winAmount)}`,
+      STYLE.TEXT
+    );
+    resultText.setColor('#ffde3d');
+    resultText.setStroke('#000000', 5);
+    resultText.setFontSize(60);
+    Phaser.Display.Align.In.Center(
+      resultText,
+      this.gameZone as Phaser.GameObjects.GameObject
+    );
+    this.input.once(
+      'pointerdown',
+      () => {
+        this.scene.start('LobbyScene');
+        this.scene.stop('PlayScene');
+      },
+      this
+    );
+  }
+
+  protected setBetDouble(): void {
+    if (this.lobbyScene) {
+      this.lobbyScene.bet *= 2;
+      this.setBetText(this.lobbyScene.bet);
+    }
+  }
+
+  abstract handOutCard(
+    deck: Deck,
+    player: Player,
+    toX: number,
+    toY: number,
+    isFaceDown: boolean
+  ): void;
+
+  protected endHand(result: string): void {
+    const resultObj = this.payOut(result);
+    this.time.delayedCall(500, () => {
+      this.createResultText(result, resultObj.winAmount);
+      this.playGameResultSound(result);
+    });
+    // ログインしている場合は、DBのmoneyを更新する。
+    // ログインしていない場合は、storageのHighScoreを更新する。
+    if (this.config.userId) {
+      updateMoney(
+        this.config.userId,
+        this.lobbyScene!.money
+      );
+      const { gameResult, winAmount } = resultObj;
+      addResult(
+        this.config.userId,
+        this.config.game,
+        gameResult,
+        winAmount,
+        this.lobbyScene!.money
+      );
+    } else {
+      Table.setStorageHighScore(
+        this.config.game,
+        this.lobbyScene!.money
+      );
+    }
+    this.clearPlayerHandsAndBets();
+  }
+
+  protected clearPlayerHandsAndBets(): void {
+    this.players.forEach((player) => {
+      player.clearHand();
+      player.clearBet();
+    });
+  }
+
+  protected static setStorageHighScore(
+    highScoreKey: string,
+    money: number
+  ): void {
+    const highScore = localStorage.getItem(highScoreKey);
+    if (!highScore || money > Number(highScore)) {
+      localStorage.setItem(highScoreKey, String(money));
+    }
+  }
+
+  abstract payOut(
+    result: string,
+    playerIndex?: number
+  ): Result;
+
+  abstract playGameResultSound(result: string): void;
+
+  // abstract deriveGameResult(): string | undefined;
 }

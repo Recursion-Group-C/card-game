@@ -97,7 +97,7 @@ export default class LobbyScene extends BaseScene {
     this.betText = this.add.text(0, 0, '', STYLE.TEXT);
     this.setBetText(this.bet);
 
-    // ユーザーがログインしていない場合に、HighScoreを表示する
+    // NOTE: ユーザーがログインしていない場合は、HighScoreを表示する
     if (!this.config.userId) {
       this.highScoreText = this.add.text(
         0,
@@ -142,8 +142,8 @@ export default class LobbyScene extends BaseScene {
       chipHeight,
       GAME.TABLE.RED_CHIP_KEY,
       GAME.TABLE.CHIP_CLICK_SOUND_KEY,
-      '20',
-      20
+      '50',
+      50
     );
     const orangeChip = new Button(
       this,
@@ -151,8 +151,8 @@ export default class LobbyScene extends BaseScene {
       chipHeight,
       GAME.TABLE.ORANGE_CHIP_KEY,
       GAME.TABLE.CHIP_CLICK_SOUND_KEY,
-      '50',
-      50
+      '100',
+      100
     );
     const blueChip = new Button(
       this,
@@ -160,8 +160,7 @@ export default class LobbyScene extends BaseScene {
       chipHeight,
       GAME.TABLE.BLUE_CHIP_KEY,
       GAME.TABLE.CHIP_CLICK_SOUND_KEY,
-      '100',
-      100
+      'ALL'
     );
 
     this.#chips.push(whiteChip);
@@ -177,17 +176,27 @@ export default class LobbyScene extends BaseScene {
     this.#chips.forEach((chip: Button) => {
       chip.setClickHandler(() => {
         if (this.bet + chip.getChipValue() <= this.money) {
-          this.addChip(chip.getChipValue());
+          if (chip.key === 'ALL') {
+            this.addChip(this.money - this.bet);
+          } else {
+            this.addChip(chip.getChipValue());
+          }
+
           this.#dealButton?.playFadeIn();
-          // アニメーション用のチップを作成する
-          const tempChip = new Button(
-            this,
-            chip.x,
-            chip.y,
-            chip.texture.key
-          );
-          tempChip.playMoveAndDestroy(this.config.width, 0);
-          // 現在のベット金額と追加チップの合計が所持金を上回る場合は、チップをフェードアウトする
+          // NOTE: アニメーション用のチップを作成する
+          if (chip.key !== 'ALL') {
+            const tempChip = new Button(
+              this,
+              chip.x,
+              chip.y,
+              chip.texture.key
+            );
+            tempChip.playMoveAndDestroy(
+              this.config.width,
+              0
+            );
+          }
+          // NOTE: 現在のベット金額と追加チップの合計が所持金を上回る場合はチップをフェードアウトする
           this.#chips.forEach((otherChip: Button) => {
             if (
               this.bet + otherChip.getChipValue() >
@@ -325,6 +334,8 @@ export default class LobbyScene extends BaseScene {
             1000,
             1000
           );
+        } else {
+          this.money = 1000;
         }
         this.bet = 0;
         this.scene.restart();
