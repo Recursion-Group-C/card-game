@@ -1,13 +1,13 @@
 import { Result } from '@/games/common/types/game';
-import Card from '../../common/Factories/cardImage';
-import Deck from '../../common/Factories/deckImage';
+import Card from '../../common/Factories/card';
+import Deck from '../../common/Factories/deck';
 import GAME from '../../common/constants/game';
 import STYLE from '../../common/constants/style';
 import GamePhase from '../constants/gamePhase';
 import GameResult from '../constants/gameResult';
 import SpeedPlayer from '../models/SpeedPlayer';
 
-import Table from '../../common/Factories/tableScene';
+import Table from '../../common/Factories/table';
 
 import Text = Phaser.GameObjects.Text;
 import Zone = Phaser.GameObjects.Zone;

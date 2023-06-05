@@ -1,8 +1,8 @@
 import { Result } from '@/games/common/types/game';
 import Button from '../../common/Factories/button';
-import Card from '../../common/Factories/cardImage';
-import Deck from '../../common/Factories/deckImage';
-import Table from '../../common/Factories/tableScene';
+import Card from '../../common/Factories/card';
+import Deck from '../../common/Factories/deck';
+import Table from '../../common/Factories/table';
 import GAME from '../../common/constants/game';
 import STYLE from '../../common/constants/style';
 import ImageUtility from '../../common/utility/ImageUtility';
