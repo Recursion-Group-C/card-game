@@ -1,11 +1,11 @@
 import { Result } from '@/games/common/types/game';
-import Button from '../../common/Factories/button';
-import Card from '../../common/Factories/cardImage';
-import Deck from '../../common/Factories/deckImage';
-import Table from '../../common/Factories/tableScene';
-import GAME from '../../common/constants/game';
-import STYLE from '../../common/constants/style';
-import ImageUtility from '../../common/utility/ImageUtility';
+import Button from '@/games/common/Factories/button';
+import Card from '@/games/common/Factories/cardImage';
+import Deck from '@/games/common/Factories/deckImage';
+import Table from '@/games/common/Factories/tableScene';
+import GAME from '@/games/common/constants/game';
+import STYLE from '@/games/common/constants/style';
+import ImageUtility from '@/games/common/utility/ImageUtility';
 import GamePhase from '../constants/gamePhase';
 import GameResult from '../constants/gameResult';
 import BlackjackPlayer from '../models/BlackjackPlayer';
@@ -14,24 +14,23 @@ import Zone = Phaser.GameObjects.Zone;
 import TimeEvent = Phaser.Time.TimerEvent;
 
 export default class PlayScene extends Table {
-  private playerScoreTexts: Array<Text> = [];
+  #playerScoreTexts: Text[] = [];
 
-  private standButton: Button | undefined;
+  #standButton: Button | undefined;
 
-  private hitButton: Button | undefined;
+  #hitButton: Button | undefined;
 
-  private doubleButton: Button | undefined;
+  #doubleButton: Button | undefined;
 
-  private surrenderButton: Button | undefined;
+  #surrenderButton: Button | undefined;
 
-  private timeEvent: TimeEvent | undefined;
+  #timeEvent: TimeEvent | undefined;
 
   constructor(config: any) {
-    super(
-      'PlayScene',
-      GAME.TABLE.BLACKJACK_TABLE_KEY,
-      config
-    );
+    super('PlayScene', GAME.TABLE.BLACKJACK_TABLE_KEY, {
+      ...config,
+      canGoBack: true
+    });
   }
 
   create(): void {
@@ -149,7 +148,8 @@ export default class PlayScene extends Table {
   }
 
   private createPlayerScoreTexts(): void {
-    this.playerScoreTexts = []; // 前回のゲームで作成したものが残っている可能性があるので、初期化する
+    // NOTE: 前回のゲームで作成したものが残っている可能性があるので、初期化する
+    this.#playerScoreTexts = [];
     this.players.forEach((player, index) => {
       const playerScoreText = this.add.text(
         0,
@@ -174,17 +174,19 @@ export default class PlayScene extends Table {
         );
       }
 
-      this.playerScoreTexts.push(playerScoreText);
+      this.#playerScoreTexts.push(playerScoreText);
     });
   }
 
-  private setPlayerScoreTexts(disableHouse: boolean): void {
+  private setPlayerScoreTexts(
+    hideHouseScore: boolean
+  ): void {
     this.players.forEach((player, index) => {
-      const playerScoreText = this.playerScoreTexts[index];
+      const playerScoreText = this.#playerScoreTexts[index];
 
       if (player.playerType === 'player') {
         playerScoreText.setText(
-          String(player.getHandScore())
+          player.getHandScore().toString()
         );
         Phaser.Display.Align.To.TopCenter(
           playerScoreText as Text,
@@ -192,18 +194,20 @@ export default class PlayScene extends Table {
           0,
           0
         );
-      } else if (player.playerType === 'house') {
-        if (!disableHouse) {
+      }
+
+      if (player.playerType === 'house') {
+        if (!hideHouseScore) {
           playerScoreText.setText(
-            String(player.getHandScore())
+            player.getHandScore().toString()
+          );
+          Phaser.Display.Align.To.BottomCenter(
+            playerScoreText as Text,
+            this.playerHandZones[index] as Zone,
+            0,
+            0
           );
         }
-        Phaser.Display.Align.To.BottomCenter(
-          playerScoreText as Text,
-          this.playerHandZones[index] as Zone,
-          0,
-          0
-        );
       }
     });
   }
@@ -214,11 +218,11 @@ export default class PlayScene extends Table {
     this.createDoubleButton();
     this.createSurrenderButton();
 
-    const buttons: Button[] = new Array<Button>();
-    buttons.push(this.standButton as Button);
-    buttons.push(this.hitButton as Button);
-    buttons.push(this.doubleButton as Button);
-    buttons.push(this.surrenderButton as Button);
+    const buttons: Button[] = [];
+    buttons.push(this.#standButton as Button);
+    buttons.push(this.#hitButton as Button);
+    buttons.push(this.#doubleButton as Button);
+    buttons.push(this.#surrenderButton as Button);
 
     ImageUtility.spaceOutImagesEvenlyHorizontally(
       buttons,
@@ -227,15 +231,15 @@ export default class PlayScene extends Table {
   }
 
   private fadeOutButtons(): void {
-    this.hitButton?.playFadeOut();
-    this.standButton?.playFadeOut();
-    this.doubleButton?.playFadeOut();
-    this.surrenderButton?.playFadeOut();
+    this.#hitButton?.playFadeOut();
+    this.#standButton?.playFadeOut();
+    this.#doubleButton?.playFadeOut();
+    this.#surrenderButton?.playFadeOut();
   }
 
   private createHitButton(): void {
     const buttonHeight = Number(this.config.height) / 2;
-    this.hitButton = new Button(
+    this.#hitButton = new Button(
       this,
       0,
       buttonHeight,
@@ -243,12 +247,12 @@ export default class PlayScene extends Table {
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Hit'
     );
-    this.hitButton.setClickHandler(() => this.handleHit());
+    this.#hitButton.setClickHandler(() => this.handleHit());
   }
 
   private createStandButton(): void {
     const buttonHeight = Number(this.config.height) / 2;
-    this.standButton = new Button(
+    this.#standButton = new Button(
       this,
       0,
       buttonHeight,
@@ -256,7 +260,7 @@ export default class PlayScene extends Table {
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Stand'
     );
-    this.standButton.setClickHandler(() =>
+    this.#standButton.setClickHandler(() =>
       this.handleStand()
     );
   }
@@ -264,7 +268,7 @@ export default class PlayScene extends Table {
   private createDoubleButton(): void {
     const buttonHeight = Number(this.config.height) / 2;
 
-    this.doubleButton = new Button(
+    this.#doubleButton = new Button(
       this,
       0,
       buttonHeight,
@@ -272,7 +276,7 @@ export default class PlayScene extends Table {
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Double'
     );
-    this.doubleButton.setClickHandler(() =>
+    this.#doubleButton.setClickHandler(() =>
       this.handleDouble()
     );
   }
@@ -280,7 +284,7 @@ export default class PlayScene extends Table {
   private createSurrenderButton() {
     const buttonHeight = Number(this.config.height) / 2;
 
-    this.surrenderButton = new Button(
+    this.#surrenderButton = new Button(
       this,
       0,
       buttonHeight,
@@ -288,7 +292,7 @@ export default class PlayScene extends Table {
       GAME.TABLE.BUTTON_CLICK_SOUND_KEY,
       'Surrender'
     );
-    this.surrenderButton.setClickHandler(() =>
+    this.#surrenderButton.setClickHandler(() =>
       this.handleSurrender()
     );
   }
@@ -307,8 +311,8 @@ export default class PlayScene extends Table {
     const playerHandZone = this.playerHandZones[0];
     player.gameStatus = 'hit';
 
-    this.doubleButton?.playFadeOut();
-    this.surrenderButton?.playFadeOut();
+    this.#doubleButton?.playFadeOut();
+    this.#surrenderButton?.playFadeOut();
 
     this.handOutCard(
       this.deck as Deck,
@@ -366,7 +370,7 @@ export default class PlayScene extends Table {
 
     this.handleStand();
 
-    if (player.getHandScore() > 21) {
+    if (PlayScene.isBust(player)) {
       player.gameStatus = 'bust';
     }
   }
@@ -386,39 +390,50 @@ export default class PlayScene extends Table {
     const house = this.players[1];
     const houseHandZone = this.playerHandZones[1];
 
-    this.timeEvent = this.time.addEvent({
+    this.#timeEvent = this.time.addEvent({
       delay: 800,
       callback: () => {
         const houseScore = house.getHandScore();
-        if (houseScore < 17) {
-          house.gameStatus = 'hit';
-          this.handOutCard(
-            this.deck as Deck,
-            house,
-            houseHandZone.x +
-              GAME.CARD.WIDTH *
-                (house.getHandSize() * 0.3 - 0.15),
-            houseHandZone.y,
-            false
-          );
-          this.setPlayerScoreTexts(false);
-        } else {
-          if (this.timeEvent) this.timeEvent.remove();
+
+        if (houseScore >= 17) {
+          this.#timeEvent?.remove();
+          this.gamePhase = GamePhase.ROUND_OVER;
+
           if (house.getHandScore() > 21) {
             house.gameStatus = 'bust';
-          } else if (PlayScene.isBlackjack(house)) {
-            house.gameStatus = 'blackjack';
-          } else {
-            house.gameStatus = 'stand';
+            return;
           }
-          this.gamePhase = GamePhase.ROUND_OVER;
+          if (PlayScene.isBlackjack(house)) {
+            house.gameStatus = 'blackjack';
+            return;
+          }
+          house.gameStatus = 'stand';
+          return;
         }
+
+        house.gameStatus = 'hit';
+        this.handOutCard(
+          this.deck as Deck,
+          house,
+          houseHandZone.x +
+            GAME.CARD.WIDTH *
+              (house.getHandSize() * 0.3 - 0.15),
+          houseHandZone.y,
+          false
+        );
+        this.setPlayerScoreTexts(false);
       },
       callbackScope: this,
       loop: true
     });
   }
 
+  /**
+   * ブラックジャックかどうか判定する関数。
+   * 手札の枚数が2枚かつ手札の合計が21の状態をブラックジャックと呼ぶ。
+   * @param player プレイヤー
+   * @returns ブラックジャックかどうか
+   */
   private static isBlackjack(
     player: BlackjackPlayer
   ): boolean {
@@ -428,40 +443,56 @@ export default class PlayScene extends Table {
     );
   }
 
-  private deriveGameResult(): GameResult | undefined {
-    let result: GameResult | undefined;
+  /**
+   * バストかどうか判定する関数。
+   * 手札の合計が21を越えた状態をバストと呼ぶ。
+   * @param player プレイヤー
+   * @returns ブラックジャックかどうか
+   */
+  private static isBust(player: BlackjackPlayer): boolean {
+    return player.getHandScore() > 21;
+  }
+
+  private deriveGameResult(): GameResult {
     const player = this.players[0];
     const playerHandScore = player.getHandScore();
     const house = this.players[1];
     const houseHandScore = house.getHandScore();
 
+    this.gamePhase = GamePhase.END_OF_GAME;
+
     if (player.gameStatus === 'bust') {
-      result = GameResult.BUST;
-    } else if (player.gameStatus === 'blackjack') {
-      if (house.gameStatus === 'blackjack') {
-        result = GameResult.PUSH;
-      } else {
-        result = GameResult.BLACKJACK;
+      return GameResult.BUST;
+    }
+
+    if (player.gameStatus === 'blackjack') {
+      if (house.gameStatus !== 'blackjack') {
+        return GameResult.BLACKJACK;
       }
-    } else if (player.gameStatus === 'stand') {
+      return GameResult.PUSH;
+    }
+
+    if (player.gameStatus === 'stand') {
       if (
         house.gameStatus === 'bust' ||
         playerHandScore > houseHandScore
       ) {
-        result = GameResult.WIN;
-      } else if (
+        return GameResult.WIN;
+      }
+
+      if (
         house.gameStatus === 'blackjack' ||
         houseHandScore > playerHandScore
       ) {
-        result = GameResult.LOSS;
-      } else if (houseHandScore === playerHandScore) {
-        result = GameResult.PUSH;
+        return GameResult.LOSS;
       }
-    } else if (player.gameStatus === 'surrender') {
-      result = GameResult.SURRENDER;
+
+      if (houseHandScore === playerHandScore) {
+        return GameResult.PUSH;
+      }
     }
-    this.gamePhase = GamePhase.END_OF_GAME;
-    return result;
+
+    return GameResult.SURRENDER;
   }
 
   handOutCard(
@@ -473,38 +504,42 @@ export default class PlayScene extends Table {
   ): void {
     const card: Card | undefined = deck.drawOne();
 
-    if (card) {
-      if (!isFaceDown) {
-        card.setFaceUp();
-      }
-      player.addCardToHand(card);
-      this.children.bringToTop(card);
-      card.playMoveTween(toX, toY);
+    if (!card) return;
+
+    if (!isFaceDown) {
+      card.setFaceUp();
     }
+
+    player.addCardToHand(card);
+
+    this.children.bringToTop(card);
+    card.playMoveTween(toX, toY);
   }
 
   payOut(result: GameResult): Result {
-    let winAmount = 0;
-    if (this.lobbyScene && this.lobbyScene.money) {
-      if (result === GameResult.WIN) {
-        winAmount = this.lobbyScene.bet;
-      } else if (result === GameResult.BLACKJACK) {
-        winAmount = this.lobbyScene.bet * 1.5;
-      } else if (result === GameResult.SURRENDER) {
-        winAmount = -this.lobbyScene.bet * 0.5;
-      } else if (
-        result === GameResult.LOSS ||
-        result === GameResult.BUST
-      ) {
-        winAmount = -this.lobbyScene.bet;
-      }
-      this.lobbyScene.money += winAmount;
-      this.setMoneyText(this.lobbyScene.money);
-      this.setBetText(this.lobbyScene.bet);
+    if (!this.lobbyScene?.money) {
+      return {
+        gameResult: result,
+        winAmount: 0
+      };
     }
+
+    const winAmount = {
+      [GameResult.WIN]: this.lobbyScene.bet,
+      [GameResult.LOSS]: -this.lobbyScene.bet,
+      [GameResult.PUSH]: 0,
+      [GameResult.BLACKJACK]: this.lobbyScene.bet * 1.5,
+      [GameResult.BUST]: -this.lobbyScene.bet,
+      [GameResult.SURRENDER]: -this.lobbyScene.bet * 0.5
+    };
+
+    this.lobbyScene.money += winAmount[result];
+    this.setMoneyText(this.lobbyScene.money);
+    this.setBetText(this.lobbyScene.bet);
+
     return {
       gameResult: result,
-      winAmount
+      winAmount: winAmount[result]
     };
   }
 
