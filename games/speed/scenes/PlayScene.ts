@@ -1,13 +1,12 @@
+import Card from '@/games/common/Factories/cardImage';
+import Deck from '@/games/common/Factories/deckImage';
+import Table from '@/games/common/Factories/tableScene';
+import GAME from '@/games/common/constants/game';
+import STYLE from '@/games/common/constants/style';
 import { Result } from '@/games/common/types/game';
-import Card from '../../common/Factories/cardImage';
-import Deck from '../../common/Factories/deckImage';
-import GAME from '../../common/constants/game';
-import STYLE from '../../common/constants/style';
 import GamePhase from '../constants/gamePhase';
 import GameResult from '../constants/gameResult';
 import SpeedPlayer from '../models/SpeedPlayer';
-
-import Table from '../../common/Factories/tableScene';
 
 import Text = Phaser.GameObjects.Text;
 import Zone = Phaser.GameObjects.Zone;
@@ -15,25 +14,27 @@ import GameObject = Phaser.GameObjects.GameObject;
 import TimeEvent = Phaser.Time.TimerEvent;
 
 export default class PlayScene extends Table {
-  // TODO: private->#に変更する
-  private playerDecks: Array<Deck> = []; // player, house
+  #playerDecks: Deck[] = []; // player, house
 
-  private deckSizeTexts: Array<Text> = []; // player, house
+  #deckSizeTexts: Text[] = []; // player, house
 
-  private dropZones: Array<Zone> = []; // player, house
+  #dropZones: Zone[] = []; // player, house
 
-  private dropCardRanks: Array<number> = []; // player, house
+  #dropCardRanks: number[] = []; // player, house
 
-  private timeEvent: TimeEvent | undefined;
+  #timeEvent: TimeEvent | undefined;
 
-  private housePlayTimeEvent: TimeEvent | undefined;
+  #housePlayTimeEvent: TimeEvent | undefined;
 
-  private houseDealTimeEvent: TimeEvent | undefined;
+  #houseDealTimeEvent: TimeEvent | undefined;
 
   #countDownSound: Phaser.Sound.BaseSound | undefined;
 
   constructor(config: any) {
-    super('PlayScene', GAME.TABLE.SPEED_TABLE_KEY, config);
+    super('PlayScene', GAME.TABLE.SPEED_TABLE_KEY, {
+      ...config,
+      canGoBack: true
+    });
   }
 
   create(): void {
@@ -51,6 +52,7 @@ export default class PlayScene extends Table {
       new SpeedPlayer('house', 0, 0, 'bet', 'House', 0)
     ];
 
+    this.registerCountDownSound();
     this.createPlayerNameTexts();
     this.createPlayerHandZones(
       GAME.CARD.WIDTH * 5 + STYLE.GUTTER_SIZE * 4,
@@ -64,50 +66,9 @@ export default class PlayScene extends Table {
     this.resetAndShuffleDeck();
     this.dealInitialCards();
 
-    this.#countDownSound = this.scene.scene.sound.add(
-      GAME.TABLE.COUNT_DOWN_SOUND_KEY,
-      { volume: 0.3 }
-    );
-
-    // ゲームのカウントダウン
-    this.time.delayedCall(3000, () => {
-      this.createTimerText();
-      if (this.#countDownSound) this.#countDownSound.play();
-      this.timeEvent = this.time.addEvent({
-        delay: 1000,
-        callback: () => {
-          this.countDown(() => {
-            this.gamePhase = GamePhase.ACTING;
-            this.enableCardDraggable();
-            if (this.timeEvent) this.timeEvent.remove();
-          });
-        },
-        callbackScope: this,
-        loop: true
-      });
-    });
-
-    // AIの始動
-    this.time.delayedCall(7000, () => {
-      this.housePlayTimeEvent = this.time.addEvent({
-        delay: this.lobbyScene
-          ? (3 - this.lobbyScene.level) * 1500
-          : 4500,
-        callback: this.playHouseTurn,
-        callbackScope: this,
-        loop: true
-      });
-    });
-
-    // Houseの始動（ゲーム停滞時のカード配布）
-    this.time.delayedCall(7000, () => {
-      this.houseDealTimeEvent = this.time.addEvent({
-        delay: 5000,
-        callback: this.playHouse,
-        callbackScope: this,
-        loop: true
-      });
-    });
+    this.startCountDown();
+    this.startHousePlay(7000);
+    this.startDealer();
   }
 
   update(): void {
@@ -122,15 +83,71 @@ export default class PlayScene extends Table {
       result
     ) {
       this.time.delayedCall(2000, () => {
-        this.housePlayTimeEvent?.remove();
-        this.houseDealTimeEvent?.remove();
+        this.#housePlayTimeEvent?.remove();
+        this.#houseDealTimeEvent?.remove();
         this.endHand(result as GameResult);
       });
     }
   }
 
+  private registerCountDownSound(): void {
+    this.#countDownSound = this.scene.scene.sound.add(
+      GAME.TABLE.COUNT_DOWN_SOUND_KEY,
+      { volume: 0.3 }
+    );
+  }
+
+  private startCountDown(): void {
+    this.time.delayedCall(3000, () => {
+      this.createTimerText();
+      this.#countDownSound?.play();
+      this.#timeEvent = this.time.addEvent({
+        delay: 1000,
+        callback: () => {
+          this.countDown(() => {
+            this.gamePhase = GamePhase.ACTING;
+            this.enableCardDraggable();
+            if (this.#timeEvent) this.#timeEvent.remove();
+          });
+        },
+        callbackScope: this,
+        loop: true
+      });
+    });
+  }
+
+  private startHousePlay(delay: number): void {
+    this.time.delayedCall(delay, () => {
+      this.#housePlayTimeEvent = this.time.addEvent({
+        delay: this.lobbyScene
+          ? (3 - this.lobbyScene.level) * 1200
+          : 3600,
+        callback: this.playHouseTurn,
+        callbackScope: this,
+        loop: true
+      });
+    });
+  }
+
+  private startDealer(): void {
+    this.time.delayedCall(7000, () => {
+      this.#houseDealTimeEvent = this.time.addEvent({
+        delay: 5000,
+        callback: this.playHouse,
+        callbackScope: this,
+        loop: true
+      });
+    });
+  }
+
   private createDropZones(): void {
-    this.dropZones = []; // 前回のゲームで作成したものが残っている可能性があるので、初期化する
+    // NOTE: 前回のゲームで作成したものが残っている可能性があるので初期化する
+    this.#dropZones = [];
+    const xOffset = {
+      player: GAME.CARD.WIDTH,
+      house: -GAME.CARD.WIDTH
+    };
+
     this.players.forEach((player) => {
       const dropZone = this.add
         .zone(
@@ -144,21 +161,13 @@ export default class PlayScene extends Table {
           GAME.CARD.HEIGHT
         );
 
-      if (player.playerType === 'player') {
-        Phaser.Display.Align.In.Center(
-          dropZone,
-          this.gameZone as GameObject,
-          GAME.CARD.WIDTH
-        );
-      } else if (player.playerType === 'house') {
-        Phaser.Display.Align.In.Center(
-          dropZone,
-          this.gameZone as GameObject,
-          -GAME.CARD.WIDTH
-        );
-      }
+      Phaser.Display.Align.In.Center(
+        dropZone,
+        this.gameZone as GameObject,
+        xOffset[player.playerType as 'player' | 'house']
+      );
 
-      this.dropZones.push(dropZone);
+      this.#dropZones.push(dropZone);
     });
   }
 
@@ -177,61 +186,52 @@ export default class PlayScene extends Table {
         card: Card,
         dropZone: Zone
       ) => {
-        if (this.canDropCard(card, dropZone)) {
-          card.setPosition(dropZone.x, dropZone.y);
-          card.disableInteractive();
-
-          this.dropZones.forEach(
-            (dropCardZone: Zone, index: number) => {
-              if (dropCardZone === dropZone) {
-                this.dropCardRanks[index] =
-                  card.getRankNumber('speed');
-              }
-            }
-          );
-
-          this.players.forEach((player, index) => {
-            if (player.playerType === 'player') {
-              player.removeCardFromHand(card);
-              this.handOutCard(
-                this.playerDecks[index] as Deck,
-                player as SpeedPlayer,
-                card.input.dragStartX,
-                this.playerHandZones[index].y,
-                false
-              );
-            }
-          });
-        } else {
+        if (!this.canDropCard(card, dropZone)) {
           card.returnToOrigin();
+          return;
         }
+
+        card.setPosition(dropZone.x, dropZone.y);
+        card.disableInteractive();
+
+        this.#dropZones.forEach(
+          (dropCardZone: Zone, index: number) => {
+            if (dropCardZone === dropZone) {
+              this.#dropCardRanks[index] =
+                card.getRankNumber('speed');
+            }
+          }
+        );
+
+        this.players.forEach((player, index) => {
+          if (player.playerType === 'player') {
+            player.removeCardFromHand(card);
+            this.handOutCard(
+              this.#playerDecks[index] as Deck,
+              player as SpeedPlayer,
+              card.input.dragStartX,
+              this.playerHandZones[index].y,
+              false
+            );
+          }
+        });
       }
     );
   }
 
   private playHouseTurn(): void {
-    if (!this.isPlayerStagnant(this.players[1])) {
+    const house = this.players[1];
+    if (!this.isPlayerStagnant(house)) {
       this.putDownCardFromHand();
     }
   }
 
   private playHouse(): void {
-    if (this.isGameStagnant()) {
-      // HouseのPlayを一時停止する
-      this.housePlayTimeEvent?.remove();
-      this.dealLeadCards();
-      // HouseのPlayを再開する
-      this.time.delayedCall(2000, () => {
-        this.housePlayTimeEvent = this.time.addEvent({
-          delay: this.lobbyScene
-            ? (3 - this.lobbyScene.level) * 1500
-            : 4500,
-          callback: this.playHouseTurn,
-          callbackScope: this,
-          loop: true
-        });
-      });
-    }
+    if (!this.isGameStagnant()) return;
+
+    this.#housePlayTimeEvent?.remove();
+    this.dealLeadCards();
+    this.startHousePlay(2000);
   }
 
   private disableCardDraggable(): void {
@@ -254,8 +254,8 @@ export default class PlayScene extends Table {
     });
   }
 
-  resetAndShuffleDeck(): void {
-    this.playerDecks = [
+  protected resetAndShuffleDeck(): void {
+    this.#playerDecks = [
       new Deck(
         this,
         this.playerHandZones[0].x +
@@ -274,7 +274,7 @@ export default class PlayScene extends Table {
       )
     ];
 
-    this.playerDecks.forEach((deck) => {
+    this.#playerDecks.forEach((deck) => {
       deck.shuffle();
     });
   }
@@ -282,13 +282,13 @@ export default class PlayScene extends Table {
   private canDropCard(card: Card, dropZone: Zone): boolean {
     let canDropCard = false;
 
-    this.dropZones.forEach(
+    this.#dropZones.forEach(
       (cardDropZone: Zone, index: number) => {
         if (dropZone === cardDropZone) {
           canDropCard =
             canDropCard ||
             PlayScene.isNextRank(
-              this.dropCardRanks[index],
+              this.#dropCardRanks[index],
               card.getRankNumber('speed')
             );
         }
@@ -305,6 +305,9 @@ export default class PlayScene extends Table {
     return diff === 1 || diff === 12;
   }
 
+  /**
+   * プレイヤーもしくはハウスが台札に出せるカードを持っているかどうかを示す真偽値
+   */
   private isGameStagnant(): boolean {
     let isGameStagnant = true;
     this.players.forEach((player) => {
@@ -314,10 +317,13 @@ export default class PlayScene extends Table {
     return isGameStagnant;
   }
 
+  /**
+   * プレイヤーが台札に出せるカードを持っているかどうかを示す真偽値
+   */
   private isPlayerStagnant(player: SpeedPlayer): boolean {
     let isPlayerContinuable = false;
     player.hand.forEach((card: Card) => {
-      this.dropZones.forEach((dropZone: Zone) => {
+      this.#dropZones.forEach((dropZone: Zone) => {
         isPlayerContinuable =
           isPlayerContinuable ||
           this.canDropCard(card, dropZone);
@@ -327,7 +333,9 @@ export default class PlayScene extends Table {
   }
 
   private createDeckSizeTexts(): void {
-    this.deckSizeTexts = []; // 前回のゲームで作成したものが残っている可能性があるので、初期化する
+    // NOTE: 前回のゲームで作成したものが残っている可能性があるので初期化する
+    this.#deckSizeTexts = [];
+
     this.players.forEach((player, index) => {
       const deckSizeText = this.add.text(
         0,
@@ -343,7 +351,7 @@ export default class PlayScene extends Table {
           20,
           0
         );
-      } else if (player.playerType === 'house') {
+      } else {
         Phaser.Display.Align.In.BottomLeft(
           deckSizeText,
           this.playerHandZones[index] as Zone,
@@ -351,60 +359,60 @@ export default class PlayScene extends Table {
           0
         );
       }
-      this.deckSizeTexts.push(deckSizeText);
+
+      this.#deckSizeTexts.push(deckSizeText);
     });
   }
 
   private setDeckSizeTexts(): void {
-    this.playerDecks.forEach((deck, index) => {
+    this.#playerDecks.forEach((deck, index) => {
       if (!deck.isEmpty()) {
-        this.deckSizeTexts[index].setText(
+        this.#deckSizeTexts[index].setText(
           `${deck.getSize()} 枚`
         );
       } else {
-        this.deckSizeTexts[index].setText('');
+        this.#deckSizeTexts[index].setText('');
       }
     });
   }
 
   private dealInitialCards() {
-    // 中央の台札をセットする
     this.dealLeadCards();
+    this.dealInitialHandCards();
+  }
 
-    let i = 0;
-    this.timeEvent = this.time.addEvent({
+  private dealInitialHandCards(): void {
+    let count = 0;
+    this.#timeEvent = this.time.addEvent({
       delay: 200,
       callback: () => {
+        const xOffset = {
+          player:
+            -2 * (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE) +
+            count * (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE),
+          house:
+            2 * (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE) -
+            count * (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE)
+        };
+
         this.players.forEach((player, index) => {
-          if (player.playerType === 'player') {
-            this.handOutCard(
-              this.playerDecks[index] as Deck,
-              player as SpeedPlayer,
-              this.playerHandZones[index].x -
-                (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE) * 2 +
-                i * (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE),
-              this.playerHandZones[index].y,
-              true
-            );
-          } else if (player.playerType === 'house') {
-            this.handOutCard(
-              this.playerDecks[index] as Deck,
-              player as SpeedPlayer,
-              this.playerHandZones[index].x +
-                (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE) * 2 -
-                i * (GAME.CARD.WIDTH + STYLE.GUTTER_SIZE),
-              this.playerHandZones[index].y,
-              true
-            );
-          }
+          this.handOutCard(
+            this.#playerDecks[index] as Deck,
+            player as SpeedPlayer,
+            this.playerHandZones[index].x +
+              xOffset[
+                player.playerType as 'player' | 'house'
+              ],
+            this.playerHandZones[index].y,
+            true
+          );
         });
-        i += 1;
+        count += 1;
       },
       callbackScope: this,
       repeat: 3
     });
 
-    // カードを裏返す
     this.time.delayedCall(1500, () => {
       this.players.forEach((player) => {
         player.hand.forEach((card) => {
@@ -415,7 +423,7 @@ export default class PlayScene extends Table {
     });
   }
 
-  handOutCard(
+  public handOutCard(
     deck: Deck,
     player: SpeedPlayer,
     toX: number,
@@ -424,50 +432,50 @@ export default class PlayScene extends Table {
   ): void {
     const card: Card | undefined = deck.drawOne();
 
-    if (card) {
-      if (!isFaceDown) {
-        card.setFaceUp();
-      }
-      if (player.playerType === 'player') {
-        card.setDraggable();
-      }
+    if (!card) return;
 
-      player.addCardToHand(card);
-
-      this.children.bringToTop(card);
-      card.playMoveTween(toX, toY);
-    } else {
-      return;
+    if (!isFaceDown) {
+      card.setFaceUp();
     }
 
+    if (player.playerType === 'player') {
+      card.setDraggable();
+    }
+
+    player.addCardToHand(card);
+
+    this.children.bringToTop(card);
+    card.playMoveTween(toX, toY);
     this.setDeckSizeTexts();
   }
 
-  // 山札から台札にカードを裏向きに配って、裏返す
-  // 山札がない場合は、手札から出す
+  /**
+   * 台札にカードを補充する関数。
+   * 山札からカードを補充し、山札が空の場合は、手札から補充する。
+   */
   private dealLeadCards(): void {
     this.players.forEach((player, index) => {
       let card: Card | undefined;
-      if (!this.playerDecks[index].isEmpty()) {
-        card = this.playerDecks[index].drawOne();
-      } else {
+      if (this.#playerDecks[index].isEmpty()) {
         card = player.hand.pop();
+      } else {
+        card = this.#playerDecks[index].drawOne();
       }
 
-      if (card) {
-        this.dropCardRanks[index] =
-          card.getRankNumber('speed');
-        this.children.bringToTop(card);
-        card.playMoveTween(
-          this.dropZones[index].x,
-          this.dropZones[index].y
-        );
+      if (!card) return;
 
-        if (card.isFaceDown) {
-          this.time.delayedCall(1500, () => {
-            card!.playFlipOverTween();
-          });
-        }
+      this.#dropCardRanks[index] =
+        card.getRankNumber('speed');
+      this.children.bringToTop(card);
+      card.playMoveTween(
+        this.#dropZones[index].x,
+        this.#dropZones[index].y
+      );
+
+      if (card.isFaceDown) {
+        this.time.delayedCall(1500, () => {
+          card?.playFlipOverTween();
+        });
       }
     });
 
@@ -476,53 +484,61 @@ export default class PlayScene extends Table {
 
   private putDownCardFromHand(): void {
     const house: SpeedPlayer = this.players[1];
-    const [card, dropZoneIndex] =
+    const { card, dropZoneIndex } =
       this.getAvailableCardFromHand(house);
 
-    if (card && dropZoneIndex !== undefined) {
-      this.children.bringToTop(card);
-      this.dropCardRanks[dropZoneIndex] =
-        card.getRankNumber('speed');
-      card.playMoveTween(
-        this.dropZones[dropZoneIndex].x,
-        this.dropZones[dropZoneIndex].y
-      );
+    if (!card) return;
+    // NOTE: if (!dropZoneIndex) とすると、dropZoneIndex = 0の時もTrueとなってしまうので、if (dropZoneIndex === undefined)としている。
+    if (dropZoneIndex === undefined) return;
 
-      this.handOutCard(
-        this.playerDecks[1] as Deck,
-        house as SpeedPlayer,
-        card.x,
-        card.y,
-        false
-      );
-    }
+    this.children.bringToTop(card);
+    this.#dropCardRanks[dropZoneIndex] =
+      card.getRankNumber('speed');
+    card.playMoveTween(
+      this.#dropZones[dropZoneIndex].x,
+      this.#dropZones[dropZoneIndex].y
+    );
+
+    this.handOutCard(
+      this.#playerDecks[1] as Deck,
+      house as SpeedPlayer,
+      card.x,
+      card.y,
+      false
+    );
   }
 
-  private getAvailableCardFromHand(
-    player: SpeedPlayer
-  ): [Card | undefined, number | undefined] {
+  /**
+   * 手札から台札に出すことができるカードと台札のインデックスを取得する
+   * @param player プレイヤー
+   * @returns カードと台札のインデックス
+   */
+  private getAvailableCardFromHand(player: SpeedPlayer): {
+    card: Card | undefined;
+    dropZoneIndex: number | undefined;
+  } {
     for (let i = 0; i < player.hand.length; i += 1) {
-      const currCard = player.hand[i];
+      const card = player.hand[i];
       for (
         let dropZoneIndex = 0;
-        dropZoneIndex < this.dropCardRanks.length;
+        dropZoneIndex < this.#dropCardRanks.length;
         dropZoneIndex += 1
       ) {
         if (
           PlayScene.isNextRank(
-            currCard.getRankNumber('speed'),
-            this.dropCardRanks[dropZoneIndex]
+            card.getRankNumber('speed'),
+            this.#dropCardRanks[dropZoneIndex]
           )
         ) {
-          player.removeCardFromHand(currCard);
-          return [currCard, dropZoneIndex];
+          player.removeCardFromHand(card);
+          return { card, dropZoneIndex };
         }
       }
     }
-    return [undefined, undefined];
+    return { card: undefined, dropZoneIndex: undefined };
   }
 
-  deriveGameResult(): GameResult | undefined {
+  private deriveGameResult(): GameResult | undefined {
     let result: GameResult | undefined;
     const player = this.players[0];
     const playerHandScore = player.getHandScore();
@@ -532,38 +548,51 @@ export default class PlayScene extends Table {
     if (playerHandScore === 0 && houseHandScore === 0) {
       result = GameResult.TIE;
       this.gamePhase = GamePhase.END_OF_GAME;
-    } else if (playerHandScore === 0) {
+      return result;
+    }
+
+    if (playerHandScore === 0) {
       result = GameResult.WIN;
       this.gamePhase = GamePhase.END_OF_GAME;
-    } else if (houseHandScore === 0) {
+      return result;
+    }
+
+    if (houseHandScore === 0) {
       result = GameResult.LOSS;
       this.gamePhase = GamePhase.END_OF_GAME;
-    } else {
-      result = undefined; // まだゲームが終わっていない
-      this.gamePhase = GamePhase.ACTING;
+      return result;
     }
+
+    result = undefined; // still playing
+    this.gamePhase = GamePhase.ACTING;
     return result;
   }
 
-  payOut(result: GameResult): Result {
-    let winAmount = 0;
-    if (this.lobbyScene && this.lobbyScene.money) {
-      if (result === GameResult.WIN) {
-        winAmount = this.lobbyScene.bet;
-      } else if (result === GameResult.LOSS) {
-        winAmount = -this.lobbyScene.bet;
-      }
-      this.lobbyScene.money += winAmount;
-      this.setMoneyText(this.lobbyScene.money);
-      this.setBetText(this.lobbyScene.bet);
+  public payOut(result: GameResult): Result {
+    if (!this.lobbyScene?.money) {
+      return {
+        gameResult: result,
+        winAmount: 0
+      };
     }
+
+    const winAmount = {
+      [GameResult.WIN]: this.lobbyScene.bet,
+      [GameResult.LOSS]: -this.lobbyScene.bet,
+      [GameResult.TIE]: 0
+    };
+
+    this.lobbyScene.money += winAmount[result];
+    this.setMoneyText(this.lobbyScene.money);
+    this.setBetText(this.lobbyScene.bet);
+
     return {
       gameResult: result,
-      winAmount
+      winAmount: winAmount[result]
     };
   }
 
-  playGameResultSound(result: string): void {
+  public playGameResultSound(result: string): void {
     if (result === GameResult.WIN) {
       this.winGameSound?.play();
     } else {

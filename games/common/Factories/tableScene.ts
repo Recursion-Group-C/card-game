@@ -16,13 +16,13 @@ import Text = Phaser.GameObjects.Text;
 import GameObject = Phaser.GameObjects.GameObject;
 
 export default abstract class Table extends BaseScene {
-  protected playerHandZones: Array<Zone> = [];
+  protected playerHandZones: Zone[] = [];
 
   protected timerText: Text | undefined;
 
-  protected playerNameTexts: Array<Text> = [];
+  protected playerNameTexts: Text[] = [];
 
-  protected players: Array<Player> = [];
+  protected players: Player[] = [];
 
   protected lobbyScene: LobbyScene | undefined;
 

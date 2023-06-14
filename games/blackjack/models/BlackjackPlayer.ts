@@ -1,5 +1,5 @@
-import GameDecision from '../../common/Factories/gameDecision';
-import Player from '../../common/Factories/player';
+import GameDecision from '@/games/common/Factories/gameDecision';
+import Player from '@/games/common/Factories/player';
 
 export default class BlackjackPlayer extends Player {
   // eslint-disable-next-line class-methods-use-this
@@ -22,7 +22,7 @@ export default class BlackjackPlayer extends Player {
 
     for (let i = 0; i < aceCount; i += 1) {
       if (score > 21) {
-        score -= 10; // Scoreが21を越える場合は、Aを11ではなく、1としてカウントするため、10を引く
+        score -= 10; // NOTE: Scoreが21を越える場合は、Aを11ではなく、1としてカウントするため、10を引く
       } else {
         break;
       }

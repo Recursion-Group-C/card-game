@@ -97,7 +97,7 @@ export default class BaseScene extends Phaser.Scene {
   }
 
   protected createMenu(
-    menu: Array<MenuItem>,
+    menu: MenuItem[],
     setupMenuEvents: (menuItem: MenuItem) => void
   ) {
     const buttons: Button[] = new Array<Button>();

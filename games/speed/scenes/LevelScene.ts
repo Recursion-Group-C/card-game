@@ -1,8 +1,8 @@
 import GAME from '@/games/common/constants/game';
 import LobbyScene from '@/games/common/scenes/LobbyScene';
 
-import STYLE from '../../common/constants/style';
-import BaseScene from '../../common/scenes/BaseScene';
+import STYLE from '@/games/common/constants/style';
+import BaseScene from '@/games/common/scenes/BaseScene';
 import MenuItem from '../constants/menuItem';
 
 import Text = Phaser.GameObjects.Text;
@@ -10,7 +10,7 @@ import Text = Phaser.GameObjects.Text;
 const LEVEL = ['EASY', 'MEDIUM', 'HARD'];
 
 export default class LevelScene extends BaseScene {
-  #menu: Array<MenuItem> = [];
+  #menu: MenuItem[] = [];
 
   #lobbyScene: LobbyScene | undefined;
 
@@ -61,10 +61,7 @@ export default class LevelScene extends BaseScene {
   }
 
   private setupMenuEvents(menuItem: MenuItem): void {
-    // eslint-disable-next-line prefer-destructuring
-    const button = menuItem.button;
-
-    button?.setClickHandler(() => {
+    menuItem.button?.setClickHandler(() => {
       if (menuItem.scene && this.#lobbyScene) {
         this.#lobbyScene.level = menuItem.level;
         this.scene.start(menuItem.scene);
