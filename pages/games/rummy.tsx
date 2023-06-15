@@ -10,7 +10,7 @@ const Game = () => {
   useEffect(() => {
     const importScenes = async () => {
       const { default: PlayScene } = await import(
-        '@/games/war/scenes/PlayScene'
+        '@/games/rummy/scenes/PlayScene'
       );
 
       const { default: LobbyScene } = await import(
@@ -32,7 +32,7 @@ const Game = () => {
     const initPhaserAsync = async () => {
       const Scenes = await importScenes();
       initPhaser(
-        'war',
+        'rummy',
         false,
         user ? user.id : '',
         setGame,

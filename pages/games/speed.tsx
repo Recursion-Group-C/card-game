@@ -45,7 +45,7 @@ const Game = () => {
       );
     };
     initPhaserAsync();
-  }, [user]);
+  }, []);
 
   return (
     <div id="game-content" key="game-content">

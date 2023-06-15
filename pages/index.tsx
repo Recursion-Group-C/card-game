@@ -18,7 +18,7 @@ const Home = () => (
         alt="homePage"
       />
 
-      <div className="my-10 mx-3 rounded-md border-4 border-red-600 p-2">
+      <div className="mx-3 my-10 rounded-md border-4 border-red-600 p-2">
         <p className="mb-3 text-center text-3xl underline decoration-red-600 decoration-2">
           SELECT GAME
         </p>
@@ -57,14 +57,14 @@ const Home = () => (
             url="/games/holdem"
             imgPath="/images/thumbnailSample.png"
             ruleUrl="/rules/holdem"
-          />
+          /> */}
           <Card
             title="Rummy"
             description="麻雀+花札のようなゲームです。場に出されたカードへも「付け札」が行え、最初に手札をなくした人の勝ちです。"
             url="/games/rummy"
             imgPath="/images/thumbnailSample.png"
             ruleUrl="/rules/rummy"
-          /> */}
+          />
         </div>
       </div>
     </div>
